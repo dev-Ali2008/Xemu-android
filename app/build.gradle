@@ -22,6 +22,7 @@ android {
             cmake {
                 cppFlags "-std=c++17"
                 arguments "-DANDROID_STL=c++_shared"
+                
                 arguments "-DANDROID_ARM_NEON=TRUE"
                 arguments "-DANDROID_PLATFORM=android-29"
             }
@@ -49,18 +50,16 @@ android {
         jvmTarget = '1.8'
     }
 
-    // Explicit kapt configuration to ensure JVM target compatibility
     kapt {
         javacOptions {
             option("-source", "8")
             option("-target", "8")
         }
     }
-    
-    tasks.withType(JavaCompile) {
-        // Removed --release 8 flag as it prevents Android SDK imports
-    }
 
+    tasks.withType(JavaCompile) {
+    }
+    
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
         kotlinOptions {
             jvmTarget = '1.8'
@@ -89,7 +88,7 @@ android {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
             version "3.23.1"
-           
+            
             
         }
     }
