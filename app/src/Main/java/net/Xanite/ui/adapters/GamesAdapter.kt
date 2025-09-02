@@ -32,13 +32,16 @@ class GamesAdapter(
         private val size: TextView = itemView.findViewById(R.id.gameSize)
 
         fun bind(game: Game) {
-            
+
             title.text = game.name
-            
+
+
             size.text = game.getFormattedSize()
-            
+
+
             cover.setImageResource(R.drawable.ic_game_placeholder)
-            
+
+
             itemView.setOnClickListener { onItemClick(game) }
         }
     }
