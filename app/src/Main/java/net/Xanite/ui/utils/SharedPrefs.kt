@@ -44,6 +44,7 @@ object SharedPrefs {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    // Renderer type management
     fun saveRendererType(context: Context, rendererType: String) {
         getPrefs(context).edit().apply {
             putString(KEY_RENDERER_TYPE, rendererType)
@@ -52,7 +53,7 @@ object SharedPrefs {
     }
 
     fun getRendererType(context: Context): String {
-        return getPrefs(context).getString(KEY_RENDERER_TYPE, "vulkan") ?: "vulkan"
+        return getPrefs(context).getString(KEY_RENDERER_TYPE, "opengl") ?: "opengl"
     }
 
     data class BiosInfo(

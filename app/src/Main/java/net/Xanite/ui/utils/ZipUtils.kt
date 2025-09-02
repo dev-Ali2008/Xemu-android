@@ -3,10 +3,12 @@ package com.xanite.utils
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object ZipUtils {
-    fun extractZip(zipFile: File, destination: File): Boolean {
-        return try {
+    suspend fun extractZip(zipFile: File, destination: File): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
             if (!destination.exists()) {
                 destination.mkdirs()
             }
