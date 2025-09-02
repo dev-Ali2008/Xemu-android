@@ -98,6 +98,7 @@ class Xbox360Activity : AppCompatActivity() {
             .show()
     }
 
+
     private fun deleteGame(game: Game) {
         val file = File(game.path)
         if (file.exists()) {
@@ -159,6 +160,7 @@ class Xbox360Activity : AppCompatActivity() {
         return true
     }
 }
+
 
 class GridSpacingItemDecoration(
     private val spanCount: Int,

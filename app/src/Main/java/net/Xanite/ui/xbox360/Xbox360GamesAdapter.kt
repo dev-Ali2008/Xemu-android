@@ -30,8 +30,9 @@ class Xbox360GamesAdapter(
         private val gameDetails: TextView = itemView.findViewById(R.id.gameDetails)
 
         fun bind(game: Game) {
-            
+
             gameName.text = game.name
+
 
          val typeText = when (game.type) {
                 "XBOX360" -> "Xbox 360 Game"

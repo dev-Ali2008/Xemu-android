@@ -28,11 +28,11 @@ class Xbox360Emulator(private val context: Context) {
             setContentView(binding.root)
             window?.setLayout(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             setCancelable(false)
-            
-         
+
+
             val gameName = game.name ?: context.getString(R.string.unknown_game)
             Toast.makeText(context, context.getString(R.string.running_game) + ": $gameName", Toast.LENGTH_SHORT).show()
-            
+
             startColorAnimation()
             show()
         }

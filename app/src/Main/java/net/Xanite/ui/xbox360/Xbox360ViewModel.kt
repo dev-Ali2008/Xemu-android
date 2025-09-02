@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 
 class Xbox360ViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = Xbox360Repository(application)
-    
+
     val gamesList = MutableLiveData<List<Game>>()
     val errorMessage = MutableLiveData<String>()
     val successMessage = MutableLiveData<String>()
@@ -23,6 +23,7 @@ class Xbox360ViewModel(application: Application) : AndroidViewModel(application)
             isLoading.postValue(true)
             try {
                 val games = withContext(Dispatchers.IO) {
+                    repository.initialize()
                     repository.getGames()
                 }
                 gamesList.postValue(games)
