@@ -15,14 +15,27 @@ import com.xanite.databinding.ActivityXboxOriginalBinding
 import com.xanite.models.Game
 import com.xanite.R
 import com.xanite.utils.RendererManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class XboxOriginalActivity : AppCompatActivity() {
     private lateinit var binding: ActivityXboxOriginalBinding
     private val viewModel: XboxOriginalViewModel by viewModels()
     private lateinit var adapter: XboxOriginalGamesAdapter
+    private val activityScope = CoroutineScope(Dispatchers.Main)
 
-    
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                viewModel.addGame(uri)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +94,6 @@ class XboxOriginalActivity : AppCompatActivity() {
         
         showToast("Launching ${game.name} with $rendererName renderer")
         
-        
         val intent = Intent(this, XboxShaderActivity::class.java).apply {
             putExtra("game_path", game.path)
             putExtra("renderer_type", rendererType.name)
@@ -101,17 +113,26 @@ class XboxOriginalActivity : AppCompatActivity() {
     }
 
     private fun deleteGame(game: Game) {
-        val file = File(game.path)
-        if (file.exists()) {
-            val deleted = file.delete()
-            if (deleted) {
-                showToast("Game deleted")
-                viewModel.loadGames()
-            } else {
-                showToast("Failed to delete game")
+        activityScope.launch {
+            try {
+                val deleted = withContext(Dispatchers.IO) {
+                    val file = File(game.path)
+                    if (file.exists()) {
+                        file.delete()
+                    } else {
+                        false
+                    }
+                }
+                
+                if (deleted) {
+                    showToast("Game deleted")
+                    viewModel.loadGames()
+                } else {
+                    showToast("Failed to delete game")
+                }
+            } catch (e: Exception) {
+                showToast("Error deleting game: ${e.message}")
             }
-        } else {
-            showToast("Game file not found")
         }
     }
 
@@ -137,39 +158,23 @@ class XboxOriginalActivity : AppCompatActivity() {
         }
     }
 
-    
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
- 
-
-  private fun openFilePicker() {
-    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-        addCategory(Intent.CATEGORY_OPENABLE)
-        type = "*/*"
-        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true) 
-    }
-    filePickerLauncher.launch(intent)
-}
-
-private val filePickerLauncher = registerForActivityResult(
-    ActivityResultContracts.StartActivityForResult()
-) { result ->
-    if (result.resultCode == Activity.RESULT_OK) {
-        result.data?.let { intent ->
-            if (intent.clipData != null) {
-
-                for (i in 0 until intent.clipData!!.itemCount) {
-                    val uri = intent.clipData!!.getItemAt(i).uri
-                    viewModel.addGame(uri)
-                }
-            } else {
-                
-                intent.data?.let { uri ->
-                    viewModel.addGame(uri)
-                }
-            }
+    private fun openFilePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/x-iso9660-image", "application/octet-stream", "application/x-xiso", ".iso", ".xiso"))
+            putExtra(Intent.EXTRA_TITLE, "ISO/XISO-Datei auswählen")
         }
+        filePickerLauncher.launch(intent)
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }
 
@@ -202,5 +207,4 @@ class GridSpacingItemDecoration(
             }
         }
     }
-}
 }

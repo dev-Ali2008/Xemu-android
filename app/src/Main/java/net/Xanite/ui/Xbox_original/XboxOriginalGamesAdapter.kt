@@ -33,7 +33,6 @@ class XboxOriginalGamesAdapter(
             
             gameName.text = game.name
 
-           
             val typeText = when (game.type) {
                 "XBOXOG" -> "Xbox Original Game"
                 "ISO" -> "ISO Image"
