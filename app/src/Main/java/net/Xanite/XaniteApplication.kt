@@ -8,7 +8,7 @@ class XaniteApplication : Application() {
         super.onCreate()
         
         try {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
+            Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         } catch (e: Exception) {
             e.printStackTrace()
         }

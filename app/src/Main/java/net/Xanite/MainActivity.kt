@@ -8,7 +8,6 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,20 +36,12 @@ class MainActivity : AppCompatActivity() {
     private val BIOS_DIR_PATH = "/data/user/0/com.xanite/files/bios/"
     private val FIRST_RUN_KEY = "first_run"
     private val ZIP_FILENAME = "Xanite_system.zip"
-    private val REQUIRED_BIOS_FILES = listOf(
-        "Complex_4627v1.03.bin",
-        "mcpx_1.0.bin",
-        "xbox_hdd.qcow2"
-    )
 
-   
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
                 showExtractProgress(uri)
             }
-        } else {
-            Toast.makeText(this, getString(R.string.file_selection_cancelled), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -67,7 +58,6 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
         checkAndRequestPermissions()
 
-        
         if (isFirstRun() && !areBiosFilesPresent()) {
             showFilePickerDialog()
         }
@@ -86,50 +76,44 @@ class MainActivity : AppCompatActivity() {
         if (!biosDir.exists()) {
             return false
         }
-        return REQUIRED_BIOS_FILES.all { filename -> 
-            val file = File(biosDir, filename)
-            file.exists() && file.length() > 0
-        }
+        return listOf(
+            "Complex_4627v1.03.bin",
+            "mcpx_1.0.bin",
+            "xbox_hdd.qcow2"
+        ).all { filename -> File(biosDir, filename).exists() }
     }
 
     private fun showFilePickerDialog() {
-    val dialogBinding = SimpleDownloadDialogBinding.inflate(layoutInflater)
-    val dialog = AlertDialog.Builder(this)
-        .setView(dialogBinding.root)
-        .setCancelable(true)
-        .create()
+        val dialogBinding = SimpleDownloadDialogBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .setCancelable(false)
+            .create()
 
-    with(dialogBinding) {
-        titleText.text = getString(R.string.select_bios_file)
-        
-        
-        messageText.text = getString(R.string.select_bios_message)
-        messageText.visibility = View.VISIBLE
-        
-        nextButton.text = getString(R.string.select_file)
-        closeButton.text = getString(R.string.cancel)
-        
-        nextButton.setOnClickListener {
-            dialog.dismiss()
-            openFilePicker()
+        with(dialogBinding) {
+            titleText.text = getString(R.string.select_file)
+            nextButton.text = getString(R.string.select_file)
+            closeButton.text = getString(R.string.cancel)
+            
+            nextButton.setOnClickListener {
+                dialog.dismiss()
+                openFilePicker()
+            }
+            
+            closeButton.setOnClickListener {
+                dialog.dismiss()
+                Toast.makeText(this@MainActivity, getString(R.string.select_file_later), Toast.LENGTH_SHORT).show()
+            }
         }
-        
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-            Toast.makeText(this@MainActivity, getString(R.string.select_file_later), Toast.LENGTH_SHORT).show()
-        }
+
+        dialog.show()
     }
-
-    dialog.show()
-}
 
     private fun openFilePicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "application/zip"
-            putExtra(Intent.EXTRA_TITLE, "Select $ZIP_FILENAME")
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or 
-                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            putExtra(Intent.EXTRA_TITLE, "Select Xanite_system.zip")
         }
         filePickerLauncher.launch(intent)
     }
@@ -143,8 +127,6 @@ class MainActivity : AppCompatActivity() {
 
         with(progressDialogBinding) {
             titleText.text = getString(R.string.extracting_files)
-            messageText.text = getString(R.string.extracting_message)
-            messageText.visibility = View.VISIBLE
             nextButton.visibility = View.GONE
             closeButton.visibility = View.GONE
             progressBar.visibility = View.VISIBLE
@@ -160,20 +142,9 @@ class MainActivity : AppCompatActivity() {
             if (areBiosFilesPresent()) {
                 Toast.makeText(this, getString(R.string.extraction_complete), Toast.LENGTH_SHORT).show()
             } else {
-                showExtractionFailedDialog()
+                Toast.makeText(this, getString(R.string.extraction_failed), Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    private fun showExtractionFailedDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.extraction_failed))
-            .setMessage(getString(R.string.extraction_failed_message))
-            .setPositiveButton(getString(R.string.retry)) { _, _ ->
-                showFilePickerDialog()
-            }
-            .setNegativeButton(getString(R.string.cancel), null)
-            .show()
     }
 
     private fun extractZipFile(uri: Uri, dialogBinding: SimpleDownloadDialogBinding, onComplete: () -> Unit) {
@@ -184,22 +155,17 @@ class MainActivity : AppCompatActivity() {
                     biosDir.mkdirs()
                 }
 
-                contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-
                 contentResolver.openInputStream(uri)?.use { inputStream ->
                     ZipInputStream(BufferedInputStream(inputStream)).use { zipInputStream ->
                         var entry = zipInputStream.nextEntry
+                        val totalEntries = 3 
                         var extractedEntries = 0
-                        val totalEntries = REQUIRED_BIOS_FILES.size
 
                         while (entry != null) {
-                            if (!entry.isDirectory && REQUIRED_BIOS_FILES.contains(entry.name)) {
+                            if (!entry.isDirectory) {
                                 val outputFile = File(biosDir, entry.name)
                                 FileOutputStream(outputFile).use { outputStream ->
-                                    val buffer = ByteArray(1024 * 8)
+                                    val buffer = ByteArray(1024)
                                     var length: Int
                                     var totalRead: Long = 0
                                     val entrySize = entry.size
@@ -223,7 +189,6 @@ class MainActivity : AppCompatActivity() {
                                     }
                                 }
                                 extractedEntries++
-                                Log.d("Extraction", "Extracted: ${entry.name}")
                             }
                             zipInputStream.closeEntry()
                             entry = zipInputStream.nextEntry
@@ -236,7 +201,7 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
-                    Toast.makeText(this, "${getString(R.string.extraction_failed)}: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.extraction_failed) + ": ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }.start()
@@ -263,7 +228,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             biosDownloadCard.setOnClickListener {
-              
                 showFilePickerDialog()
             }
         }
@@ -297,9 +261,17 @@ class MainActivity : AppCompatActivity() {
                 showStoragePermissionDialog()
             }
         } else {
-            val readPermission = Manifest.permission.READ_EXTERNAL_STORAGE
-            if (ContextCompat.checkSelfPermission(this, readPermission) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(readPermission), STORAGE_PERMISSION_REQUEST_CODE)
+            val permissions = arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            
+            val permissionsToRequest = permissions.filter { permission ->
+                ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED
+            }.toTypedArray()
+            
+            if (permissionsToRequest.isNotEmpty()) {
+                ActivityCompat.requestPermissions(this, permissionsToRequest, STORAGE_PERMISSION_REQUEST_CODE)
             }
         }
     }
@@ -370,7 +342,9 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 Toast.makeText(this, getString(R.string.permission_granted), Toast.LENGTH_SHORT).show()
-                showFilePickerDialog()
+                if (isFirstRun() && !areBiosFilesPresent()) {
+                    showFilePickerDialog()
+                }
             } else {
                 Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
             }
