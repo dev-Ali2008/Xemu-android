@@ -1,0 +1,75 @@
+# Standalone CMakeLists.txt for building without Android/Gradle/Clang-Tidy
+cmake_minimum_required(VERSION 3.22.1)
+
+project(XaniteStandalone LANGUAGES CXX)
+
+# Force disable ALL static analysis tools
+set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE)
+set(CMAKE_CXX_CPPCHECK "" CACHE STRING "" FORCE)
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "" CACHE STRING "" FORCE)
+set(CMAKE_CXX_ANALYZER "" CACHE STRING "" FORCE)
+
+# Set compiler flags to disable all warnings and analysis
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-everything -Wno-all -Wno-extra -Wno-pedantic")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG -Wno-everything")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-everything")
+
+# No Android dependencies - pure Linux build
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Include directories (simplified)
+include_directories(
+    .
+    Xbox_og
+)
+
+# Simple memory allocator
+add_library(memory_allocator SHARED Xbox_og/memory_allocator.cpp)
+
+# Simple utils
+add_library(xbox_utils SHARED Xbox_og/xbox_utils.cpp)
+
+# Simplified x86 core (no analysis)
+add_library(x86_core SHARED
+    Xbox_og/x86_core_simple.cpp
+)
+
+# Ensure no static analysis on these targets
+set_target_properties(
+    memory_allocator
+    xbox_utils
+    x86_core
+    PROPERTIES
+    CXX_CLANG_TIDY ""
+    CXX_CPPCHECK ""
+    CXX_INCLUDE_WHAT_YOU_USE ""
+)
+
+# Link libraries
+target_link_libraries(x86_core
+    memory_allocator
+    xbox_utils
+)
+
+# Main executable
+add_executable(xanite_standalone
+    Xbox_og/xbox_emulator_standalone.cpp
+)
+
+target_link_libraries(xanite_standalone
+    x86_core
+    memory_allocator
+    xbox_utils
+)
+
+# Install target
+install(TARGETS
+    xanite_standalone
+    x86_core
+    memory_allocator
+    xbox_utils
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+)

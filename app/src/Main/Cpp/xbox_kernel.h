@@ -36,7 +36,41 @@ public:
         uint32_t xapiLibraryImportAddr;
         uint32_t logoBitmapAddr;
         uint32_t logoBitmapSize;
+
+
+        uint32_t initFlags;
+        uint32_t stackCommit;
+        uint32_t heapReserve;
+        uint32_t heapCommit;
+        uint32_t peBaseAddr;
+        uint32_t peSize;
+        uint32_t peChecksum;
+        uint32_t peTimestamp;
+        uint32_t debugPathnameAddr;
+        uint32_t debugFilenameAddr;
+        uint32_t debugUnicodeFilenameAddr;
+        uint32_t kernelThunkAddr;
+        uint32_t nonKernelImportDirAddr;
+        uint32_t libraryVersionsAddr;
+        uint32_t libraryVersionsNum;
+        uint32_t kernelLibraryVersionAddr;
+        uint32_t xapiLibraryVersionAddr;
     };
+
+
+    struct XbeSectionHeader {
+        uint32_t flags;
+        uint32_t virtualAddr;
+        uint32_t virtualSize;
+        uint32_t fileAddr;
+        uint32_t fileSize;
+        uint32_t nameAddr;  
+        uint32_t nameRefCount;
+        uint32_t headSharedPage;
+        uint32_t tailSharedPage;
+        uint32_t sharedPageRefCount;
+    };
+
 
     struct XbeSection {
         uint32_t flags;
@@ -58,6 +92,7 @@ public:
         Normal,
         High
     };
+
 
     struct MemoryBlock {
         uint32_t address;
@@ -98,7 +133,7 @@ public:
     void dumpThreads() const;
 
     uint32_t createProcess(const char* name, uint32_t entryPoint);
-   
+
     void setDebugOutput(std::function<void(const std::string&)> callback);
 
     uint32_t getEntryPoint() const;
@@ -116,7 +151,7 @@ public:
 private:
     XboxMemory* memory;
     X86Core* cpu;
-    
+
     XbeHeader currentXbe;
     std::vector<XbeSection> sections;
     std::vector<uint8_t> xbeData;
@@ -154,6 +189,35 @@ private:
     uint32_t syscallReadFile(uint32_t* args);
     uint32_t syscallWriteFile(uint32_t* args);
     uint32_t syscallCloseFile(uint32_t* args);
+
+
+    uint32_t syscallXboxGetTickCount(uint32_t* args);
+    uint32_t syscallXboxGetTime(uint32_t* args);
+    uint32_t syscallXboxSleep(uint32_t* args);
+    uint32_t syscallXboxGetSystemTime(uint32_t* args);
+
+
+    uint32_t syscallXboxAudioInit(uint32_t* args);
+    uint32_t syscallXboxAudioPlay(uint32_t* args);
+    uint32_t syscallXboxAudioStop(uint32_t* args);
+    uint32_t syscallXboxAudioSetVolume(uint32_t* args);
+
+
+    uint32_t syscallXboxGraphicsInit(uint32_t* args);
+    uint32_t syscallXboxGraphicsPresent(uint32_t* args);
+    uint32_t syscallXboxGraphicsClear(uint32_t* args);
+    uint32_t syscallXboxGraphicsSetMode(uint32_t* args);
+
+
+    uint32_t syscallXboxInputInit(uint32_t* args);
+    uint32_t syscallXboxInputGetState(uint32_t* args);
+    uint32_t syscallXboxInputSetVibration(uint32_t* args);
+
+
+    uint32_t syscallXboxNetworkInit(uint32_t* args);
+    uint32_t syscallXboxNetworkConnect(uint32_t* args);
+    uint32_t syscallXboxNetworkSend(uint32_t* args);
+    uint32_t syscallXboxNetworkRecv(uint32_t* args);
 };
 
-#endif // XBOX_KERNEL_H
+#endif 

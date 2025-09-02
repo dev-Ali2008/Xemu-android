@@ -8,7 +8,7 @@
 #include <memory>
 #include <cstdlib> 
 
-// CRC32 
+
 static const uint32_t crc32_table[256] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
     0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -58,7 +58,7 @@ static const uint32_t crc32_table[256] = {
 #define ADLER32_MOD 65521
 
 namespace XboxUtils {
-  
+
     static std::function<void(const std::string&)> debugCallback = nullptr;
 
     std::string formatHex(uint32_t value, uint8_t width) {
@@ -77,12 +77,12 @@ namespace XboxUtils {
         const char* units[] = {"B", "KB", "MB", "GB", "TB"};
         double size = static_cast<double>(bytes);
         int unit = 0;
-        
+
         while (size >= 1024 && unit < 4) {
             size /= 1024;
             unit++;
         }
-        
+
         std::stringstream ss;
         ss << std::fixed << std::setprecision(2) << size << " " << units[unit];
         return ss.str();
@@ -106,15 +106,15 @@ namespace XboxUtils {
         if (!file.is_open()) {
             return {};
         }
-        
+
         std::streamsize size = file.tellg();
         file.seekg(0, std::ios::beg);
-        
+
         std::vector<uint8_t> buffer(size);
         if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
             return {};
         }
-        
+
         return buffer;
     }
 
@@ -123,40 +123,40 @@ namespace XboxUtils {
         if (!file.is_open()) {
             return false;
         }
-        
+
         file.write(reinterpret_cast<const char*>(data.data()), data.size());
         return file.good();
     }
 
     uint32_t calculateCRC32(const uint8_t* data, size_t length) {
         uint32_t crc = 0xFFFFFFFF;
-        
+
         for (size_t i = 0; i < length; i++) {
             crc = (crc >> 8) ^ crc32_table[(crc ^ data[i]) & 0xFF];
         }
-        
+
         return ~crc;
     }
 
     uint32_t calculateCRC32NEON(const uint8_t* data, size_t length) {
         uint32_t crc = 0xFFFFFFFF;
-        
-  
+
+
         size_t i = 0;
 #ifdef __ARM_NEON
         for (; i + 16 <= length; i += 16) {
             uint8x16_t chunk = vld1q_u8(data + i);
-            
+
             uint8_t bytes[16];
             vst1q_u8(bytes, chunk);
-            
+
             for (int j = 0; j < 16; j++) {
                 uint8_t byte = bytes[j];
                 crc = (crc >> 8) ^ crc32_table[(crc ^ byte) & 0xFF];
             }
         }
 #else
-       
+
         for (; i + 16 <= length; i += 16) {
             for (int j = 0; j < 16; j++) {
                 uint8_t byte = data[i + j];
@@ -164,36 +164,36 @@ namespace XboxUtils {
             }
         }
 #endif
-        
+
         for (; i < length; i++) {
             crc = (crc >> 8) ^ crc32_table[(crc ^ data[i]) & 0xFF];
         }
-        
+
         return ~crc;
     }
 
     uint32_t calculateAdler32(const uint8_t* data, size_t length) {
         uint32_t a = 1, b = 0;
-        
+
         for (size_t i = 0; i < length; i++) {
             a = (a + data[i]) % ADLER32_MOD;
             b = (b + a) % ADLER32_MOD;
         }
-        
+
         return (b << 16) | a;
     }
 
     uint32_t calculateAdler32NEON(const uint8_t* data, size_t length) {
         uint32_t a = 1, b = 0;
-        
+
         size_t i = 0;
 #ifdef __ARM_NEON
         for (; i + 16 <= length; i += 16) {
             uint8x16_t chunk = vld1q_u8(data + i);
-                     
+
             uint8_t bytes[16];
             vst1q_u8(bytes, chunk);
-            
+
             for (int j = 0; j < 16; j++) {
                 uint8_t byte = bytes[j];
                 a = (a + byte) % ADLER32_MOD;
@@ -201,7 +201,7 @@ namespace XboxUtils {
             }
         }
 #else
-   
+
         for (; i + 16 <= length; i += 16) {
             for (int j = 0; j < 16; j++) {
                 uint8_t byte = data[i + j];
@@ -210,12 +210,12 @@ namespace XboxUtils {
             }
         }
 #endif
-        
+
         for (; i < length; i++) {
             a = (a + data[i]) % ADLER32_MOD;
             b = (b + a) % ADLER32_MOD;
         }
-        
+
         return (b << 16) | a;
     }
 
@@ -243,7 +243,7 @@ namespace XboxUtils {
 
 #ifdef __ARM_NEON
     uint32x4_t swap128(uint32x4_t value) {
-        // 32-bit
+
         uint8x16_t bytes = vreinterpretq_u8_u32(value);
         uint8x16_t swapped = vrev32q_u8(bytes);
         return vreinterpretq_u32_u8(swapped);
