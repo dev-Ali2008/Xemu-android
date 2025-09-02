@@ -1,10 +1,13 @@
-package com.Xanite.overlay
-  
+package com.xanite.overlay
+
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.os.Vibrator
 import android.os.Handler
+import com.xanite.R
+import com.xanite.RPCSX
+import com.xanite.utils.GeneralSettings
 import android.os.Looper
 import android.os.Build
 import android.graphics.Bitmap
@@ -23,16 +26,14 @@ import android.view.SurfaceView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
-import com.Xanite.R
-import com.Xanite.Digital1Flags
-import com.Xanite.Digital2Flags
-import com.Xanite.xanite
-import com.Xanite.utils.GeneralSettings
-import com.Xanite.utils.GeneralSettings.int
+import com.xanite.Digital1Flags
+import com.xanite.Digital2Flags
 import kotlin.math.min
-
+import com.xanite.overlay.PadOverlayButton
+import com.xanite.overlay.PadOverlayDpad
 
 private const val idleAlpha = (0.3 * 255).toInt()
+
 
 data class State(
     val digital: IntArray = IntArray(2),
@@ -40,7 +41,16 @@ data class State(
     var leftStickY: Int = 127,
     var rightStickX: Int = 127,
     var rightStickY: Int = 127
-)
+) {
+    fun reset() {
+        digital.fill(0)
+        leftStickX = 127
+        leftStickY = 127
+        rightStickX = 127
+        rightStickY = 127
+    }
+}
+
 interface PadOverlayItem {
     fun draw(canvas: Canvas)
     fun updatePosition(x: Int, y: Int, force: Boolean = false)
@@ -55,7 +65,12 @@ interface PadOverlayItem {
     var dragging: Boolean
     var enabled: Boolean
 }
-class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs) {
+
+class PadOverlay @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : SurfaceView(context, attrs, defStyleAttr) {
     private val buttons: Array<PadOverlayButton>
     private val dpad: PadOverlayDpad
     private val triangleSquareCircleCross: PadOverlayDpad
@@ -65,18 +80,24 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     private val rightStick: PadOverlayStick
     private val floatingSticks = arrayOf<PadOverlayStick?>(null, null)
     private val sticks = mutableListOf<PadOverlayStick>()
-    private val prefs by lazy { context!!.getSharedPreferences("PadOverlayPrefs", Context.MODE_PRIVATE) }
-    private val vibrator by lazy { 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            (context?.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager)?.defaultVibrator 
-        else context?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator 
+    private val prefs by lazy { context.getSharedPreferences("PadOverlayPrefs", Context.MODE_PRIVATE) }
+
+    private val vibrator by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
     }
-    private var selectedInput: PadOverlayItem? = null
+
+ private var selectedInput: PadOverlayItem? = null
         set(value) {
             field = value
             onSelectedInputChange?.invoke(value)
         }
-        
+
     var onSelectedInputChange: ((Any?) -> Unit)? = null
     var isEditing = false
 
@@ -87,7 +108,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
 
     private val fadeDuration = 500L
     private val fadeTimeout = 19_000L
-    
+
     private val outlinePaint = Paint().apply {
         color = Color.RED
         style = Paint.Style.STROKE
@@ -101,7 +122,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     }
 
     init {
-        val metrics = context!!.resources.displayMetrics
+        val metrics = context.resources.displayMetrics
         val totalWidth = metrics.widthPixels
         val totalHeight = metrics.heightPixels
         val sizeHint = min(totalHeight, totalWidth)
@@ -249,7 +270,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             ),
 
             createButton(
-                R.drawable.ic_rpcsx_foreground,
+                R.drawable.ic_xanite_foreground,
                 btnHomeX,
                 btnHomeY,
                 buttonSize,
@@ -347,7 +368,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 if (hit) invalidate()
                 return@setOnTouchListener true
             }
-            
+
             val force =
                 action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_MOVE
 
@@ -356,10 +377,16 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                     hit = editable.onTouch(motionEvent, pointerIndex, state)
                 }
             }
-        
-            if (hit && GeneralSettings["haptic_feedback"] as Boolean? ?: true) {
-                vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
-            }
+
+
+if (hit && GeneralSettings.getBoolean("haptic_feedback", true)) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(50) 
+    }
+}
 
             if (force || !hit) {
                 for (i in sticks.indices) {
@@ -389,14 +416,14 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 }
             }
 
-            RPCSX.instance.overlayPadData(
-                state.digital[0],
-                state.digital[1],
-                state.leftStickX,
-                state.leftStickY,
-                state.rightStickX,
-                state.rightStickY
-            )
+            RPCSX.overlayPadData(
+    state.digital[0],
+    state.digital[1],
+    state.leftStickX,
+    state.leftStickY,
+    state.rightStickX,
+    state.rightStickY
+)
 
             if (!hit && (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN)) {
                 val xInFloatingArea = x > buttonSize * 2 && x < totalWidth - buttonSize * 2
@@ -477,22 +504,48 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         }
     }
 
-    private fun createButton(
-        resourceId: Int,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        digital1: Digital1Flags,
-        digital2: Digital2Flags
-    ): PadOverlayButton {
-        val resources = context!!.resources
+
+fun highlightAllButtons(highlight: Boolean) {
+    editables.forEach { it.enabled = highlight }
+    invalidate()
+}
+
+fun vibrateForTest() {
+    vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+}
+
+fun logCurrentLayout() {
+    editables.forEach {
+        when (it) {
+            is PadOverlayButton -> {
+                val bounds = it.bounds()
+                println("Button at (${bounds.left}, ${bounds.top})")
+            }
+            is PadOverlayDpad -> {
+                val bounds = it.bounds()
+                println("Dpad at (${bounds.left}, ${bounds.top})")
+            }
+        }
+    }
+}
+
+
+ private fun createButton(
+    resourceId: Int,
+    x: Int,
+    y: Int,
+    width: Int,
+    height: Int,
+    digital1: Digital1Flags,
+    digital2: Digital2Flags
+): PadOverlayButton {
+       val resources = context.resources
         val bitmap = getBitmap(resourceId, width, height)
         val result = PadOverlayButton(resources, bitmap, digital1.bit, digital2.bit)
-        val scale = GeneralSettings["button_${digital1.bit}_${digital2.bit}_scale"].int(0)
-        val alpha = GeneralSettings["button_${digital1.bit}_${digital2.bit}_opacity"].int(50)
-        val savedX = GeneralSettings["button_${digital1.bit}_${digital2.bit}_x"].int(x)
-        val savedY = GeneralSettings["button_${digital1.bit}_${digital2.bit}_y"].int(y)
+        val scale = GeneralSettings.getInt("button_${digital1.bit}_${digital2.bit}_scale", 0)
+        val alpha = GeneralSettings.getInt("button_${digital1.bit}_${digital2.bit}_opacity", 50)
+        val savedX = GeneralSettings.getInt("button_${digital1.bit}_${digital2.bit}_x", x)
+        val savedY = GeneralSettings.getInt("button_${digital1.bit}_${digital2.bit}_y", y)
         result.setBounds(savedX, savedY, savedX + width, savedY + height)
         result.defaultPosition = Pair(x, y)
         result.defaultSize = Pair(height, width)
@@ -530,7 +583,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             multitouch
         )
 
-        val alpha = GeneralSettings["${inputId}_opacity"].int(-1)
+        val alpha = GeneralSettings.getInt("${inputId}_opacity", -1)
         result.setOpacity(if (alpha != -1) alpha else 50)
         return result
     }
@@ -626,7 +679,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     }
 
     fun enableButton(value: Boolean) {
-        selectedInput!!.enabled = value //null means enable checkbox is disabled, shouldn't be called when null
+        selectedInput!!.enabled = value 
         invalidate()
     }
 }

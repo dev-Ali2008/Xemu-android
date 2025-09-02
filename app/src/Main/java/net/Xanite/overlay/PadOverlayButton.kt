@@ -1,5 +1,5 @@
 package com.xanite.overlay
-    #rpscx-ui Just borrow 
+
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -8,12 +8,13 @@ import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
 import com.xanite.Digital1Flags
 import kotlin.math.roundToInt
-import com.xanite.GeneralSettings
-import com.xanite.utils.GeneralSettings.boolean
+import com.xanite.utils.GeneralSettings
 import com.xanite.utils.InputBindingPrefs
 
-class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1: Int, private val digital2: Int) : PadOverlayItem, BitmapDrawable(resources, image) {
-    private var pressed = false
+class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1: Int, private val digital2: Int) : 
+    PadOverlayItem, BitmapDrawable(resources, image) {
+
+     private var pressed = false
     private var locked = -1
     private var origAlpha = alpha
     override var dragging = false
@@ -25,12 +26,12 @@ class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1
     lateinit var defaultPosition: Pair<Int, Int>
     override fun bounds(): Rect = bounds
     override fun draw(canvas: Canvas) = super.draw(canvas)
-    override var enabled: Boolean = GeneralSettings["button_${digital1}_${digital2}_enabled"].boolean(true)
+    override var enabled: Boolean = GeneralSettings.getBoolean("button_${digital1}_${digital2}_enabled", true)
         set(value) {
             field = value
             GeneralSettings.setValue("button_${digital1}_${digital2}_enabled", value)
         }
-    
+
     override fun contains(x: Int, y: Int) = bounds.contains(x, y)
 
     override fun onTouch(event: MotionEvent, pointerIndex: Int, padState: State): Boolean {
@@ -76,7 +77,7 @@ class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1
             GeneralSettings.setValue("button_${digital1}_${digital2}_x", x - offsetX)
             GeneralSettings.setValue("button_${digital1}_${digital2}_y", y - offsetY)
         } else if (force) {
-            // don't use offsets as we aren't dragging
+
             setBounds(x, y, x + bounds.width(), y + bounds.height())
             GeneralSettings.setValue("button_${digital1}_${digital2}_x", x)
             GeneralSettings.setValue("button_${digital1}_${digital2}_y", y)
@@ -119,6 +120,6 @@ class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1
 
     fun getInfo(): Triple<String, Int, Int> {
         val dn = if (digital1 == Digital1Flags.None.ordinal) 1 else 0
-        return Triple(InputBindingPrefs.rpcsxKeyCodeToString(if (dn == 0) digital1 else digital2, dn), GeneralSettings["button_${digital1}_${digital2}_scale"] as Int? ?: measureDefaultScale(), GeneralSettings["button_${digital1}_${digital2}_opacity"] as Int? ?: 50)
+        return Triple(InputBindingPrefs.rpcsxKeyCodeToString(if (dn == 0) digital1 else digital2, dn), GeneralSettings.getInt("button_${digital1}_${digital2}_scale", measureDefaultScale()), GeneralSettings.getInt("button_${digital1}_${digital2}_opacity", 50))
     }
 }

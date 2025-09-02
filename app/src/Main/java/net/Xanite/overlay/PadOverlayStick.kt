@@ -1,16 +1,18 @@
-package com.Xanite.overlay
-    #rpscx-ui Just borrow 
+package com.xanite.overlay
+
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
+import com.xanite.R
 import androidx.core.graphics.drawable.toDrawable
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 
+@OptIn(kotlin.ExperimentalStdlibApi::class)
 class PadOverlayStick(
     resources: Resources,
     private val isLeft: Boolean,

@@ -1,9 +1,16 @@
-package com.Xanite.overlay
-    #rpscx-ui Just borrow ❤️
+package com.xanite.overlay
+
 import android.graphics.PointF
 import android.os.Build
+
 import android.os.Bundle
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import android.content.Context
+import com.xanite.R
+import android.view.View
+import com.xanite.overlay.PadOverlay
+import com.xanite.overlay.PadOverlayDpad
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -15,6 +22,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -28,8 +36,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -51,8 +57,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.viewinterop.AndroidView
-import com.xaniteTheme
-import com.xanite.R
 import kotlin.math.roundToInt
 
 class OverlayEditActivity : ComponentActivity() {
@@ -60,16 +64,18 @@ class OverlayEditActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableFullScreenImmersive(this)
         setContent {
-            Theme {
+            MaterialTheme {
                 OverlayEditScreen()
             }
         }
     }
 
+
+
     private fun enableFullScreenImmersive(activity: ComponentActivity) {
         val window = activity.window
         WindowCompat.setDecorFitsSystemWindows(window, false)
-    
+
         val insetsController = WindowInsetsControllerCompat(window, window.decorView)
         insetsController.apply {
             hide(WindowInsetsCompat.Type.systemBars())
@@ -82,21 +88,6 @@ class OverlayEditActivity : ComponentActivity() {
     }
 }
 
-private fun applyInsetsToPadOverlay(padOverlay: PadOverlay) {
-    ViewCompat.setOnApplyWindowInsetsListener(padOverlay) { view, windowInsets ->
-        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-        if (view.layoutParams is MarginLayoutParams) {
-            view.updateLayoutParams<MarginLayoutParams> {
-                leftMargin = insets.left
-                rightMargin = insets.right
-                topMargin = insets.top
-                bottomMargin = insets.bottom
-            }
-        }
-        WindowInsetsCompat.CONSUMED
-    }
-}
-
 @Composable
 fun OverlayEditScreen() {
     var isPanelVisible by remember { mutableStateOf(true) }
@@ -105,39 +96,77 @@ fun OverlayEditScreen() {
     var isEnabled by remember { mutableStateOf(true) }
     var currentButtonName by remember { mutableStateOf("Everything") }
     var showResetDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    var padOverlay: PadOverlay? by remember { mutableStateOf(null) }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+
+
+    val padOverlay = remember { mutableStateOf<PadOverlay?>(null) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx: Context ->
-                PadOverlay(ctx, null).also { padOverlay = it }
+                PadOverlay(ctx, null).also { 
+                    padOverlay.value = it
+                    it.isEditing = true
+
+                    it.highlightAllButtons(true) 
+                    it.vibrateForTest()
+                    it.logCurrentLayout()
+                }
             },
-            update = { padOverlay = it }
+            update = { view -> 
+                padOverlay.value = view
+                view.isEditing = true
+            }
         )
 
-        padOverlay?.layoutParams = MarginLayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        padOverlay?.let { applyInsetsToPadOverlay(it) }
-        padOverlay?.isEditing = true
 
-        padOverlay?.onSelectedInputChange = { input ->
-            if (input != null) {
-                val info = (input as? PadOverlayDpad)?.getInfo() ?: (input as? PadOverlayButton)?.getInfo()
-                if (info != null) {
-                    currentButtonName = info.first.toString()
-                    scaleValue = info.second.toFloat()
-                    opacityValue = info.third.toFloat()
+        val overlay = padOverlay.value
+
+        overlay?.let {
+            it.layoutParams = MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+            ViewCompat.setOnApplyWindowInsetsListener(it) { view, windowInsets ->
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                if (view.layoutParams is MarginLayoutParams) {
+                    view.updateLayoutParams<MarginLayoutParams> {
+                        leftMargin = insets.left
+                        rightMargin = insets.right
+                        topMargin = insets.top
+                        bottomMargin = insets.bottom
+                    }
                 }
-                val inputEnabled = (input as? PadOverlayDpad)?.enabled ?: (input as? PadOverlayButton)?.enabled
-                if (inputEnabled != null) {
-                    isEnabled = inputEnabled
+                WindowInsetsCompat.CONSUMED
+            }
+
+            it.onSelectedInputChange = { input ->
+                if (input != null) {
+                    val button = input as? PadOverlayButton
+                    val dpad = input as? PadOverlayDpad
+
+                    if (button != null) {
+                        val info = button.getInfo()
+                        currentButtonName = info.first.toString()
+                        scaleValue = info.second.toFloat()
+                        opacityValue = info.third.toFloat()
+                        isEnabled = button.enabled
+                    } else if (dpad != null) {
+                        val info = dpad.getInfo()
+                        currentButtonName = info.first.toString()
+                        scaleValue = info.second.toFloat()
+                        opacityValue = info.third.toFloat()
+                        isEnabled = dpad.enabled
+                    }
+                } else {
+                    currentButtonName = "Everything"
                 }
-            } else {
-                currentButtonName = "Everything"
             }
         }
 
@@ -154,6 +183,7 @@ fun OverlayEditScreen() {
             }
         }
 
+        @OptIn(ExperimentalAnimationApi::class)
         AnimatedVisibility(
             visible = isPanelVisible,
             enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f, animationSpec = tween(300)),
@@ -163,40 +193,53 @@ fun OverlayEditScreen() {
                 scaleValue = scaleValue,
                 onScaleChange = { 
                     scaleValue = it 
-                    padOverlay?.setButtonScale(it.roundToInt())
+                    overlay?.setButtonScale(it.roundToInt())
                 },
                 opacityValue = opacityValue,
                 onOpacityChange = { 
                     opacityValue = it 
-                    padOverlay?.setButtonOpacity(it.roundToInt())
+                    overlay?.setButtonOpacity(it.roundToInt())
                 },
                 isEnabled = isEnabled,
                 onEnableChange = { 
                     isEnabled = it 
-                    padOverlay?.enableButton(isEnabled)
+                    overlay?.enableButton(it)
                 },
                 currentButtonName = currentButtonName,
                 onResetClick = { showResetDialog = true },
                 onCloseClick = { isPanelVisible = false },
-                onMoveUp = { padOverlay?.moveButtonUp() },
-                onMoveRight = { padOverlay?.moveButtonRight() },
-                onMoveLeft = { padOverlay?.moveButtonLeft() },
-                onMoveDown = { padOverlay?.moveButtonDown() }
+                onMoveUp = { overlay?.moveButtonUp() },
+                onMoveRight = { overlay?.moveButtonRight() },
+                onMoveLeft = { overlay?.moveButtonLeft() },
+                onMoveDown = { overlay?.moveButtonDown() }
             )
         }
 
         if (showResetDialog) {
-            ResetDialog(
-                buttonName = currentButtonName,
-                onConfirm = { 
-                    showResetDialog = false
-                    padOverlay?.resetButtonConfigs() 
+            AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                title = { Text(text = "Reset $currentButtonName") },
+                text = { 
+                    Text(text = "Are you sure you want to reset ${if (currentButtonName == "Everything") "everything" else "this button"}?") 
                 },
-                onDismiss = { showResetDialog = false }
+                confirmButton = {
+                    TextButton(onClick = { 
+                        showResetDialog = false
+                        overlay?.resetButtonConfigs()
+                    }) {
+                        Text(text = "Confirm")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetDialog = false }) {
+                        Text(text = "Cancel")
+                    }
+                }
             )
         }
     }
 }
+
 
 @Composable
 fun ControlPanel(
@@ -220,7 +263,7 @@ fun ControlPanel(
 
     val panelWidth = 336f
     val panelHeight = 200f
-    
+
     var panelOffset by remember { 
         mutableStateOf(
             PointF(
@@ -273,7 +316,7 @@ fun ControlPanel(
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(50))
             )
             Spacer(modifier = Modifier.height(5.dp))
-            
+
             Text(
                 text = "Editing: $currentButtonName",
                 style = MaterialTheme.typography.titleSmall,
@@ -298,7 +341,7 @@ fun ControlPanel(
                 ) {
                     IconButton(onClick = onMoveLeft) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            imageVector = Icons.Filled.KeyboardArrowLeft,
                             contentDescription = "Move Left",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -317,7 +360,7 @@ fun ControlPanel(
 
                     IconButton(onClick = onMoveRight) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            imageVector = Icons.Filled.KeyboardArrowRight,
                             contentDescription = "Move Right",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -352,7 +395,11 @@ fun ControlPanel(
                     modifier = Modifier.size(40.dp),
                     colors = IconButtonDefaults.filledTonalIconButtonColors()
                 ) {
-                    Icon(painter = painterResource(id = R.drawable.ic_restore), contentDescription = "Reset", tint = MaterialTheme.colorScheme.primary)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_restore), 
+                        contentDescription = "Reset", 
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
@@ -380,28 +427,10 @@ fun SliderComponent(label: String, value: Float, onValueChange: (Float) -> Unit)
     }
 }
 
-@Composable
-fun ResetDialog(buttonName: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    val toBeReset = if (buttonName == "Everything") "everything" else "this button"
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = "Reset $buttonName") },
-        text = { Text(text = "Are you sure you want to reset ${toBeReset}?") },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(text = "Confirm")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = "Cancel")
-            }
-        }
-    )
-}
-
 @Preview
 @Composable
 fun PreviewOverlayEditScreen() {
-    OverlayEditScreen()
+    MaterialTheme {
+        OverlayEditScreen()
+    }
 }
