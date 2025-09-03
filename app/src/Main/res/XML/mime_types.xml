@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-types xmlns:android="http://schemas.android.com/apk/res/android">
+    <mime-type android:value="application/x-xbe">
+        <extension android:value="xbe" />
+    </mime-type>
+    <mime-type android:value="application/x-xbox-executable">
+        <extension android:value="xbe" />
+    </mime-type>
+    <mime-type android:value="application/x-iso9660-image">
+        <extension android:value="iso" />
+        <extension android:value="xbe" />
+    </mime-type>
+</mime-types>

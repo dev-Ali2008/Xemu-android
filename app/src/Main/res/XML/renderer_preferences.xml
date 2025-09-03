@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Graphics Renderer">
+
+        <ListPreference
+            android:key="renderer_type"
+            android:title="Renderer Type"
+            android:summary="Choose between OpenGL and Vulkan renderers"
+            android:entries="@array/renderer_types"
+            android:entryValues="@array/renderer_type_values"
+            android:defaultValue="vulkan" />
+
+        <Preference
+            android:key="renderer_info"
+            android:title="Renderer Information"
+            android:summary="Vulkan: Better performance, modern API\nOpenGL: Better compatibility, stable" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Performance">
+
+        <Preference
+            android:key="vulkan_info"
+            android:title="Vulkan Renderer"
+            android:summary="• Better performance\n• Lower CPU usage\n• Modern graphics API\n• Requires restart to apply" />
+
+        <Preference
+            android:key="opengl_info"
+            android:title="OpenGL Renderer"
+            android:summary="• Better compatibility\n• Stable performance\n• Traditional graphics API\n• Requires restart to apply" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<emoji-compat-config
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:enabled="false"
+    tools:ignore="MissingDefaultResource">
+    
+    <!-- إعدادات إضافية إذا لزم الأمر -->
+    <metadata
+        android:name="androidx.emoji2.replaceAll"
+        android:value="false" />
+        
+    <metadata
+        android:name="androidx.emoji2.config"
+        android:value="disabled" />
+</emoji-compat-config>
