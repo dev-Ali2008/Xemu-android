@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent"
+     android:background="#F5F5F5"
+     tools:context=".xboxoriginal.XboxOriginalActivity">
+
+    <androidx.appcompat.widget.Toolbar
+         android:layout_height="?attr/actionBarSize"
+         android:layout_width="match_parent"
+         android:background="@color/purple_500"
+         android:elevation="4dp"
+         app:layout_constraintTop_toTopOf="parent"
+         app:titleTextColor="@android:color/white"
+         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+         android:id="@+id/toolbar" />
+
+    <ProgressBar
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:visibility="gone"
+         app:layout_constraintTop_toBottomOf="@id/toolbar"
+         android:id="@+id/progressBar" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:padding="4dp"
+        android:scrollbars="vertical"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/fabAddGame"
+        app:spanCount="2"
+        tools:listitem="@layout/item_xbox_og"/>
+
+    <TextView
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         android:visibility="gone"
+         app:layout_constraintStart_toStartOf="parent"
+         android:textSize="16sp"
+         android:textColor="@android:color/darker_gray"
+         app:layout_constraintEnd_toEndOf="parent"
+         android:layout_marginTop="16dp"
+         app:layout_constraintBottom_toTopOf="@id/fabAddGame"
+         android:id="@+id/emptyState"
+         android:text="No games found" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         android:src="@drawable/ic_add"
+         app:backgroundTint="@color/purple_500"
+         android:layout_margin="16dp"
+         android:tint="@android:color/white"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintBottom_toBottomOf="parent"
+         app:fabSize="normal"
+         android:id="@+id/fabAddGame" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
