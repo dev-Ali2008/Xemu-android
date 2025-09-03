@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   
+    <dimen name="xbox_button_size">64dp</dimen>
+    <dimen name="xbox_controller_button_size">72dp</dimen>
+    <dimen name="xbox_controller_stick_size">88dp</dimen>
+    
+    <dimen name="xbox_padding_small">8dp</dimen>
+    <dimen name="xbox_padding_medium">16dp</dimen>
+    <dimen name="xbox_padding_large">24dp</dimen>
+    
+    <dimen name="xbox_text_small">12sp</dimen>
+    <dimen name="xbox_text_medium">16sp</dimen>
+    <dimen name="xbox_text_large">24sp</dimen>
+    <dimen name="xbox_text_xlarge">32sp</dimen>
+</resources>

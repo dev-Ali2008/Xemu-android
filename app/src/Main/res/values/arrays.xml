@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  
+    <string name="theme_light">Light Mode</string>
+    <string name="theme_dark">Dark Mode</string>
+    <string name="theme_system">System Default</string>
+
+    <string-array name="theme_options">
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+        <item>@string/theme_system</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>system</item>
+    </string-array>
+    
+    <string-array name="language_options">
+        <item>English</item>
+        <item>العربية (Arabic)</item>
+        <item>中文 (Chinese)</item>
+        <item>Français (French)</item>
+        <item>Deutsch (German)</item>
+        <item>日本語 (Japanese)</item>
+        <item>한국어 (Korean)</item>
+        <item>فارسی (Persian)</item>
+        <item>Português (Portuguese)</item>
+        <item>Русский (Russian)</item>
+        <item>Español (Spanish)</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>en</item>
+        <item>ar</item>
+        <item>zh</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>fa</item>
+        <item>pt</item>
+        <item>ru</item>
+        <item>es</item>
+    </string-array>
+
+    <string-array name="renderer_types">
+        <item>Vulkan (Recommended)</item>
+        <item>OpenGL</item>
+    </string-array>
+    
+    <string-array name="renderer_type_values">
+        <item>vulkan</item>
+        <item>opengl</item>
+    </string-array>
+</resources>
