@@ -1,4 +1,4 @@
-# Static Analysis Suppression for Xbox Emulator Android { Xanite } 
+# Static Analysis Suppression for Xbox Emulator Android (Xanite) 
 
 ## Overview
 
