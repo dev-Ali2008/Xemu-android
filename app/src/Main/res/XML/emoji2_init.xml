@@ -5,7 +5,6 @@
     android:enabled="false"
     tools:ignore="MissingDefaultResource">
     
-    <!-- إعدادات إضافية إذا لزم الأمر -->
     <metadata
         android:name="androidx.emoji2.replaceAll"
         android:value="false" />
