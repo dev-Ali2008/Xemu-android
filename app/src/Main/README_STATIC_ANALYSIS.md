@@ -1,4 +1,4 @@
-# Static Analysis Suppression for Xbox Emulator
+# Static Analysis Suppression for Xbox Emulator Android { Xanite } 
 
 ## Overview
 
@@ -230,3 +230,5 @@ export CXX_CLANG_TIDY=""
 ## Contact
 
 If you need to modify the suppression mechanisms or have questions about this approach, please refer to the CMakeLists.txt configuration and the comments in the suppressed files.
+
+( Emulator From scratch )
