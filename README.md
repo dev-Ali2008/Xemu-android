@@ -7,7 +7,7 @@
 <h1 align="center"> Xanite -
  Xbox OG/360 emulator </h1>
 
-Xanite is a "proof of concept" emulator. 
+Xanite is a "proof of concept" emulator written in Rust.
 
 This project emulates both the original Xbox and Xbox 360 consoles on Android, supporting game ROMs in various formats.
 
@@ -31,13 +31,13 @@ the games you can play depends on your device's performance and storage capacity
     </a>
 -- Key Features
 
-- Hardware Detection:  
+- Hardware Detection:
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
 
-- Dual Console Support:  
+- Dual Console Support:
 Play both Xbox and Xbox 360 games in one emulator
 
-- Performance Scaling:  
+- Performance Scaling:
 you can manually adjust the resolution and performance in settings for experiment or low end devices
 
 ## System Requirements
@@ -64,7 +64,7 @@ you can manually adjust the resolution and performance in settings for experimen
   - 12+ GB recommended
 
 ### Graphics:
-- 3.2 opengl 
+- 3.2 opengl
 - (vulkan coming soon)
 
 ### OS Requirements:
@@ -86,17 +86,16 @@ you can manually adjust the resolution and performance in settings for experimen
 If you want to contribute as a developer, please contact us in discord
 
 ## Credits
-Developed by @FreePalestine1970,@Yebot32 and other developers on Telegram and discord.  
+Developed by @FreePalestine1970,@Yebot32 and other developers on Telegram and discord.
 Special thanks to all Xanite supporters.
 
 ## DISCLAIMER !
-Xanite is an open-source project not affiliated with Microsoft, Xemu, or Xenia. It is intended for educational  
+Xanite is an open-source project not affiliated with Microsoft, Xemu, or Xenia. It is intended for educational
 
 We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator itself is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
 
 
- 
+
 ## xanite website
 
 https://dev-ali2008.github.io/Xanite.io/#social
-
