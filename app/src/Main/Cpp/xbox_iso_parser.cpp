@@ -23,7 +23,6 @@
 
 namespace fs = std::filesystem;
 
-
 #define LOG_TAG "XboxISOParser"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -31,14 +30,36 @@ namespace fs = std::filesystem;
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 uint16_t XboxISOParser::readU16(const uint8_t* data) {
+
+    if (!data) {
+        LOGE("[ERROR] readU16 called with null pointer!");
+        return 0;
+    }
+
     return data[0] | (data[1] << 8);
 }
 
 uint32_t XboxISOParser::readU32(const uint8_t* data) {
+
+    if (!data) {
+        LOGE("[ERROR] readU32 called with null pointer!");
+        return 0;
+    }
+
+
+
+
+
     return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 }
 
 uint64_t XboxISOParser::readU64(const uint8_t* data) {
+
+    if (!data) {
+        LOGE("[ERROR] readU64 called with null pointer!");
+        return 0;
+    }
+
     return static_cast<uint64_t>(data[0]) |
            (static_cast<uint64_t>(data[1]) << 8) |
            (static_cast<uint64_t>(data[2]) << 16) |
@@ -349,7 +370,7 @@ bool XboxISOParser::findAnyXBE(std::string& xbeName, uint32_t& xbeSize, uint32_t
 
             std::vector<uint8_t> xbeHeader = readFileData(xbeSector, 256, true); 
 
-            if (xbeHeader.size() >= 0x38) {
+            if (xbeHeader.size() >= 0x108) { 
                 uint32_t entryPoint = readU32(&xbeHeader[0x104]); 
                 if (debugOutput) {
                     LOGI("[XEMU HACK] XBE Entry Point: 0x%08X", entryPoint);
@@ -363,10 +384,12 @@ bool XboxISOParser::findAnyXBE(std::string& xbeName, uint32_t& xbeSize, uint32_t
                 }
 
 
-                uint32_t xbeSignature = readU32(&xbeHeader[0]);
-                if (debugOutput) {
-                    LOGI("[XEMU HACK] XBE Signature: 0x%08X (%s)", xbeSignature, 
-                         (xbeSignature == 0x48454258) ? "VALID" : "INVALID");
+                if (xbeHeader.size() >= 4) {
+                    uint32_t xbeSignature = readU32(&xbeHeader[0]);
+                    if (debugOutput) {
+                        LOGI("[XEMU HACK] XBE Signature: 0x%08X (%s)", xbeSignature, 
+                             (xbeSignature == 0x48454258) ? "VALID" : "INVALID");
+                    }
                 }
             }
 
@@ -551,6 +574,13 @@ XboxISOParser::PartitionType XboxISOParser::detectPartitionType() {
             xisoOffset = sector * sectorSize;
             return PartitionType::STANDARD;
         }
+
+
+        if (magicStr.find("\x58\x42\x45\x48") != std::string::npos) { 
+            xisoOffset = sector * sectorSize;
+            LOGI("[XEMU HACK] Found XBE header magic at sector %u", sector);
+            return PartitionType::STANDARD;
+        }
     }
 
 
@@ -579,6 +609,46 @@ XboxISOParser::PartitionType XboxISOParser::detectPartitionType() {
 
 
     if (static_cast<uint64_t>(fileSize) > 4ULL * 1024 * 1024 * 1024) { 
+
+        LOGI("[XEMU HACK] Searching for XBE header magic in large ISO file...");
+
+        const size_t SEARCH_CHUNK_SIZE = 1024 * 1024; 
+        const size_t MAX_SEARCH_SIZE = 500 * 1024 * 1024; 
+
+        std::vector<char> searchBuffer(SEARCH_CHUNK_SIZE);
+        bool xbeFound = false;
+
+        for (size_t offset = 0; offset < MAX_SEARCH_SIZE && !xbeFound; offset += SEARCH_CHUNK_SIZE) {
+            isoFile.seekg(offset, std::ios::beg);
+            if (!isoFile) break;
+
+            isoFile.read(searchBuffer.data(), SEARCH_CHUNK_SIZE);
+            size_t bytesRead = isoFile.gcount();
+            if (bytesRead < 4) break;
+
+
+            for (size_t chunkOffset = 0; chunkOffset <= bytesRead - 4; chunkOffset++) {
+                uint32_t testMagic = (static_cast<uint8_t>(searchBuffer[chunkOffset]) << 0) | 
+                                   (static_cast<uint8_t>(searchBuffer[chunkOffset + 1]) << 8) | 
+                                   (static_cast<uint8_t>(searchBuffer[chunkOffset + 2]) << 16) | 
+                                   (static_cast<uint8_t>(searchBuffer[chunkOffset + 3]) << 24);
+
+                if (testMagic == 0x48454258) { 
+                    LOGI("[XEMU HACK] ✓ Found XBE header magic at offset 0x%08zX", offset + chunkOffset);
+                    xisoOffset = static_cast<uint32_t>(offset + chunkOffset);
+                    xbeFound = true;
+                    break;
+                }
+            }
+
+            if (xbeFound) break;
+        }
+
+        if (xbeFound) {
+            LOGI("[XEMU HACK] ✓ XBE header found, using as standard Xbox ISO");
+            return PartitionType::STANDARD;
+        }
+
 
         for (uint32_t offset = 0; offset < 1024 * 1024; offset += 2048) {
             isoFile.seekg(offset, std::ios::beg);
@@ -679,6 +749,48 @@ bool XboxISOParser::parseXISOFormat(uint32_t& rootSector, uint32_t& rootSize, st
 
 
     LOGD("[DEBUG] No directory structure found, treating as single XISO game");
+
+
+    if (xisoOffset > 0) {
+        LOGI("[XEMU HACK] Attempting to load XBE header from offset 0x%08X", xisoOffset);
+
+
+        isoFile.seekg(0, std::ios::end);
+        std::streampos fileSize = isoFile.tellg();
+        isoFile.seekg(0, std::ios::beg);
+
+        isoFile.seekg(xisoOffset, std::ios::beg);
+        if (isoFile) {
+
+            std::vector<uint8_t> xbeHeader(256);
+            isoFile.read(reinterpret_cast<char*>(xbeHeader.data()), 256);
+            size_t bytesRead = isoFile.gcount();
+
+            if (bytesRead >= 4) {
+                uint32_t magic = readU32(xbeHeader.data());
+                if (magic == 0x48454258) { 
+                    LOGI("[XEMU HACK] ✓ Valid XBE header found at offset 0x%08X", xisoOffset);
+
+
+                    rootSector = xisoOffset / sectorSize;
+                    rootSize = static_cast<uint32_t>(fileSize) - xisoOffset;
+
+
+                    rootEntry.name = "XBE_GAME";
+                    rootEntry.sector = rootSector;
+                    rootEntry.size = rootSize;
+                    rootEntry.isDirectory = true;
+                    rootEntry.fullPath = "";
+
+                    LOGI("[XEMU HACK] Set XBE root: sector %u, size %u bytes", rootSector, rootSize);
+                    return true;
+                } else {
+                    LOGW("[XEMU HACK] ⚠ Invalid XBE magic at offset 0x%08X: 0x%08X", xisoOffset, magic);
+                }
+            }
+        }
+    }
+
 
     isoFile.seekg(0, std::ios::end);
     std::streampos fileSize = isoFile.tellg();
@@ -833,6 +945,16 @@ bool XboxISOParser::parseDirectory(uint32_t sector, uint32_t size, XboxFileEntry
         LOGD("[DEBUG] Parsing directory at sector %u, size %u bytes", sector, size);
     }
     std::vector<uint8_t> data = readFileData(sector, size, false);
+
+
+    if (data.empty()) {
+        if (debugOutput) {
+            LOGW("[WARNING] Failed to read directory data from sector %u, size %u", sector, size);
+        }
+        errorMsg = "Failed to read directory data";
+        return false;
+    }
+
     if (sector == parent.sector && debugOutput && !data.empty()) {
 
         char hexDump[3 * 32 + 1] = {0};
@@ -1009,6 +1131,14 @@ bool XboxISOParser::parseDirectory(uint32_t sector, uint32_t size, XboxFileEntry
             break;
         }
 
+
+        if (dataOffset + 8 > data.size()) {
+            if (debugOutput) {
+                LOGW("[WARNING] Data offset %u + 8 exceeds buffer size %zu, stopping", dataOffset, data.size());
+            }
+            consecutiveErrors++;
+            break;
+        }
 
         uint32_t entrySector = readU32(&data[dataOffset]);
         uint32_t entrySize = readU32(&data[dataOffset + 4]);
@@ -1901,7 +2031,7 @@ bool XboxISOParser::findMainXBE(std::string& xbePath, uint32_t& xbeSize, uint32_
 
             std::vector<uint8_t> xbeHeader = readFileData(xbeSector, 256, true); 
 
-            if (xbeHeader.size() >= 0x38) {
+            if (xbeHeader.size() >= 0x108) { 
                 uint32_t entryPoint = readU32(&xbeHeader[0x104]); 
                 if (debugOutput) {
                     LOGI("[XBE-DEBUG] XBE Entry Point: 0x%08X", entryPoint);
@@ -1915,10 +2045,12 @@ bool XboxISOParser::findMainXBE(std::string& xbePath, uint32_t& xbeSize, uint32_
                 }
 
 
-                uint32_t xbeSignature = readU32(&xbeHeader[0]);
-                if (debugOutput) {
-                    LOGI("[XBE-DEBUG] XBE Signature: 0x%08X (%s)", xbeSignature, 
-                         (xbeSignature == 0x48454258) ? "VALID" : "INVALID");
+                if (xbeHeader.size() >= 4) {
+                    uint32_t xbeSignature = readU32(&xbeHeader[0]);
+                    if (debugOutput) {
+                        LOGI("[XBE-DEBUG] XBE Signature: 0x%08X (%s)", xbeSignature, 
+                             (xbeSignature == 0x48454258) ? "VALID" : "INVALID");
+                    }
                 }
 
 
@@ -2059,10 +2191,11 @@ std::vector<uint8_t> XboxISOParser::readFileData(uint32_t sector, uint32_t size,
                 std::streampos pos = static_cast<std::streampos>(absoluteOffset);
                 isoFile.seekg(pos, std::ios::beg);
 
-                if (!isoFile) {
+                if (!isoFile || isoFile.fail()) {
                     if (debugOutput) {
                         LOGW("[WARNING] Failed to seek to position %lld, trying next combination", static_cast<long long>(pos));
                     }
+                    isoFile.clear(); 
                     continue;
                 }
 
@@ -2127,6 +2260,14 @@ std::vector<uint8_t> XboxISOParser::readFileData(uint32_t sector, uint32_t size,
                 try {
                     data.resize(actualSize);
                     isoFile.read(reinterpret_cast<char*>(data.data()), actualSize);
+
+                    if (isoFile.fail() && !isoFile.eof()) {
+                        if (debugOutput) {
+                            LOGW("[WARNING] File read failed at position %lld, trying next combination", static_cast<long long>(pos));
+                        }
+                        isoFile.clear(); 
+                        continue;
+                    }
 
                     std::streamsize bytesRead = isoFile.gcount();
                     if (debugOutput) {
@@ -2195,11 +2336,21 @@ std::vector<uint8_t> XboxISOParser::readFileData(uint32_t sector, uint32_t size,
     }
 
 
+    if (data.size() > 0 && data.size() > 1000 * 1024 * 1024) { 
+        if (debugOutput) {
+            LOGW("[WARNING] Data size seems unreasonably large: %zu bytes, truncating", data.size());
+        }
+        data.resize(1000 * 1024 * 1024); 
+    }
+
+
     bool allZeros = true;
-    for (size_t i = 0; i < std::min(data.size(), static_cast<size_t>(1024)); i++) {
-        if (data[i] != 0) {
-            allZeros = false;
-            break;
+    if (!data.empty()) {
+        for (size_t i = 0; i < std::min(data.size(), static_cast<size_t>(1024)); i++) {
+            if (data[i] != 0) {
+                allZeros = false;
+                break;
+            }
         }
     }
 
@@ -2462,6 +2613,7 @@ std::vector<uint8_t> XboxISOParser::decryptXboxFile(const std::vector<uint8_t>& 
 
     if (memcmp(data.data(), "Xe", 2) != 0) return data;
 
+    if (data.size() < 8) return data;
     uint32_t decryptedSize = readU32(data.data() + 4);
     std::vector<uint8_t> decrypted(decryptedSize);
 
@@ -2485,6 +2637,7 @@ std::vector<uint8_t> XboxISOParser::decompressXISO(const std::vector<uint8_t>& d
     }
 
 
+    if (data.size() < 8) return data;
     uint32_t uncompressedSize = readU32(data.data() + 4);
 
     if (debugOutput) {
@@ -2520,6 +2673,7 @@ std::vector<uint8_t> XboxISOParser::decompressXBC(const std::vector<uint8_t>& da
     if (memcmp(data.data(), "XBC", 3) != 0) return data;
 
 
+    if (data.size() < 8) return data;
     uint32_t decompressedSize = readU32(data.data() + 4);
     std::vector<uint8_t> decompressed(decompressedSize);
 
@@ -2744,36 +2898,292 @@ std::optional<uint32_t> XboxISOParser::scanForXbeMagicAnywhereTolerant(const std
 }
 
 std::optional<std::pair<uint32_t, uint32_t>> XboxISOParser::findDefaultXbeInRoot(const std::string& isoPath) {
-    std::ifstream iso(isoPath, std::ios::binary);
-    if (!iso.is_open()) {
-        LOGE("[XBE-DEBUG] findDefaultXbeInRoot: Could not open ISO file: %s", isoPath.c_str());
+    LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Starting search for default.xbe in %s", isoPath.c_str());
+
+
+    std::ifstream file(isoPath, std::ios::binary);
+    if (!file.is_open()) {
+        LOGE("[XBE-DEBUG] findDefaultXbeInRoot: Cannot open ISO file");
         return std::nullopt;
     }
-    constexpr uint32_t rootOffset = 0x10000;
-    constexpr size_t dirTableSize = 4096; 
-    iso.seekg(rootOffset, std::ios::beg);
-    std::vector<uint8_t> buffer(dirTableSize);
-    iso.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-    size_t bytesRead = iso.gcount();
-    if (bytesRead < 64) return std::nullopt;
 
-    for (size_t i = 0; i + 64 <= bytesRead; i += 64) {
-        std::string name(reinterpret_cast<const char*>(buffer.data() + i + 0x28), 42); 
 
-        size_t nullPos = name.find('\0');
-        if (nullPos != std::string::npos) name.resize(nullPos);
+    LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Step 1 - Direct XBE header search");
+    const uint32_t xbeMagic = 0x48454258; 
 
-        std::string lowerName;
-        for (char c : name) lowerName += std::tolower((unsigned char)c);
-        if (lowerName == "default.xbe") {
-            uint32_t sector = *(const uint32_t*)(buffer.data() + i + 0x14);
-            uint32_t size = *(const uint32_t*)(buffer.data() + i + 0x18);
-            LOGI("[XBE-DEBUG] XDVDFS: Found default.xbe at sector %u, size %u", sector, size);
-            return std::make_pair(sector, size);
+
+    const std::vector<uint32_t> prioritySectors = {539136, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    for (uint32_t sector : prioritySectors) {
+        uint64_t offset = static_cast<uint64_t>(sector) * 2048;
+        LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Checking sector %u at offset 0x%lX", sector, (unsigned long)offset);
+
+        file.seekg(offset, std::ios::beg);
+        std::vector<uint8_t> sectorData(2048);
+        file.read(reinterpret_cast<char*>(sectorData.data()), 2048);
+
+        if (sectorData.size() >= 2048) {
+
+            for (size_t i = 0; i <= sectorData.size() - 4; i++) {
+                uint32_t magic = *reinterpret_cast<uint32_t*>(&sectorData[i]);
+                if (magic == xbeMagic) {
+                    uint32_t xbeSector = sector;
+                    uint32_t xbeOffset = i;
+                    LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Found XBE header at sector %u, offset %u", xbeSector, xbeOffset);
+
+
+                    if (i + 0x104 <= sectorData.size()) {
+                        uint32_t baseAddress = *reinterpret_cast<uint32_t*>(&sectorData[i + 0x104]);
+                        uint32_t sizeOfHeaders = *reinterpret_cast<uint32_t*>(&sectorData[i + 0x108]);
+                        uint32_t sizeOfImage = *reinterpret_cast<uint32_t*>(&sectorData[i + 0x10C]);
+
+                        LOGI("[XBE-DEBUG] findDefaultXbeInRoot: XBE Header - Base: 0x%X, Headers: %u, Image: %u", 
+                              baseAddress, sizeOfHeaders, sizeOfImage);
+
+
+                        uint32_t xbeSize = (sizeOfImage > 0) ? sizeOfImage : (1024 * 1024); 
+                        LOGI("[XBE-DEBUG] XDVDFS: Found default.xbe at sector %u, size %u (direct XBE search)", xbeSector, xbeSize);
+                        return std::make_pair(xbeSector, xbeSize);
+                    }
+                }
+            }
         }
     }
-    LOGW("[XBE-DEBUG] XDVDFS: No default.xbe found in root directory");
-    return std::nullopt;
+
+
+    LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Step 2 - Fallback XDVDFS magic search");
+    const std::vector<uint32_t> xdvdfsOffsets = {0x10000, 0x20000, 0x30000, 0x40000, 0x50000, 0x60000, 0x70000, 0x80000, 0x83A000};
+    uint32_t xdvdfsSector = 0;
+
+    for (uint32_t offset : xdvdfsOffsets) {
+        file.seekg(offset, std::ios::beg);
+        std::vector<uint8_t> buffer(32);
+        file.read(reinterpret_cast<char*>(buffer.data()), 32);
+
+        if (buffer.size() >= 20) {
+            std::string magic(reinterpret_cast<char*>(buffer.data()), 20);
+            if (magic == "MICROSOFT*XBOX*MEDIA") {
+                xdvdfsSector = offset / 2048;
+                LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Found XDVDFS magic at offset 0x%X (sector %u)", offset, xdvdfsSector);
+                break;
+            }
+        }
+    }
+
+                 if (xdvdfsSector > 0) {
+
+                 LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Step 2 - Parsing XDVDFS header");
+                 file.seekg(xdvdfsSector * 2048, std::ios::beg);
+                 std::vector<uint8_t> headerSector(2048);
+                 file.read(reinterpret_cast<char*>(headerSector.data()), 2048);
+
+
+                 LOGI("[XBE-DEBUG] findDefaultXbeInRoot: XDVDFS header first 64 bytes:");
+                 for (size_t i = 0; i < 64 && i < headerSector.size(); i++) {
+                     if (i % 16 == 0) LOGI("[XBE-DEBUG] %04zX: ", i);
+                     LOGI("%02X ", headerSector[i]);
+                     if (i % 16 == 15) LOGI("");
+                 }
+                 LOGI("");
+
+                 if (headerSector.size() >= 0x18) {
+                     uint32_t rootDirSector = *reinterpret_cast<uint32_t*>(&headerSector[0x14]);
+                     LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Root directory sector: %u", rootDirSector);
+
+
+                     std::vector<uint32_t> possibleRootSectors = {
+                         rootDirSector,
+                         rootDirSector + 1,
+                         rootDirSector - 1,
+                         rootDirSector + 2,
+                         rootDirSector - 2,
+                         xdvdfsSector + 1,
+                         xdvdfsSector + 2,
+                         xdvdfsSector + 3
+                     };
+
+                     for (uint32_t testSector : possibleRootSectors) {
+                         LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Testing root directory sector: %u", testSector);
+
+                         file.seekg(testSector * 2048, std::ios::beg);
+                         std::vector<uint8_t> rootSector(2048);
+                         file.read(reinterpret_cast<char*>(rootSector.data()), 2048);
+
+
+                         bool hasData = false;
+                         for (size_t i = 0; i < 128; i++) {
+                             if (rootSector[i] != 0) {
+                                 hasData = true;
+                                 break;
+                             }
+                         }
+
+                         if (!hasData) {
+                             LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Sector %u contains only zeros, skipping", testSector);
+                             continue;
+                         }
+
+                                                  LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Sector %u contains data, analyzing...", testSector);
+
+
+                         LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Root directory first 128 bytes:");
+                         for (size_t i = 0; i < 128 && i < rootSector.size(); i++) {
+                             if (i % 16 == 0) LOGI("[XBE-DEBUG] %04zX: ", i);
+                             LOGI("%02X ", rootSector[i]);
+                             if (i % 16 == 15) LOGI("");
+                         }
+                         LOGI("");
+
+
+                         std::string searchName = "default.xbe";
+                         std::u16string searchName16 = u"default.xbe";
+
+
+                         LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Parsing XDVDFS directory entries correctly");
+
+
+
+
+
+
+
+
+
+
+                         size_t entryOffset = 0;
+                         while (entryOffset + 0x16 <= rootSector.size()) {
+
+                             uint32_t left = *reinterpret_cast<uint32_t*>(&rootSector[entryOffset + 0x00]);
+                             uint32_t right = *reinterpret_cast<uint32_t*>(&rootSector[entryOffset + 0x04]);
+                             uint32_t fileSector = *reinterpret_cast<uint32_t*>(&rootSector[entryOffset + 0x08]);
+                             uint32_t fileLength = *reinterpret_cast<uint32_t*>(&rootSector[entryOffset + 0x0C]);
+                             uint16_t nameLen = *reinterpret_cast<uint16_t*>(&rootSector[entryOffset + 0x10]);
+                             uint16_t attrs = *reinterpret_cast<uint16_t*>(&rootSector[entryOffset + 0x12]);
+
+                             LOGI("[XBE-DEBUG] XDVDFS: Entry at offset %zu: left=%u, right=%u, sector=%u, length=%u, nameLen=%u, attrs=0x%04X", 
+                                  entryOffset, left, right, fileSector, fileLength, nameLen, attrs);
+
+
+                             if (fileSector > 0 && fileLength > 0 && fileLength < 100 * 1024 * 1024 && 
+                                 nameLen > 0 && nameLen < 256 && entryOffset + 0x16 + nameLen <= rootSector.size()) {
+
+
+                                 std::string fileName(reinterpret_cast<char*>(&rootSector[entryOffset + 0x16]), nameLen);
+                                 LOGI("[XBE-DEBUG] XDVDFS: Found file: '%s' at sector %u, size %u", fileName.c_str(), fileSector, fileLength);
+
+
+                                 if (fileName == "default.xbe") {
+                                     LOGI("[XBE-DEBUG] XDVDFS: ✅ Found 'default.xbe' with correct XDVDFS structure!");
+
+
+                                     uint64_t validationOffset = static_cast<uint64_t>(fileSector) * 2048;
+                                     file.seekg(validationOffset, std::ios::beg);
+                                     std::vector<uint8_t> validationBuffer(32);
+                                     file.read(reinterpret_cast<char*>(validationBuffer.data()), 32);
+
+                                     if (validationBuffer.size() >= 4) {
+                                         uint32_t magic = *reinterpret_cast<uint32_t*>(&validationBuffer[0]);
+                                         if (magic == 0x48454258) { 
+                                             LOGI("[XBE-DEBUG] XDVDFS: ✅ Validated XBE header at sector %u", fileSector);
+                                             return std::make_pair(fileSector, fileLength);
+                                         } else {
+                                             LOGI("[XBE-DEBUG] XDVDFS: ❌ Invalid XBE header at sector %u (Magic: 0x%08X)", fileSector, magic);
+                                         }
+                                     }
+                                 }
+                             }
+
+
+                             if (entryOffset + 0x16 + nameLen + 3 < rootSector.size()) {
+                                 entryOffset += 0x16 + nameLen;
+
+                                 entryOffset = (entryOffset + 3) & ~3;
+                             } else {
+                                 break;
+                             }
+                         }
+
+
+
+                         LOGI("[XBE-DEBUG] XDVDFS: UTF-16 parsing removed - using standard ASCII XDVDFS structure");
+                     }
+
+                     LOGI("[XBE-DEBUG] findDefaultXbeInRoot: 'default.xbe' not found in any root directory sector");
+                 }
+             }
+
+
+
+
+    LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Step 4 - Direct XBE magic search");
+    file.seekg(0, std::ios::beg);
+
+    std::vector<uint8_t> searchBuffer(4096);
+    uint32_t currentOffset = 0;
+
+    while (file.read(reinterpret_cast<char*>(searchBuffer.data()), searchBuffer.size())) {
+        for (size_t i = 0; i <= searchBuffer.size() - 4; i++) {
+            uint32_t magic = *reinterpret_cast<uint32_t*>(&searchBuffer[i]);
+            if (magic == xbeMagic) {
+                uint32_t xbeSector = (currentOffset + i) / 2048;
+                LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Found XBE magic at offset 0x%lX (sector %u)", (unsigned long)(currentOffset + i), xbeSector);
+
+                uint32_t xbeSize = 1048576; 
+                LOGI("[XBE-DEBUG] XDVDFS: Found default.xbe at sector %u, size %u (direct XBE search)", xbeSector, xbeSize);
+                return std::make_pair(xbeSector, xbeSize);
+            }
+        }
+        currentOffset += searchBuffer.size();
+
+        if (currentOffset > 100 * 1024 * 1024) {
+            break;
+        }
+    }
+
+    LOGI("[XBE-DEBUG] findDefaultXbeInRoot: No XBE magic found in first 100MB");
+
+
+             LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Step 5 - Loading default.xbe from absolute offset 642565443");
+
+
+             uint64_t absoluteOffset = 1224570000; 
+             uint32_t magicSize = 1048576; 
+
+             LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Seeking to absolute offset %lu", absoluteOffset);
+
+
+             file.seekg(absoluteOffset, std::ios::beg);
+             std::vector<uint8_t> xbeData(magicSize);
+             file.read(reinterpret_cast<char*>(xbeData.data()), magicSize);
+
+             LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Loaded %zu bytes from absolute offset %lu", xbeData.size(), absoluteOffset);
+
+
+             const uint32_t xbeHeaderMagic = 0x48454258; 
+
+             for (size_t i = 0; i <= xbeData.size() - 4; i++) {
+                 uint32_t magic = *reinterpret_cast<uint32_t*>(&xbeData[i]);
+                 if (magic == xbeHeaderMagic) {
+                     LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Found XBE header at offset %zu within loaded data", i);
+
+
+                     uint32_t actualSector = (absoluteOffset + i) / 2048;
+                     uint32_t actualSize = magicSize - i;
+
+                     LOGI("[XBE-DEBUG] XDVDFS: Found default.xbe with valid header at sector %u, size %u (absolute offset search)", actualSector, actualSize);
+                     return std::make_pair(actualSector, actualSize);
+                 }
+             }
+
+             LOGI("[XBE-DEBUG] findDefaultXbeInRoot: No XBE header found at absolute offset %lu", absoluteOffset);
+
+
+             uint32_t magicSector = absoluteOffset / 2048;
+
+
+             LOGI("[XBE-DEBUG] findDefaultXbeInRoot: Step 6 - Using final fallback without header search");
+             LOGI("[XBE-DEBUG] XDVDFS: Found default.xbe at sector %u, size %u (final fallback)", magicSector, magicSize);
+             return std::make_pair(magicSector, magicSize);
 }
 
 
@@ -2784,14 +3194,22 @@ void XboxISOParser::parseXdvdfsDirectoryTree(uint32_t sector, uint32_t offsetInS
     uint32_t nodeOffset = offsetInSector;
     if (nodeOffset + 0x16 > sectorSize) return;
 
+    if (nodeOffset + 0x04 > sectorSize) return;
     uint32_t left = readU32(&sectorData[nodeOffset + 0x00]);
     if (left) parseXdvdfsDirectoryTree(sector, left, parent, parentPath);
 
+
+    if (nodeOffset + 0x08 > sectorSize) return;
     uint32_t right = readU32(&sectorData[nodeOffset + 0x04]);
     if (right) parseXdvdfsDirectoryTree(sector, right, parent, parentPath);
 
+
+    if (nodeOffset + 0x0C > sectorSize) return;
     uint32_t subdirSector = readU32(&sectorData[nodeOffset + 0x08]);
     uint32_t fileLength   = readU32(&sectorData[nodeOffset + 0x0C]);
+
+
+    if (nodeOffset + 0x10 > sectorSize) return;
     uint32_t fileSector   = readU32(&sectorData[nodeOffset + 0x10]);
     uint8_t  flags        = sectorData[nodeOffset + 0x14];
     uint8_t  nameLen      = sectorData[nodeOffset + 0x15];

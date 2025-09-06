@@ -1,14 +1,5 @@
-
-
-
-
-
 #include "x86_core.h"
 #include "xbox_memory.h"
-
-
-
-
 
 namespace X86CoreInternal {
 
@@ -17,11 +8,9 @@ namespace X86CoreInternal {
     void processComplexMemoryOperation(uint8_t modrm, X86Core* core);
 }
 
-
 namespace X86CoreInternal {
 
 void executeComplexInstruction(uint8_t opcode, X86Core* core) {
-
 
     (void)opcode; 
     (void)core;   

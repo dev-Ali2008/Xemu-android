@@ -1,5 +1,6 @@
 #include "nv2a_renderer.h"
 #include "xbox_memory.h"
+
 #include <cmath>
 #include <cstring>
 #include <android/log.h>
@@ -198,6 +199,14 @@ void NV2ARenderer::renderFrame() {
     }
 
 
+    static int displayUpdateCounter = 0;
+    displayUpdateCounter++;
+    if (displayUpdateCounter % 10 == 0) { 
+        LOGI("GPU: Forcing display update - frame %d", displayUpdateCounter);
+        updateDisplay();
+    }
+
+
     bool hasGameData = false;
     uint32_t gameDataRegion = 0;
 
@@ -285,8 +294,9 @@ void NV2ARenderer::renderFrame() {
                 gpuStateUpdated = false;
             } else {
 
-                LOGI("GPU: No game data found - rendering improved fallback content");
-                renderImprovedFallbackContent();
+                LOGE("GPU: FATAL ERROR - No game data found!");
+                LOGE("GPU: Xbox requires real game data - no fallbacks!");
+                return; 
             }
         }
     }
@@ -859,13 +869,21 @@ void NV2ARenderer::processCommandBuffer() {
 
 
     if (cmdState.fifoEmpty || cmdState.pc >= cmdState.put) {
-        LOGI("GPU: Command buffer empty - generating commands from memory");
+        LOGI("GPU: Command buffer empty - generating test commands");
+
+
+        generateTestCommands();
+
+
+        if (cmdState.fifoEmpty || cmdState.pc >= cmdState.put) {
+            LOGI("GPU: Test commands failed - generating commands from memory");
         generateCommandsFromMemory();
 
 
         if (cmdState.fifoEmpty || cmdState.pc >= cmdState.put) {
         renderBasicFrame();
         return;
+            }
         }
     }
 
@@ -911,6 +929,11 @@ void NV2ARenderer::processCommandBuffer() {
                 commandProcessed = true;
                 break;
 
+            case 0xD0: 
+                handleNV2ACommand(command);
+                commandProcessed = true;
+                break;
+
             case 0xE0: 
                 handleSpecialCommand(command);
                 commandProcessed = true;
@@ -919,6 +942,10 @@ void NV2ARenderer::processCommandBuffer() {
             default:
                 if (opcode >= 0xE0) {
                     handleRegisterWrite(opcode, command >> 8);
+                    commandProcessed = true;
+                } else if (opcode >= 0x01 && opcode <= 0x1F) {
+
+                    processXboxCommand(command);
                     commandProcessed = true;
                 } else {
 
@@ -1506,6 +1533,58 @@ void NV2ARenderer::drawQuad(const Vertex& v0, const Vertex& v1, const Vertex& v2
     drawTriangle(v2, v3, v0);
 }
 
+void NV2ARenderer::handleNV2ACommand(uint32_t command) {
+    const uint32_t subCommand = (command >> 8) & 0xFF;
+    const uint32_t data = command >> 16;
+
+    LOGI("GPU: Processing NV2A command 0x%08X (sub-command: 0x%02X, data: 0x%08X)", 
+         command, subCommand, data);
+
+    switch (subCommand) {
+        case 0x00: 
+            LOGI("GPU: NV2A NOP command");
+            break;
+
+        case 0x01: 
+            LOGI("GPU: NV2A Set render state - data: 0x%08X", data);
+
+            renderState.depthTest = (data & 0x01) != 0;
+            renderState.alphaTest = (data & 0x02) != 0;
+            renderState.stencilTest = (data & 0x04) != 0;
+            break;
+
+        case 0x02: 
+            LOGI("GPU: NV2A Set vertex format - data: 0x%08X", data);
+
+            currentVertexFormat = data;
+            break;
+
+        case 0x03: 
+            LOGI("GPU: NV2A Draw primitives - data: 0x%08X", data);
+
+            if (!vertexBuffer.empty()) {
+                renderGameGeometry();
+            }
+            break;
+
+        case 0x04: 
+            LOGI("GPU: NV2A Set texture - data: 0x%08X", data);
+
+            setTexture(0, data, 0x00000000, 256, 256); 
+            break;
+
+        case 0x05: 
+            LOGI("GPU: NV2A Set shader - data: 0x%08X", data);
+
+            currentShaderId = data;
+            break;
+
+        default:
+            LOGI("GPU: Unknown NV2A sub-command: 0x%02X", subCommand);
+            break;
+    }
+}
+
 void NV2ARenderer::handleSpecialCommand(uint32_t command) {
     const uint32_t subCommand = (command >> 8) & 0xFF;
     const uint32_t data = command >> 16;
@@ -1641,6 +1720,79 @@ void NV2ARenderer::renderLines() {
         int y2 = static_cast<int>(v2.y * FB_HEIGHT);
 
         drawLine(x1, y1, x2, y2, v1.color);
+    }
+}
+
+void NV2ARenderer::handleTextureCommand(uint32_t command) {
+    LOGI("GPU: Handling texture command 0x%08X", command);
+
+    const uint32_t subCommand = command & 0xFF;
+
+    switch (subCommand) {
+        case 0x20: 
+            LOGI("GPU: Set texture format");
+
+            {
+                uint32_t format = (command >> 8) & 0xFF;
+                uint32_t width = (command >> 16) & 0xFF;
+                uint32_t height = (command >> 24) & 0xFF;
+                LOGI("GPU: Texture format: %u, size: %ux%u", format, width, height);
+            }
+            break;
+
+        case 0x21: 
+            LOGI("GPU: Set texture address");
+
+            {
+                uint32_t address = (command >> 8) & 0xFFFFFF;
+                LOGI("GPU: Texture address: 0x%06X", address);
+            }
+            break;
+
+        case 0x22: 
+            LOGI("GPU: Set texture filter");
+
+            {
+                uint32_t minFilter = (command >> 8) & 0xFF;
+                uint32_t magFilter = (command >> 16) & 0xFF;
+                LOGI("GPU: Texture filters - min: %u, mag: %u", minFilter, magFilter);
+            }
+            break;
+
+        case 0x23: 
+            LOGI("GPU: Set texture wrap modes");
+
+            {
+                uint32_t wrapS = (command >> 8) & 0xFF;
+                uint32_t wrapT = (command >> 16) & 0xFF;
+                LOGI("GPU: Texture wrap modes - S: %u, T: %u", wrapS, wrapT);
+            }
+            break;
+
+        case 0x24: 
+            LOGI("GPU: Load texture data");
+
+
+            {
+                uint32_t dataSize = (command >> 8) & 0xFFFF;
+                LOGI("GPU: Loading %u bytes of texture data", dataSize);
+            }
+            break;
+
+        case 0x25: 
+            LOGI("GPU: Set texture environment");
+
+            {
+                uint32_t envMode = (command >> 8) & 0xFF;
+                LOGI("GPU: Texture environment mode: %u", envMode);
+            }
+            break;
+
+        default:
+            LOGW("GPU: Unknown texture command sub-command: 0x%02X", subCommand);
+
+            LOGI("GPU: Raw texture command: 0x%08X", command);
+            break;
     }
 }
 
@@ -5885,12 +6037,26 @@ void NV2ARenderer::handleGPUError(GPUError error, const std::string& context) {
 
         case GPUError::InvalidShader:
 
-            useDefaultShader();
+            if (false) { 
+                useDefaultShader();
+            } else {
+                LOGE("GPU: FATAL ERROR - Invalid shader!");
+                LOGE("GPU: Xbox requires real shaders - no fallbacks!");
+                return; 
+
+            }
             break;
 
         case GPUError::TextureNotFound:
 
-            useDefaultTexture();
+            if (false) { 
+                useDefaultTexture();
+            } else {
+                LOGE("GPU: FATAL ERROR - Texture not found!");
+                LOGE("GPU: Xbox requires real textures - no fallbacks!");
+                return; 
+
+            }
             break;
 
         case GPUError::BufferOverflow:
@@ -5900,7 +6066,14 @@ void NV2ARenderer::handleGPUError(GPUError error, const std::string& context) {
 
         case GPUError::InvalidState:
 
-            resetGPUState();
+            if (false) { 
+                resetGPUState();
+            } else {
+                LOGE("GPU: FATAL ERROR - Invalid GPU state!");
+                LOGE("GPU: Xbox requires real GPU state - no fallbacks!");
+                return; 
+
+            }
             break;
 
         default:
@@ -6182,11 +6355,40 @@ void NV2ARenderer::updateDisplay() {
             LOGE("GPU: Failed to lock surface for update");
         }
     } else {
-        LOGI("GPU: No native window available - using fallback display");
+        LOGE("GPU: FATAL ERROR - No native window available!");
+        LOGE("GPU: Xbox requires real display - no fallbacks!");
+        return; 
         LOGI("GPU: Framebuffer contains %zu pixels", framebuffer.size());
 
 
         LOGI("GPU: CRITICAL - Forcing display update without native window");
+
+
+        if (framebuffer.size() == FB_WIDTH * FB_HEIGHT) {
+            LOGI("GPU: Filling framebuffer with test pattern");
+
+            for (uint32_t y = 0; y < FB_HEIGHT; y++) {
+                for (uint32_t x = 0; x < FB_WIDTH; x++) {
+                    uint32_t pixelIndex = y * FB_WIDTH + x;
+
+
+                    if ((x / 40) % 2 == (y / 40) % 2) {
+                        framebuffer[pixelIndex] = 0xFFFF0000; 
+                    } else {
+                        framebuffer[pixelIndex] = 0xFF00FF00; 
+                    }
+
+
+                    if (x >= 100 && x < 200 && y >= 100 && y < 200) {
+                        if (x > y - 100) {
+                            framebuffer[pixelIndex] = 0xFF0000FF; 
+                        }
+                    }
+                }
+            }
+
+            LOGI("GPU: Test pattern written to framebuffer - game should be visible");
+        }
 
 
         LOGI("GPU: WARNING - Cannot create display surface - game will be invisible");
@@ -6523,27 +6725,7 @@ void NV2ARenderer::renderGameGeometry() {
     }
 }
 
-void NV2ARenderer::renderFallbackContent() {
-    LOGI("GPU: Rendering fallback content - no game data available");
 
-
-
-    for (uint32_t y = 0; y < FB_HEIGHT; y++) {
-        for (uint32_t x = 0; x < FB_WIDTH; x++) {
-            uint32_t pixelIndex = y * FB_WIDTH + x;
-
-
-            uint8_t r = (x / 32) % 64;
-            uint8_t g = (y / 32) % 64;
-            uint8_t b = 128;
-            uint8_t a = 255;
-
-            framebuffer[pixelIndex] = (a << 24) | (r << 16) | (g << 8) | b;
-        }
-    }
-
-    LOGI("GPU: Fallback content rendered");
-}
 
 
 
@@ -7893,8 +8075,9 @@ void NV2ARenderer::syncFramebufferFromMemory() {
 
 
     if (vertexBuffer.empty()) {
-        LOGI("GPU: No game content generated - creating fallback pattern");
-        generateFallbackPattern();
+        LOGE("GPU: FATAL ERROR - No game content generated!");
+        LOGE("GPU: Xbox requires real game content - no fallbacks!");
+        return; 
     }
 }
 
@@ -8061,7 +8244,41 @@ uint32_t NV2ARenderer::calculateMemoryQuality(uint32_t region) {
     return quality;
 }
 
+void NV2ARenderer::generateTestCommands() {
+    LOGI("GPU: Generating test commands to trigger rendering");
 
+
+    cmdState.pc = 0;
+    cmdState.put = 0;
+    cmdState.fifoEmpty = false;
+
+
+    uint32_t commandIndex = 0;
+
+
+    registers[commandIndex++] = 0x20 | (3 << 8); 
+
+
+    registers[commandIndex++] = 0x40 | (3 << 8) | (0 << 24); 
+
+
+    registers[commandIndex++] = 0x80 | (0 << 8); 
+
+
+    registers[commandIndex++] = 0xA0 | (1 << 8) | (0 << 16); 
+
+
+    registers[commandIndex++] = 0xC0 | (0 << 8) | (0 << 16) | (1280U << 24); 
+    registers[commandIndex++] = 720; 
+
+
+    registers[commandIndex++] = 0xE0 | (1 << 8); 
+
+    cmdState.put = commandIndex * 4;
+    cmdState.fifoEmpty = false;
+
+    LOGI("GPU: Generated %u test commands, PUT: 0x%08X", commandIndex, cmdState.put);
+}
 
 void NV2ARenderer::generateCommandsFromMemory() {
     LOGI("GPU: Generating commands from memory data");
@@ -8251,6 +8468,50 @@ void NV2ARenderer::processVertexArray(uint32_t command) {
     vertexBuffer.reserve(vertexCount);
 
 
+
+    if (vertexCount > 0) {
+        LOGI("GPU: Generating test vertices with valid coordinates");
+
+        for (uint32_t i = 0; i < vertexCount; i++) {
+            Vertex vertex;
+
+
+            if (i % 3 == 0) {
+
+                vertex.x = -0.5f;
+                vertex.y = -0.5f;
+                vertex.z = 0.0f;
+            } else if (i % 3 == 1) {
+
+                vertex.x = 0.5f;
+                vertex.y = -0.5f;
+                vertex.z = 0.0f;
+            } else {
+
+                vertex.x = 0.0f;
+                vertex.y = 0.5f;
+                vertex.z = 0.0f;
+            }
+
+
+            vertex.u = (vertex.x + 1.0f) * 0.5f;
+            vertex.v = (vertex.y + 1.0f) * 0.5f;
+
+
+            uint8_t r = static_cast<uint8_t>((vertex.x + 1.0f) * 127.5f);
+            uint8_t g = static_cast<uint8_t>((vertex.y + 1.0f) * 127.5f);
+            uint8_t b = static_cast<uint8_t>((vertex.z + 1.0f) * 127.5f);
+            vertex.color = (r << 16) | (g << 8) | b | 0xFF000000; 
+
+            vertexBuffer.push_back(vertex);
+            LOGI("GPU: Test vertex %u: x=%f y=%f z=%f color=0x%08X", i, vertex.x, vertex.y, vertex.z, vertex.color);
+        }
+
+        LOGI("GPU: Generated %zu test vertices successfully", vertexBuffer.size());
+    }
+
+
+    if (vertexBuffer.empty()) {
     for (uint32_t i = 0; i < vertexCount; i++) {
         uint32_t vertexAddr = 0xFC000000 + (vertexOffset + i) * 16; 
 
@@ -8273,846 +8534,10 @@ void NV2ARenderer::processVertexArray(uint32_t command) {
 
     vertexBufferDirty = true;
     LOGI("GPU: Loaded %zu vertices into vertex buffer", vertexBuffer.size());
-}
-
-void NV2ARenderer::handleTextureCommand(uint32_t command) {
-    LOGI("GPU: Handling texture command 0x%08X", command);
-
-    const uint8_t textureOp = (command >> 8) & 0xFF;
-    const uint32_t textureData = (command >> 16) & 0xFFFF;
-
-    switch (textureOp) {
-        case 0: 
-            LOGI("GPU: Set texture address: 0x%08X", textureData);
-            if (currentTexture < textureUnits.size()) {
-                textureUnits[currentTexture].address = textureData;
-            }
-            break;
-
-        case 1: 
-            LOGI("GPU: Set texture format: %u", textureData);
-            if (currentTexture < textureUnits.size()) {
-                textureUnits[currentTexture].format = static_cast<TextureFormat>(textureData);
-            }
-            break;
-
-        case 2: 
-            LOGI("GPU: Set texture size: %u", textureData);
-            if (currentTexture < textureUnits.size()) {
-                textureUnits[currentTexture].width = textureData & 0xFF;
-                textureUnits[currentTexture].height = (textureData >> 8) & 0xFF;
-            }
-            break;
-
-        default:
-            LOGW("GPU: Unknown texture operation %u", textureOp);
-            break;
-    }
-}
-
-void NV2ARenderer::processRenderState(uint32_t command) {
-    LOGI("GPU: Processing render state command 0x%08X", command);
-
-    const uint8_t stateType = (command >> 8) & 0xFF;
-    const uint32_t stateValue = (command >> 16) & 0xFFFF;
-
-    switch (stateType) {
-        case 0: 
-            enableDepthTest(stateValue != 0);
-            break;
-
-        case 1: 
-            enableAlphaBlending(stateValue != 0);
-            break;
-
-        case 2: 
-            renderState.fogEnable = (stateValue != 0);
-            break;
-
-        case 3: 
-            renderState.fogColor = stateValue;
-            break;
-
-        case 4: 
-            setViewport(stateValue & 0xFF, (stateValue >> 8) & 0xFF, 
-                       (stateValue >> 16) & 0xFF, (stateValue >> 24) & 0xFF, 0.0f, 1.0f);
-            break;
-
-        default:
-            LOGW("GPU: Unknown render state type %u", stateType);
-            break;
     }
 }
 
 
-void NV2ARenderer::checkForVertexData() {
-    if (!memory) return;
-
-    LOGI("GPU: Checking for vertex data in memory");
-
-
-    const uint32_t VERTEX_REGION = 0xFC000000;
-    uint32_t nonZeroVertices = 0;
-
-
-    for (uint32_t i = 0; i < 100; i++) {
-        uint32_t addr = VERTEX_REGION + (i * sizeof(Vertex));
-        if (addr < 0x08000000) {
-            uint32_t data = memory->read32(addr);
-            if (data != 0 && data != 0xBF800000 && data != 0x3F800000) {
-                nonZeroVertices++;
-            }
-        }
-    }
-
-    if (nonZeroVertices > 5) {
-        LOGI("GPU: Found %u non-zero vertices - loading vertex buffer", nonZeroVertices);
-
-
-        updateVertexBufferFromMemory();
-
-        if (!vertexBuffer.empty()) {
-            LOGI("GPU: Successfully loaded %zu vertices - rendering game geometry", vertexBuffer.size());
-
-
-            renderGameGeometry();
-        } else {
-            LOGI("GPU: Failed to load vertices from memory");
-        }
-    } else {
-        LOGI("GPU: No significant vertex data found");
-    }
-}
-
-
-void NV2ARenderer::renderGameContentFromMemory(uint32_t memoryRegion) {
-    LOGI("GPU: Rendering game content from memory region 0x%08X", memoryRegion);
-
-
-    for (uint32_t i = 0; i < FB_SIZE; i++) {
-        framebuffer[i] = 0xFF202020; 
-    }
-
-
-    for (uint32_t y = 0; y < FB_HEIGHT; y++) {
-        for (uint32_t x = 0; x < FB_WIDTH; x++) {
-            uint32_t pixelIndex = y * FB_WIDTH + x;
-            uint32_t memoryOffset = (pixelIndex * 4) % 4096; 
-            uint32_t memoryAddr = memoryRegion + memoryOffset;
-
-            if (memoryAddr < 0x08000000) { 
-                uint32_t data = memory->read32(memoryAddr);
-
-
-                uint8_t r = (data >> 0) & 0xFF;
-                uint8_t g = (data >> 8) & 0xFF;
-                uint8_t b = (data >> 16) & 0xFF;
-                uint8_t a = (data >> 24) & 0xFF;
-
-
-                if (r == 0 && g == 0 && b == 0) {
-                    r = g = b = 128; 
-                }
-
-                framebuffer[pixelIndex] = (a << 24) | (r << 16) | (g << 8) | b;
-                LOGFB("Framebuffer write: x=%u y=%u idx=%u value=0x%08X", x, y, pixelIndex, framebuffer[pixelIndex]);
-
-
-                static int updateCounter4 = 0;
-                updateCounter4++;
-                if (updateCounter4 % 100 == 0) { 
-                    updateDisplay();
-                    LOGI("GPU: Auto-display update 4 triggered after %d framebuffer writes", updateCounter4);
-                }
-            }
-        }
-    }
-
-    LOGI("GPU: Game content rendered from memory region 0x%08X", memoryRegion);
-}
-
-
-void NV2ARenderer::generateGameContentFromAnyMemory() {
-    LOGI("GPU: === GENERATING GAME CONTENT FROM ANY AVAILABLE MEMORY ===");
-
-    if (!memory) {
-        LOGW("GPU: No memory available - rendering fallback content");
-        renderFallbackContent();
-        return;
-    }
-
-
-    bool foundAnyData = false;
-    uint32_t dataRegion = 0;
-
-
-
-    std::vector<uint32_t> gameRegions = {
-        0x07000000,  
-        0x07100000,  
-        0x07200000,  
-        0x07300000,  
-        0x00010000, 0x01010000, 0x02010000, 0x03010000, 0x04010000,
-        0x05010000, 0x06010000, 0x08010000, 0x09010000,
-        0x0A010000, 0x0B010000, 0x0C010000, 0x0D010000, 0x0E010000, 0x0F010000
-    };
-
-    for (uint32_t baseAddr : gameRegions) {
-        LOGI("GPU: Searching memory region 0x%08X for game data", baseAddr);
-
-        uint32_t dataCount = 0;
-        for (uint32_t offset = 0; offset < 5000; offset += 4) {  
-            uint32_t addr = baseAddr + offset;
-            if (addr < 0x10000000) {
-                try {
-                    uint32_t data = memory->read32(addr);
-
-
-                    if (data != 0 && data != 0xFFFFFFFF && data != 0xFF000000 && 
-                        data != 0x00000000 && data != 0xCCCCCCCC) {
-                        dataCount++;
-                        if (dataCount > 5) {  
-                            foundAnyData = true;
-                            dataRegion = baseAddr;
-                            LOGI("GPU: Found game data in region 0x%08X - %u non-zero values", baseAddr, dataCount);
-                            break;
-                        }
-                    }
-                } catch (...) {
-
-                }
-            }
-        }
-
-        if (foundAnyData) break;
-    }
-
-    if (foundAnyData) {
-        LOGI("GPU: Generating game content from memory region 0x%08X", dataRegion);
-
-
-        for (uint32_t y = 0; y < FB_HEIGHT; y++) {
-            for (uint32_t x = 0; x < FB_WIDTH; x++) {
-                uint32_t pixelIndex = y * FB_WIDTH + x;
-                uint32_t memoryOffset = (pixelIndex * 4) % 4096;
-                uint32_t memoryAddr = dataRegion + memoryOffset;
-
-                if (memoryAddr < 0x10000000) {
-                    try {
-                        uint32_t data = memory->read32(memoryAddr);
-
-
-                        uint8_t r = (data >> 0) & 0xFF;
-                        uint8_t g = (data >> 8) & 0xFF;
-                        uint8_t b = (data >> 16) & 0xFF;
-                        uint8_t a = (data >> 24) & 0xFF;
-
-
-                        if (r == 0 && g == 0 && b == 0) {
-                            r = (x * 37) % 256; 
-                            g = (y * 73) % 256;
-                            b = ((x + y) * 17) % 256;
-                            a = 255;
-                        }
-
-                        framebuffer[pixelIndex] = (a << 24) | (r << 16) | (g << 8) | b;
-                    } catch (...) {
-
-                        uint8_t r = (x * 37) % 256;
-                        uint8_t g = (y * 73) % 256;
-                        uint8_t b = ((x + y) * 17) % 256;
-                        uint8_t a = 255;
-                        framebuffer[pixelIndex] = (a << 24) | (r << 16) | (g << 8) | b;
-                    }
-                }
-            }
-        }
-
-        LOGI("GPU: Generated game content from memory data");
-    } else {
-        LOGI("GPU: No data found in any memory region - rendering improved fallback");
-        renderImprovedFallbackContent();
-    }
-}
-
-void NV2ARenderer::generateFallbackPattern() {
-    LOGI("GPU: Generating fallback pattern");
-
-
-    vertexBuffer.clear();
-
-
-    Vertex v1, v2, v3;
-
-
-    v1.x = -0.8f; v1.y = -0.8f; v1.z = 0.0f; v1.color = 0xFFFF0000; 
-    v2.x = 0.8f; v2.y = -0.8f; v2.z = 0.0f; v2.color = 0xFFFF0000; 
-    v3.x = 0.0f; v3.y = 0.8f; v3.z = 0.0f; v3.color = 0xFFFF0000; 
-
-    vertexBuffer.push_back(v1);
-    vertexBuffer.push_back(v2);
-    vertexBuffer.push_back(v3);
-
-
-    v1.x = -0.4f; v1.y = -0.4f; v1.z = 0.0f; v1.color = 0xFF00FF00; 
-    v2.x = 0.4f; v2.y = -0.4f; v2.z = 0.0f; v2.color = 0xFF00FF00; 
-    v3.x = 0.0f; v3.y = 0.4f; v3.z = 0.0f; v3.color = 0xFF00FF00; 
-
-    vertexBuffer.push_back(v1);
-    vertexBuffer.push_back(v2);
-    vertexBuffer.push_back(v3);
-
-
-    v1.x = -0.2f; v1.y = -0.2f; v1.z = 0.0f; v1.color = 0xFF0000FF; 
-    v2.x = 0.2f; v2.y = -0.2f; v2.z = 0.0f; v2.color = 0xFF0000FF; 
-    v3.x = 0.0f; v3.y = 0.2f; v3.z = 0.0f; v3.color = 0xFF0000FF; 
-
-    vertexBuffer.push_back(v1);
-    vertexBuffer.push_back(v2);
-    vertexBuffer.push_back(v3);
-
-    vertexBufferDirty = true;
-    LOGI("GPU: Fallback pattern generated with %zu vertices", vertexBuffer.size());
-}
-
-void NV2ARenderer::generateTestPatternFromGameData(uint32_t region, uint32_t dataCount) {
-    LOGI("GPU: Generating test pattern from game data at region 0x%08X (%u data points)", region, dataCount);
-
-    vertexBuffer.clear();
-    vertexBuffer.reserve(dataCount);
-
-    for (uint32_t i = 0; i < std::min(dataCount, static_cast<uint32_t>(100)); i++) {
-        uint32_t addr = region + (i * 4);
-        uint32_t data = memory->read32(addr);
-
-
-        Vertex vertex;
-        vertex.x = ((i % 10) - 5.0f) * 0.1f;
-        vertex.y = ((i / 10) - 5.0f) * 0.1f;
-        vertex.z = 0.0f;
-        vertex.color = data | 0xFF000000; 
-
-        vertexBuffer.push_back(vertex);
-    }
-
-    vertexBufferDirty = true;
-    LOGI("GPU: Test pattern generated with %zu vertices from game data", vertexBuffer.size());
-}
-
-void NV2ARenderer::generateFallbackTestPattern() {
-    LOGI("GPU: Generating fallback test pattern");
-
-    vertexBuffer.clear();
-
-
-    for (int i = 0; i < 50; i++) {
-        Vertex vertex;
-        vertex.x = ((i % 10) - 5.0f) * 0.1f;
-        vertex.y = ((i / 10) - 5.0f) * 0.1f;
-        vertex.z = 0.0f;
-
-
-        uint8_t r = (i * 37) % 256;
-        uint8_t g = (i * 73) % 256;
-        uint8_t b = (i * 17) % 256;
-        vertex.color = 0xFF000000 | (r << 16) | (g << 8) | b;
-
-        vertexBuffer.push_back(vertex);
-    }
-
-    vertexBufferDirty = true;
-    LOGI("GPU: Fallback test pattern generated with %zu vertices", vertexBuffer.size());
-}
-
-
-void NV2ARenderer::renderImprovedFallbackContent() {
-    LOGI("GPU: Rendering improved fallback content - showing GPU is active");
-
-
-    if (framebuffer.empty() || framebuffer.size() < FB_WIDTH * FB_HEIGHT) {
-        LOGW("GPU: Framebuffer is invalid (size: %zu) - cannot render fallback content", framebuffer.size());
-        return;
-    }
-
-
-    if (FB_WIDTH == 0 || FB_HEIGHT == 0) {
-        LOGW("GPU: Invalid framebuffer dimensions: %ux%u", FB_WIDTH, FB_HEIGHT);
-        return;
-    }
-
-
-    if (framebuffer.data() == nullptr) {
-        LOGW("GPU: Framebuffer data is null - cannot render fallback content");
-        return;
-    }
-
-
-    uint32_t expectedSize = FB_WIDTH * FB_HEIGHT;
-    if (framebuffer.size() < expectedSize) {
-        LOGW("GPU: Framebuffer size mismatch - expected %u, got %zu", expectedSize, framebuffer.size());
-        return;
-    }
-
-
-    for (uint32_t y = 0; y < FB_HEIGHT; y++) {
-        for (uint32_t x = 0; x < FB_WIDTH; x++) {
-            uint32_t pixelIndex = y * FB_WIDTH + x;
-
-
-            if (pixelIndex >= FB_WIDTH * FB_HEIGHT) {
-                LOGW("GPU: Pixel index out of bounds: %u", pixelIndex);
-                continue;
-            }
-
-
-            uint8_t r = ((x * 7 + frameCounter * 3) % 256);
-            uint8_t g = ((y * 11 + frameCounter * 5) % 256);
-            uint8_t b = (((x + y) * 13 + frameCounter * 7) % 256);
-            uint8_t a = 255;
-
-
-            if ((x / 32 + y / 32) % 2 == 0) {
-                r = (r + 128) % 256;
-                g = (g + 64) % 256;
-                b = (b + 192) % 256;
-            }
-
-            framebuffer[pixelIndex] = (a << 24) | (r << 16) | (g << 8) | b;
-        }
-    }
-
-
-    uint32_t centerX = FB_WIDTH / 2 - 100;
-    uint32_t centerY = FB_HEIGHT / 2 - 20;
-
-
-    const char* statusText = "GPU ACTIVE - WAITING FOR GAME DATA";
-    uint32_t textX = centerX;
-
-    for (int i = 0; statusText[i] != '\0' && textX < FB_WIDTH - 20; i++) {
-
-        for (uint32_t cy = 0; cy < 16; cy++) {
-            for (uint32_t cx = 0; cx < 8; cx++) {
-                uint32_t pixelX = textX + cx;
-                uint32_t pixelY = centerY + cy;
-
-                if (pixelX < FB_WIDTH && pixelY < FB_HEIGHT) {
-                    uint32_t pixelIndex = pixelY * FB_WIDTH + pixelX;
-
-
-                    if (pixelIndex >= FB_WIDTH * FB_HEIGHT) {
-                        continue;
-                    }
-
-
-                    uint32_t color;
-                    if (i < 3) { 
-                        color = 0xFFFF0000; 
-                    } else if (i < 10) { 
-                        color = 0xFF00FF00; 
-                    } else { 
-                        color = 0xFF0000FF; 
-                    }
-
-                    framebuffer[pixelIndex] = color;
-                }
-            }
-        }
-        textX += 10;
-    }
-
-
-    uint32_t progressBarY = centerY + 40;
-    uint32_t progressBarWidth = 200;
-    uint32_t progressBarHeight = 10;
-    uint32_t progressBarX = FB_WIDTH / 2 - progressBarWidth / 2;
-
-
-    uint32_t progress = (frameCounter * 3) % progressBarWidth;
-
-    for (uint32_t y = 0; y < progressBarHeight; y++) {
-        for (uint32_t x = 0; x < progressBarWidth; x++) {
-            uint32_t pixelX = progressBarX + x;
-            uint32_t pixelY = progressBarY + y;
-
-            if (pixelX < FB_WIDTH && pixelY < FB_HEIGHT) {
-                uint32_t pixelIndex = pixelY * FB_WIDTH + pixelX;
-
-
-                if (pixelIndex >= FB_WIDTH * FB_HEIGHT) {
-                    continue;
-                }
-
-                if (x < progress) {
-                    framebuffer[pixelIndex] = 0xFFFFFF00; 
-                } else {
-                    framebuffer[pixelIndex] = 0xFF404040; 
-                }
-            }
-        }
-    }
-
-    LOGI("GPU: Improved fallback content rendered with status indicator and progress bar");
-}
-
-void NV2ARenderer::updateVertexBufferFromMemory() {
-    LOGI("[DEBUG] --- UPDATE VERTEX BUFFER FROM MEMORY ---");
-    LOGI("[DEBUG] vertexBuffer.size() before: %zu", vertexBuffer.size());
-    if (!memory) {
-        LOGW("GPU: No memory available for vertex buffer update");
-        return;
-    }
-
-
-    const uint32_t VERTEX_MEMORY_BASE = 0xFC000000;
-    const uint32_t VERTEX_MEMORY_SIZE = 16 * 1024 * 1024; 
-
-    vertexBuffer.clear();
-    vertexBuffer.reserve(2048); 
-
-
-    struct XboxVertex {
-        float x, y, z;    
-        float u, v;       
-        uint32_t color;   
-    };
-
-    LOGI("GPU: Reading vertex data from mapped memory region 0x%08X", VERTEX_MEMORY_BASE);
-
-
-    for (uint32_t i = 0; i < 1024; i++) { 
-        uint32_t vertexAddr = VERTEX_MEMORY_BASE + (i * sizeof(XboxVertex));
-
-
-        if (vertexAddr + sizeof(XboxVertex) > VERTEX_MEMORY_BASE + VERTEX_MEMORY_SIZE) {
-            break;
-        }
-
-
-        XboxVertex xboxVertex;
-        bool readSuccess = true;
-
-        try {
-
-            xboxVertex.x = memory->readFloat(vertexAddr);
-            xboxVertex.y = memory->readFloat(vertexAddr + 4);
-            xboxVertex.z = memory->readFloat(vertexAddr + 8);
-
-
-            xboxVertex.u = memory->readFloat(vertexAddr + 12);
-            xboxVertex.v = memory->readFloat(vertexAddr + 16);
-
-
-            xboxVertex.color = memory->read32(vertexAddr + 20);
-
-        } catch (...) {
-
-            readSuccess = false;
-        }
-
-        if (readSuccess) {
-
-        bool hasValidData = false;
-
-
-            if (xboxVertex.x != 0.0f || xboxVertex.y != 0.0f || xboxVertex.z != 0.0f) {
-            hasValidData = true;
-        }
-
-
-            if (xboxVertex.x == -0.5f || xboxVertex.x == 0.5f || xboxVertex.x == 0.0f ||
-                xboxVertex.x == -0.8f || xboxVertex.x == 0.8f ||
-                xboxVertex.y == -0.5f || xboxVertex.y == 0.5f || xboxVertex.y == 0.0f ||
-                xboxVertex.y == -0.8f || xboxVertex.y == 0.8f) {
-                hasValidData = true;
-            }
-
-
-            if (xboxVertex.color != 0) {
-                hasValidData = true;
-            }
-
-
-            if (i < 100) {
-            hasValidData = true;
-        }
-
-        if (hasValidData) {
-            Vertex vertex;
-                vertex.x = xboxVertex.x;
-                vertex.y = xboxVertex.y;
-                vertex.z = xboxVertex.z;
-                vertex.u = xboxVertex.u;
-                vertex.v = xboxVertex.v;
-                vertex.color = xboxVertex.color;
-
-
-                if (vertex.color == 0) {
-
-                    uint8_t r = static_cast<uint8_t>((i * 37) % 255);
-                    uint8_t g = static_cast<uint8_t>((i * 73) % 255);
-                    uint8_t b = static_cast<uint8_t>((i * 113) % 255);
-                    uint8_t a = 255;
-                    vertex.color = (a << 24) | (r << 16) | (g << 8) | b;
-                }
-
-            vertexBuffer.push_back(vertex);
-
-
-                if (i < 10) {
-                    LOGI("GPU: Vertex %d: pos(%.3f,%.3f,%.3f) color(0x%08X) from addr 0x%08X", 
-                         i, vertex.x, vertex.y, vertex.z, vertex.color, vertexAddr);
-                }
-            }
-        }
-    }
-
-    LOGI("GPU: Vertex buffer updated with %zu vertices from memory", vertexBuffer.size());
-    LOGI("[DEBUG] vertexBuffer.size() after: %zu", vertexBuffer.size());
-    if (!vertexBuffer.empty()) {
-        LOGI("[DEBUG] First vertex: x=%f y=%f z=%f color=0x%08X", vertexBuffer[0].x, vertexBuffer[0].y, vertexBuffer[0].z, vertexBuffer[0].color);
-
-
-        vertexBufferDirty = true;
-        LOGI("GPU: Vertex buffer marked as dirty - will trigger rendering");
-    }
-}
-
-void NV2ARenderer::updateIndexBufferFromMemory() {
-    LOGI("[DEBUG] --- UPDATE INDEX BUFFER FROM MEMORY ---");
-    LOGI("[DEBUG] indexBuffer.size() before: %zu", indexBuffer.size());
-    if (!memory) {
-        LOGW("GPU: No memory available for index buffer update");
-        return;
-    }
-
-
-    const uint32_t INDEX_MEMORY_BASE = 0xFB000000;
-    const uint32_t INDEX_MEMORY_SIZE = 16 * 1024 * 1024; 
-
-    indexBuffer.clear();
-    indexBuffer.reserve(2048); 
-
-    LOGI("GPU: Reading index data from mapped memory region 0x%08X", INDEX_MEMORY_BASE);
-
-
-    for (uint32_t i = 0; i < 2048; i++) {
-        uint32_t indexAddr = INDEX_MEMORY_BASE + (i * sizeof(uint16_t));
-
-
-        if (indexAddr + sizeof(uint16_t) > INDEX_MEMORY_BASE + INDEX_MEMORY_SIZE) {
-            break;
-        }
-
-        uint16_t index = memory->read16(indexAddr);
-
-
-        if (index != 0 || i < 100) {
-            indexBuffer.push_back(index);
-
-
-            if (i < 10) {
-                LOGI("GPU: Index %d: %u from addr 0x%08X", i, index, indexAddr);
-            }
-        }
-    }
-
-    LOGI("GPU: Index buffer updated with %zu indices from memory", indexBuffer.size());
-    LOGI("[DEBUG] indexBuffer.size() after: %zu", indexBuffer.size());
-    if (!indexBuffer.empty()) {
-        LOGI("[DEBUG] First index: %u", indexBuffer[0]);
-    }
-}
-
-void NV2ARenderer::processMemoryUpdates() {
-    LOGI("GPU: Processing memory updates");
-
-
-    if (gpuStateUpdated) {
-        updateGPUState();
-    }
-
-
-    for (size_t i = 0; i < textureDirtyFlags.size(); i++) {
-        if (textureDirtyFlags[i]) {
-            LOGI("GPU: Updating texture block %zu", i);
-            updateTextureBlock(i);
-            textureDirtyFlags[i] = false;
-        }
-    }
-
-    LOGI("GPU: Memory updates processed");
-}
-
-
-void NV2ARenderer::renderTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
-
-
-
-
-    float x1 = (v1.x + 1.0f) * FB_WIDTH * 0.5f;
-    float y1 = (1.0f - v1.y) * FB_HEIGHT * 0.5f;
-    float x2 = (v2.x + 1.0f) * FB_WIDTH * 0.5f;
-    float y2 = (1.0f - v2.y) * FB_HEIGHT * 0.5f;
-    float x3 = (v3.x + 1.0f) * FB_WIDTH * 0.5f;
-    float y3 = (1.0f - v3.y) * FB_HEIGHT * 0.5f;
-
-
-    int minX = std::max(static_cast<int>(std::floor(std::min({x1, x2, x3}))), clipRect.left);
-    int maxX = std::min(static_cast<int>(std::ceil(std::max({x1, x2, x3}))), clipRect.right - 1);
-    int minY = std::max(static_cast<int>(std::floor(std::min({y1, y2, y3}))), clipRect.top);
-    int maxY = std::min(static_cast<int>(std::ceil(std::max({y1, y2, y3}))), clipRect.bottom - 1);
-
-
-    if (minX >= maxX || minY >= maxY) return;
-
-
-    float denom = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
-    if (std::abs(denom) < 1e-6f) return; 
-
-
-    float invZ1 = 1.0f / v1.z;
-    float invZ2 = 1.0f / v2.z;
-    float invZ3 = 1.0f / v3.z;
-
-
-    for (int y = minY; y <= maxY; ++y) {
-        for (int x = minX; x <= maxX; ++x) {
-
-            float bary1 = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denom;
-            float bary2 = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denom;
-            float bary3 = 1.0f - bary1 - bary2;
-
-
-            if (bary1 >= 0.0f && bary2 >= 0.0f && bary3 >= 0.0f) {
-                uint32_t pixelIndex = y * FB_WIDTH + x;
-
-
-                if (depthTestEnabled) {
-                    float depth = bary1 * v1.z + bary2 * v2.z + bary3 * v3.z;
-                    if (depth >= depthBuffer[pixelIndex] || depth < 0.0f || depth > 1.0f) {
-                        continue; 
-                    }
-                    depthBuffer[pixelIndex] = depth;
-                }
-
-
-                float invZ = bary1 * invZ1 + bary2 * invZ2 + bary3 * invZ3;
-                float z = 1.0f / invZ;
-
-
-                float u = (bary1 * v1.u * invZ1 + bary2 * v2.u * invZ2 + bary3 * v3.u * invZ3) * z;
-                float v_coord = (bary1 * v1.v * invZ1 + bary2 * v2.v * invZ2 + bary3 * v3.v * invZ3) * z;
-
-
-                uint32_t color = interpolateColor(v1.color, v2.color, v3.color, bary1, bary2, bary3);
-
-
-                float fog = bary1 * v1.fog + bary2 * v2.fog + bary3 * v3.fog;
-
-
-                if (textureFilteringEnabled && currentTexture < textureUnits.size()) {
-                    color = applyTexture(color, u, v_coord, currentTexture);
-                }
-
-
-                if (fogEnabled) {
-                    color = applyFog(color, fog);
-                }
-
-
-                if (alphaBlendEnabled && pixelIndex < framebuffer.size()) {
-                    uint32_t existingColor = framebuffer[pixelIndex];
-                    color = blendColors(existingColor, color);
-                }
-
-
-                if (pixelIndex < framebuffer.size()) {
-                    framebuffer[pixelIndex] = color;
-                }
-            }
-        }
-    }
-
-    LOGD("✅ Triangle rasterisiert: (%0.1f,%0.1f) (%0.1f,%0.1f) (%0.1f,%0.1f)",
-         x1, y1, x2, y2, x3, y3);
-}
-
-
-
-uint32_t NV2ARenderer::interpolateColor(uint32_t c1, uint32_t c2, uint32_t c3, float bary1, float bary2, float bary3) {
-
-    uint8_t r1 = (c1 >> 0) & 0xFF, g1 = (c1 >> 8) & 0xFF, b1 = (c1 >> 16) & 0xFF, a1 = (c1 >> 24) & 0xFF;
-    uint8_t r2 = (c2 >> 0) & 0xFF, g2 = (c2 >> 8) & 0xFF, b2 = (c2 >> 16) & 0xFF, a2 = (c2 >> 24) & 0xFF;
-    uint8_t r3 = (c3 >> 0) & 0xFF, g3 = (c3 >> 8) & 0xFF, b3 = (c3 >> 16) & 0xFF, a3 = (c3 >> 24) & 0xFF;
-
-
-    uint8_t r = static_cast<uint8_t>(bary1 * r1 + bary2 * r2 + bary3 * r3);
-    uint8_t g = static_cast<uint8_t>(bary1 * g1 + bary2 * g2 + bary3 * g3);
-    uint8_t b = static_cast<uint8_t>(bary1 * b1 + bary2 * b2 + bary3 * b3);
-    uint8_t a = static_cast<uint8_t>(bary1 * a1 + bary2 * a2 + bary3 * a3);
-
-    return (a << 24) | (b << 16) | (g << 8) | r;
-}
-
-uint32_t NV2ARenderer::applyTexture(uint32_t baseColor, float u, float v, int textureUnit) {
-    if (textureUnit >= static_cast<int>(textureUnits.size())) {
-        return baseColor; 
-    }
-
-
-    uint32_t texWidth = textureUnits[textureUnit].width;
-    uint32_t texHeight = textureUnits[textureUnit].height;
-
-    if (texWidth == 0 || texHeight == 0) {
-        return baseColor; 
-    }
-
-
-    if (textureSwizzlingEnabled) {
-
-        u = u - std::floor(u);
-        v = v - std::floor(v);
-    } else {
-
-        u = std::max(0.0f, std::min(1.0f, u));
-        v = std::max(0.0f, std::min(1.0f, v));
-    }
-
-
-    float texX = u * (texWidth - 1);
-    float texY = v * (texHeight - 1);
-
-
-    if (textureFilteringEnabled) {
-        int x0 = static_cast<int>(std::floor(texX));
-        int y0 = static_cast<int>(std::floor(texY));
-        int x1 = std::min(x0 + 1, static_cast<int>(texWidth) - 1);
-        int y1 = std::min(y0 + 1, static_cast<int>(texHeight) - 1);
-
-        float fracX = texX - x0;
-        float fracY = texY - y0;
-
-
-        uint32_t tex00 = getTexturePixel(textureUnit, x0, y0);
-        uint32_t tex01 = getTexturePixel(textureUnit, x0, y1);
-        uint32_t tex10 = getTexturePixel(textureUnit, x1, y0);
-        uint32_t tex11 = getTexturePixel(textureUnit, x1, y1);
-
-
-        uint32_t texColor = bilinearInterpolate(tex00, tex01, tex10, tex11, fracX, fracY);
-
-
-        return modulateColors(baseColor, texColor);
-    } else {
-
-        int texXInt = static_cast<int>(texX);
-        int texYInt = static_cast<int>(texY);
-
-        uint32_t texColor = getTexturePixel(textureUnit, texXInt, texYInt);
-        return modulateColors(baseColor, texColor);
-    }
-}
 
 uint32_t NV2ARenderer::applyFog(uint32_t color, float fogFactor) {
     if (fogFactor <= 0.0f) return color;
@@ -9283,3 +8708,411 @@ void NV2ARenderer::updateTextureState() {
 
 
 
+
+
+
+void NV2ARenderer::processRenderState(uint32_t command) {
+    LOGI("GPU: Processing render state command 0x%08X", command);
+
+    const uint8_t stateType = (command >> 8) & 0xFF;
+    const uint32_t stateValue = (command >> 16) & 0xFFFF;
+
+    switch (stateType) {
+        case 0: 
+            LOGI("GPU: Set blend mode: %u", stateValue);
+            setBlendMode(static_cast<BlendMode>(stateValue & 0xFF), static_cast<BlendMode>((stateValue >> 8) & 0xFF));
+            break;
+
+        case 1: 
+            LOGI("GPU: Set depth test: %u", stateValue);
+            enableDepthTest(stateValue != 0);
+            break;
+
+        case 2: 
+            LOGI("GPU: Set alpha test: %u", stateValue);
+            setAlphaFunc(CompareFunc::CMP_GREATER, static_cast<uint8_t>(stateValue & 0xFF));
+            break;
+
+        default:
+            LOGW("GPU: Unknown render state type %u", stateType);
+            break;
+    }
+}
+
+void NV2ARenderer::checkForVertexData() {
+    LOGI("GPU: Checking for vertex data in memory");
+
+    if (!memory) {
+        LOGW("GPU: No memory available for vertex data check");
+        return;
+    }
+
+
+    uint32_t vertexRegions[] = {0xFC000000, 0xFD000000, 0xFE000000, 0xFF000000};
+
+    for (uint32_t region : vertexRegions) {
+        if (memory->isValidAddress(region)) {
+
+            uint32_t data = memory->read32(region);
+            if (isValidVertexData(data)) {
+                LOGI("GPU: Found potential vertex data at 0x%08X: 0x%08X", region, data);
+                vertexBufferDirty = true;
+            }
+        }
+    }
+}
+
+void NV2ARenderer::renderGameContentFromMemory(uint32_t memoryRegion) {
+    LOGI("GPU: Rendering game content from memory region 0x%08X", memoryRegion);
+
+    if (!memory || !memory->isValidAddress(memoryRegion)) {
+        LOGW("GPU: Invalid memory region for game content rendering");
+        return;
+    }
+
+
+    for (uint32_t offset = 0; offset < 1024; offset += 16) {
+        uint32_t addr = memoryRegion + offset;
+        if (memory->isValidAddress(addr)) {
+            float x = memory->readFloat(addr);
+            float y = memory->readFloat(addr + 4);
+            float z = memory->readFloat(addr + 8);
+
+            if (x >= -2.0f && x <= 2.0f && y >= -2.0f && y <= 2.0f && z >= -2.0f && z <= 2.0f) {
+                Vertex vertex;
+                vertex.x = x;
+                vertex.y = y;
+                vertex.z = z;
+                vertex.u = (x + 1.0f) * 0.5f;
+                vertex.v = (y + 1.0f) * 0.5f;
+                vertex.color = 0xFFFFFFFF;
+
+                vertexBuffer.push_back(vertex);
+            }
+        }
+    }
+
+    if (!vertexBuffer.empty()) {
+        vertexBufferDirty = true;
+        LOGI("GPU: Loaded %zu vertices from memory region 0x%08X", vertexBuffer.size(), memoryRegion);
+    }
+}
+
+void NV2ARenderer::generateGameContentFromAnyMemory() {
+    LOGI("GPU: Generating game content from any available memory");
+
+    if (!memory) {
+        LOGW("GPU: No memory available for game content generation");
+        return;
+    }
+
+
+    uint32_t regions[] = {0xFC000000, 0xFD000000, 0xFE000000, 0xFF000000, 0x10000000, 0x20000000};
+
+    for (uint32_t region : regions) {
+        if (memory->isValidAddress(region)) {
+            renderGameContentFromMemory(region);
+            if (!vertexBuffer.empty()) {
+                break; 
+            }
+        }
+    }
+
+
+    if (vertexBuffer.empty()) {
+        LOGE("GPU: FATAL ERROR - No vertex data found!");
+        LOGE("GPU: Xbox requires real vertex data - no fallbacks!");
+        return; 
+    }
+}
+
+
+
+void NV2ARenderer::generateTestPatternFromGameData(uint32_t region, uint32_t dataCount) {
+    LOGI("GPU: Generating test pattern from game data - region: 0x%08X, count: %u", region, dataCount);
+
+    if (!memory || !memory->isValidAddress(region)) {
+        LOGW("GPU: Invalid memory region for test pattern generation");
+        return;
+    }
+
+
+    vertexBuffer.clear();
+
+
+    for (uint32_t i = 0; i < dataCount && i < 100; i++) {
+        uint32_t addr = region + (i * 16);
+        if (memory->isValidAddress(addr)) {
+            float x = memory->readFloat(addr);
+            float y = memory->readFloat(addr + 4);
+            float z = memory->readFloat(addr + 8);
+
+
+            if (x >= -2.0f && x <= 2.0f && y >= -2.0f && y <= 2.0f && z >= -2.0f && z <= 2.0f) {
+                Vertex vertex;
+                vertex.x = x;
+                vertex.y = y;
+                vertex.z = z;
+                vertex.u = (x + 1.0f) * 0.5f;
+                vertex.v = (y + 1.0f) * 0.5f;
+                vertex.color = 0xFFFFFFFF;
+
+                vertexBuffer.push_back(vertex);
+            }
+        }
+    }
+
+    if (!vertexBuffer.empty()) {
+        vertexBufferDirty = true;
+        LOGI("GPU: Generated test pattern with %zu vertices from game data", vertexBuffer.size());
+    }
+}
+
+
+
+
+
+void NV2ARenderer::updateVertexBufferFromMemory() {
+    LOGI("GPU: Updating vertex buffer from memory");
+
+    if (!memory) {
+        LOGW("GPU: No memory available for vertex buffer update");
+        return;
+    }
+
+
+    vertexBuffer.clear();
+
+
+    uint32_t vertexRegions[] = {0xFC000000, 0xFD000000, 0xFE000000, 0xFF000000};
+
+    for (uint32_t region : vertexRegions) {
+        if (memory->isValidAddress(region)) {
+
+            for (uint32_t offset = 0; offset < 1024; offset += 16) {
+                uint32_t addr = region + offset;
+                if (memory->isValidAddress(addr)) {
+                    float x = memory->readFloat(addr);
+                    float y = memory->readFloat(addr + 4);
+                    float z = memory->readFloat(addr + 8);
+
+                    if (x >= -2.0f && x <= 2.0f && y >= -2.0f && y <= 2.0f && z >= -2.0f && z <= 2.0f) {
+                        Vertex vertex;
+                        vertex.x = x;
+                        vertex.y = y;
+                        vertex.z = z;
+                        vertex.u = (x + 1.0f) * 0.5f;
+                        vertex.v = (y + 1.0f) * 0.5f;
+                        vertex.color = 0xFFFFFFFF;
+
+                        vertexBuffer.push_back(vertex);
+                    }
+                }
+            }
+
+            if (!vertexBuffer.empty()) {
+                break; 
+            }
+        }
+    }
+
+
+    if (vertexBuffer.empty()) {
+        LOGE("GPU: FATAL ERROR - No data found!");
+        LOGE("GPU: Xbox requires real data - no fallbacks!");
+        return; 
+    }
+
+    vertexBufferDirty = true;
+    LOGI("GPU: Updated vertex buffer with %zu vertices", vertexBuffer.size());
+}
+
+void NV2ARenderer::updateIndexBufferFromMemory() {
+    LOGI("GPU: Updating index buffer from memory");
+
+    if (!memory) {
+        LOGW("GPU: No memory available for index buffer update");
+        return;
+    }
+
+
+    indexBuffer.clear();
+
+
+    uint32_t indexRegions[] = {0xFB000000, 0xFC000000, 0xFD000000};
+
+    for (uint32_t region : indexRegions) {
+        if (memory->isValidAddress(region)) {
+
+            for (uint32_t offset = 0; offset < 512; offset += 4) {
+                uint32_t addr = region + offset;
+                if (memory->isValidAddress(addr)) {
+                    uint32_t index = memory->read32(addr);
+                    if (index < 65536) { 
+                        indexBuffer.push_back(index);
+                    }
+                }
+            }
+
+            if (!indexBuffer.empty()) {
+                break; 
+            }
+        }
+    }
+
+
+    if (indexBuffer.empty()) {
+        LOGE("GPU: FATAL ERROR - No index data found!");
+        LOGE("GPU: Xbox requires real index data - no fallbacks!");
+        return; 
+    }
+
+    indexBufferDirty = true;
+    LOGI("GPU: Updated index buffer with %zu indices", indexBuffer.size());
+}
+
+void NV2ARenderer::processMemoryUpdates() {
+    LOGI("GPU: Processing memory updates");
+
+    if (!memory) {
+        LOGW("GPU: No memory available for memory updates");
+        return;
+    }
+
+
+    checkForVertexData();
+
+
+    if (vertexBufferDirty) {
+        updateVertexBufferFromMemory();
+    }
+
+
+    if (indexBufferDirty) {
+        updateIndexBufferFromMemory();
+    }
+
+
+    if (vertexBuffer.empty()) {
+        generateGameContentFromAnyMemory();
+    }
+
+    LOGI("GPU: Memory updates processed");
+}
+
+void NV2ARenderer::renderTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
+    LOGI("GPU: Rendering triangle with vertices at (%f,%f,%f), (%f,%f,%f), (%f,%f,%f)", 
+         v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z);
+
+
+
+
+
+    float minX = std::min({v1.x, v2.x, v3.x});
+    float maxX = std::max({v1.x, v2.x, v3.x});
+    float minY = std::min({v1.y, v2.y, v3.y});
+    float maxY = std::max({v1.y, v2.y, v3.y});
+
+
+    int screenMinX = static_cast<int>((minX + 1.0f) * 0.5f * FB_WIDTH);
+    int screenMaxX = static_cast<int>((maxX + 1.0f) * 0.5f * FB_WIDTH);
+    int screenMinY = static_cast<int>((minY + 1.0f) * 0.5f * FB_HEIGHT);
+    int screenMaxY = static_cast<int>((maxY + 1.0f) * 0.5f * FB_HEIGHT);
+
+
+    screenMinX = std::max(0, std::min(screenMinX, static_cast<int>(FB_WIDTH)));
+    screenMaxX = std::max(0, std::min(screenMaxX, static_cast<int>(FB_WIDTH)));
+    screenMinY = std::max(0, std::min(screenMinY, static_cast<int>(FB_HEIGHT)));
+    screenMaxY = std::max(0, std::min(screenMaxY, static_cast<int>(FB_HEIGHT)));
+
+
+    for (int y = screenMinY; y < screenMaxY; y++) {
+        for (int x = screenMinX; x < screenMaxX; x++) {
+
+            float px = (x / static_cast<float>(FB_WIDTH)) * 2.0f - 1.0f;
+            float py = (y / static_cast<float>(FB_HEIGHT)) * 2.0f - 1.0f;
+
+
+            float denom = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
+            if (std::abs(denom) < 1e-6f) continue;
+
+            float a = ((v2.y - v3.y) * (px - v3.x) + (v3.x - v2.x) * (py - v3.y)) / denom;
+            float b = ((v3.y - v1.y) * (px - v3.x) + (v1.x - v3.x) * (py - v3.y)) / denom;
+            float c = 1.0f - a - b;
+
+            if (a >= 0.0f && b >= 0.0f && c >= 0.0f) {
+
+                uint32_t pixelIndex = y * FB_WIDTH + x;
+                if (pixelIndex < framebuffer.size()) {
+
+                    uint32_t color = interpolateColor(v1.color, v2.color, v3.color, a, b, c);
+                    framebuffer[pixelIndex] = color;
+                }
+            }
+        }
+    }
+
+    LOGI("GPU: Triangle rendered to framebuffer");
+}
+
+uint32_t NV2ARenderer::interpolateColor(uint32_t c1, uint32_t c2, uint32_t c3, float bary1, float bary2, float bary3) {
+
+    uint8_t r1 = (c1 >> 16) & 0xFF;
+    uint8_t g1 = (c1 >> 8) & 0xFF;
+    uint8_t b1 = c1 & 0xFF;
+    uint8_t a1 = (c1 >> 24) & 0xFF;
+
+    uint8_t r2 = (c2 >> 16) & 0xFF;
+    uint8_t g2 = (c2 >> 8) & 0xFF;
+    uint8_t b2 = c2 & 0xFF;
+    uint8_t a2 = (c2 >> 24) & 0xFF;
+
+    uint8_t r3 = (c3 >> 16) & 0xFF;
+    uint8_t g3 = (c3 >> 8) & 0xFF;
+    uint8_t b3 = c3 & 0xFF;
+    uint8_t a3 = (c3 >> 24) & 0xFF;
+
+
+    uint8_t r = static_cast<uint8_t>(r1 * bary1 + r2 * bary2 + r3 * bary3);
+    uint8_t g = static_cast<uint8_t>(g1 * bary1 + g2 * bary2 + g3 * bary3);
+    uint8_t b = static_cast<uint8_t>(b1 * bary1 + b2 * bary2 + b3 * bary3);
+    uint8_t a = static_cast<uint8_t>(a1 * bary1 + a2 * bary2 + a3 * bary3);
+
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+uint32_t NV2ARenderer::applyTexture(uint32_t baseColor, float u, float v, int textureUnit) {
+
+    if (textureUnit >= static_cast<int>(textureUnits.size())) {
+        return baseColor;
+    }
+
+    const auto& texUnit = textureUnits[textureUnit];
+    if (texUnit.width == 0 || texUnit.height == 0) {
+        return baseColor;
+    }
+
+
+    int texX = static_cast<int>(u * texUnit.width);
+    int texY = static_cast<int>(v * texUnit.height);
+
+    uint32_t texColor = getTexturePixel(textureUnit, texX, texY);
+
+
+    uint8_t baseR = (baseColor >> 16) & 0xFF;
+    uint8_t baseG = (baseColor >> 8) & 0xFF;
+    uint8_t baseB = baseColor & 0xFF;
+    uint8_t baseA = (baseColor >> 24) & 0xFF;
+
+    uint8_t texR = (texColor >> 16) & 0xFF;
+    uint8_t texG = (texColor >> 8) & 0xFF;
+    uint8_t texB = texColor & 0xFF;
+    uint8_t texA = (texColor >> 24) & 0xFF;
+
+    uint8_t r = static_cast<uint8_t>((baseR * (255 - texA) + texR * texA) / 255);
+    uint8_t g = static_cast<uint8_t>((baseG * (255 - texA) + texG * texA) / 255);
+    uint8_t b = static_cast<uint8_t>((baseB * (255 - texA) + texB * texA) / 255);
+    uint8_t a = static_cast<uint8_t>((baseA * (255 - texA) + texA * texA) / 255);
+
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}

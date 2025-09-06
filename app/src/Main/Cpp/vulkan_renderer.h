@@ -10,7 +10,6 @@
 #include <array>
 #include <thread>
 
-
 #if __cplusplus >= 201703L
     #include <optional>
 #else
@@ -21,7 +20,6 @@
         using optional = std::experimental::optional<T>;
     }
 #endif
-
 
 #define VK_USE_PLATFORM_ANDROID_KHR
 #include <vulkan/vulkan_android.h>

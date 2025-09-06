@@ -4,6 +4,7 @@
 #include <cmath>
 #include "xbox_memory.h"
 
+
 uint32_t XboxAudioSystem::frameCounter = 0;
 
 XboxAudioSystem::XboxAudioSystem() : initialized(false), masterVolume(100), lastAudioUpdate(0) {

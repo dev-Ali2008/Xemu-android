@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include "xbox_memory.h"
 #include "xbox_kernel.h"
 #include "xbox_iso_parser.h"
@@ -1141,6 +1139,9 @@ public:
 
 
     void validateAndFixESP();
+
+
+    void initializeStack();
 
 
     void robustStackManagement();

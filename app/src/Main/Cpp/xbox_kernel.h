@@ -111,6 +111,7 @@ public:
     };
 
     bool loadXbe(const std::string& path);
+    bool loadXbeFromMemory(const void* data, size_t size);
     void unloadXbe();
     bool isXbeLoaded() const;
     bool parseXbe(const std::string& path);
@@ -121,11 +122,30 @@ public:
 
     static uint32_t alignToPage(uint32_t size);
 
+
     uint32_t allocateMemory(uint32_t size);
     uint32_t allocateMemory(uint32_t size, uint32_t alignment, const char* purpose);
+    uint32_t allocateMemoryRobust(uint32_t size, uint32_t alignment, const char* purpose);
     bool freeMemory(uint32_t address);
+    bool freeMemorySafe(uint32_t address);
     uint32_t findFreeMemory(uint32_t size);
     void dumpMemoryMap() const;
+
+
+    bool protectMemory(uint32_t address, bool readOnly);
+    bool unprotectMemory(uint32_t address);
+    bool isMemoryProtected(uint32_t address) const;
+    bool validateMemory(uint32_t address, uint32_t size) const;
+
+
+    bool defragmentMemory();
+    void optimizeMemory();
+    void cleanupMemory();
+
+
+    uint32_t getMemoryFragmentationLevel() const;
+    uint32_t getLargestFreeMemoryBlock() const;
+    bool detectMemoryLeaks();
 
     uint32_t createThread(uint32_t entryPoint, uint32_t stackSize);
     bool terminateThread(uint32_t threadId);
@@ -138,6 +158,11 @@ public:
 
     uint32_t getEntryPoint() const;
     void registerCustomLib(const std::string& name, std::function<uint32_t(uint32_t)> handler);
+
+
+    uint32_t getTotalAllocatedMemory() const;
+    bool isMemoryAllocated(uint32_t address) const;
+    const MemoryBlock* getMemoryBlock(uint32_t address) const;
 
     int getLoadingProgress() const {
         if (totalResources == 0) return 100;
@@ -178,7 +203,9 @@ private:
     void initializeSyscalls();
     void initializeMemory();
     void initializeThreads();
-    void loadSections();
+    bool loadSections();
+    bool loadSectionsSimple();
+    bool validateAndRepairXbeHeader(XbeHeader& header, size_t fileSize);
 
     uint32_t syscallUnknown(uint32_t* args);
     uint32_t syscallDebugPrint(uint32_t* args);

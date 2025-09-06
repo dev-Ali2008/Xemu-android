@@ -26,11 +26,12 @@ public:
     static constexpr uint32_t MAX_VERTICES = 65536;
     static constexpr uint32_t MAX_COMMANDS = 16384;
 
-    enum NV2ARegisters {
+  enum NV2ARegisters {
 
         NV_PMC_ENABLE = 0x00000200,
         NV_PMC_BOOT_0 = 0x00000000,
         NV_PMC_BOOT_1 = 0x00000004,
+
 
         NV_PGRAPH_CTX_CONTROL = 0x00400000,
         NV_PGRAPH_CTX_USER = 0x00400004,
@@ -42,10 +43,12 @@ public:
         NV_PGRAPH_CTX_SWITCH6 = 0x0040001C,
         NV_PGRAPH_CTX_SWITCH7 = 0x00400020,
 
+
         NV_PGRAPH_VS_START = 0x00400100,
         NV_PGRAPH_VS_END = 0x00400104,
         NV_PGRAPH_VS_REG = 0x00400108,
         NV_PGRAPH_VS_CONST = 0x0040010C,
+
 
         NV_PGRAPH_PS_START = 0x00400200,
         NV_PGRAPH_PS_END = 0x00400204,
@@ -799,6 +802,8 @@ private:
     uint32_t currentColor = 0xFFFFFFFF; 
     PrimitiveType currentPrimitive;
     uint32_t currentTexture;
+    uint32_t currentVertexFormat = 0; 
+    uint32_t currentShaderId = 0; 
     bool depthTestEnabled;
     bool alphaBlendEnabled;
     bool textureFilteringEnabled;
@@ -842,6 +847,7 @@ private:
     void handleVertexData(uint32_t command);
     void handleRegisterWrite(uint32_t reg, uint32_t value);
     void handleSpecialCommand(uint32_t command);
+    void handleNV2ACommand(uint32_t command);
 
 
     void renderLines();
@@ -1040,6 +1046,7 @@ private:
     void applyAnisotropicFilteringToLevel(TextureInfo* tex, uint32_t level);
     void setupLRUEviction();
 
+
     void updateGPUStatus();
     void updateVertexPipelineStatus();
     void updateFragmentPipelineStatus();
@@ -1051,23 +1058,30 @@ private:
     void updatePerformanceStatus();
     void optimizePerformance();
 
+
     void compileShaderProgram(const std::string& source, uint32_t programId);
     void executeTessellationShader(uint32_t programId, const std::vector<Vertex>& inputVertices);
     void executeComputeShader(uint32_t programId, uint32_t workGroupX, uint32_t workGroupY, uint32_t workGroupZ);
     void executeHardwareInstruction(uint32_t instruction);
 
+
     void startPerformanceMonitoring();
     void updatePerformanceCounters();
 
+
     void handleGPUError(GPUError error, const std::string& context);
 
+
     void optimizeMemoryUsage();
+
 
     void saveGPUState();
     void restoreGPUState();
 
+
     std::vector<std::string> tokenizeShaderSource(const std::string& source);
     std::string getErrorString(GPUError error);
+
 
     void executeVertexInstruction(uint32_t instruction);
     void executeFragmentInstruction(uint32_t instruction);
@@ -1078,17 +1092,20 @@ private:
     void executeFloatingPointInstruction(uint32_t instruction);
     void executeIntegerInstruction(uint32_t instruction);
 
+
     void updateParticleSystem(uint32_t x, uint32_t y, uint32_t z);
     void updatePhysicsSimulation(uint32_t x, uint32_t y, uint32_t z);
     void applyPostProcessing(uint32_t x, uint32_t y, uint32_t z);
     void updateAIComputation(uint32_t x, uint32_t y, uint32_t z);
     void processAudioData(uint32_t x, uint32_t y, uint32_t z);
 
+
     void defragmentTextureMemory();
     void compactVertexBuffers();
     void optimizeShaderCache();
     void cleanupUnusedResources();
     void preallocateMemoryPools();
+
 
     void useDefaultShader();
     void useDefaultTexture();
@@ -1097,6 +1114,7 @@ private:
     void recoverFromError();
     void logErrorForDebugging(GPUError error, const std::string& context);
     void enableHardwarePerformanceCounters();
+
 
     void completeGPUImplementation();
     void completeTextureSampling();
@@ -1110,55 +1128,66 @@ private:
     void completePerformanceOptimizations();
     void completeXboxCompatibility();
 
+
     void completeTextureFormatSupport(TextureInfo* tex);
     void completeTextureFiltering(TextureInfo* tex);
     void completeTextureAddressing(TextureInfo* tex);
     void completeTextureCoordinateGeneration(TextureInfo* tex);
+
 
     void completeAlphaBlending();
     void completeLogicOperations();
     void completeColorBlending();
     void completeFrameBufferBlending();
 
+
     void completeDepthTesting();
     void completeStencilTesting();
     void completeDepthWriting();
     void completeStencilWriting();
+
 
     void completeFogEffects();
     void completeLightingCalculations();
     void completeMaterialProperties();
     void completeEnvironmentMapping();
 
+
     void completeVertexTransformation();
     void completeVertexLighting();
     void completeVertexClipping();
     void completeVertexCulling();
+
 
     void completeFragmentGeneration();
     void completeFragmentShading();
     void completeFragmentTexturing();
     void completeFragmentEffects();
 
+
     void completeTriangleSetup();
     void completeEdgeWalking();
     void completeScanConversion();
     void completeCoverageTesting();
+
 
     void completeFrameBufferOutput();
     void completeDisplayOutput();
     void completeVideoOutput();
     void completeScreenshotOutput();
 
+
     void completeMemoryOptimizations();
     void completeCacheOptimizations();
     void completeThreadOptimizations();
     void completeNEONOptimizations();
 
+
     void completeHaloCompatibility();
     void completeFableCompatibility();
     void completePGRCompatibility();
     void completeGenericXboxCompatibility();
+
 
     void validateCompleteGPU();
     bool validateTextureSystem();
@@ -1171,6 +1200,7 @@ private:
 
     }
 
+
     void renderLoadingScreen();
     void renderGameContent(uint32_t signature, uint32_t version, uint32_t state);
     void renderSimpleGameScreen();
@@ -1179,32 +1209,36 @@ public:
 
     void processCommandBuffer();
 
+
     void setLoadingProgress(float progress); 
     void setLoadingText(const std::string& text);
- 
-     void updateDisplay();
+
+
+    void updateDisplay();
+
+
 
     void onVertexDataUpdate(uint32_t offset, uint32_t value);
     void onIndexDataUpdate(uint32_t offset, uint32_t value);
     void onTextureDataUpdate(uint32_t offset, uint32_t value);
 
+
     void markMemoryRegionDirty(uint32_t offset, uint32_t size);
     void markTextureDirty(uint32_t textureBlock);
     void updateGPUState();
 
+
     void renderGameGeometry();
-    void renderFallbackContent();
+
     void renderGameContentFromMemory(uint32_t memoryRegion);
-    void renderImprovedFallbackContent();
     void generateGameContentFromAnyMemory();
-    void generateFallbackPattern();
     void generateTestPatternFromGameData(uint32_t region, uint32_t dataCount);
-    void generateFallbackTestPattern();
     void syncFramebufferFromMemory();
     void checkForVertexData();
     void updateVertexBufferFromMemory();
     void updateIndexBufferFromMemory();
     void processMemoryUpdates();
+
 
     void loadVerticesFromRegion(uint32_t region);
     void detectVerticesByPattern(uint32_t region);
@@ -1212,7 +1246,9 @@ public:
     bool isValidVertexData(uint32_t data);
     uint32_t calculateMemoryQuality(uint32_t region);
 
+
     void generateCommandsFromMemory();
+    void generateTestCommands();
     void interpretAsData(uint32_t command);
     void processXboxCommand(uint32_t command);
     void handleAdvancedPrimitive(uint32_t command);
@@ -1220,11 +1256,13 @@ public:
     void handleTextureCommand(uint32_t command);
     void processRenderState(uint32_t command);
 
+
     void renderAdvancedGeometry();
     void applyPostProcessing();
     void renderDebugOverlay();
     void optimizeRenderingPipeline();
     void handleSpecialEffects();
+
 
     void initializeGPU();
     void resetGPU();
@@ -1298,7 +1336,9 @@ public:
     void updateAdvancedMetrics();
     void handleAdvancedSynchronization();
 
+
     void renderTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
+
 
     uint32_t interpolateColor(uint32_t c1, uint32_t c2, uint32_t c3, float bary1, float bary2, float bary3);
     uint32_t applyTexture(uint32_t baseColor, float u, float v, int textureUnit);
@@ -1308,16 +1348,21 @@ public:
     void applyXboxTransformations();
     void updateTextureBlock(size_t blockIndex);
 
+
     float calculateFogFactor(float x, float y, float z);
+
 
     bool vertexBufferDirty = false;
     bool indexBufferDirty = false;
     std::vector<bool> textureDirtyFlags;
 
+
     bool memoryUpdatePending = false;
     bool gpuStateUpdated = false;
 
+
     std::vector<uint16_t> indexBuffer;
+
 
     struct ViewportState {
         float offset[2] = {0.0f, 0.0f};
@@ -1325,18 +1370,24 @@ public:
         float depth[2] = {0.0f, 1.0f};
     } viewport;
 
+
     bool fogEnabled = false;
     float fogColor[4] = {0.5f, 0.5f, 0.5f, 1.0f};
+
 
     void updateRenderState();
     void updateVertexState();
     void updateTextureState();
 
+
+
 };
+
 
 inline void swap(NV2ARenderer::Vertex& a, NV2ARenderer::Vertex& b) noexcept {
     a.swap(b);
 }
+
 
 namespace std {
     template<>

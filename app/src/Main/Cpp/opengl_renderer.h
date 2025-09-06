@@ -8,6 +8,7 @@
 #include <string>
 #include "xbox_memory.h"
 
+
 class OpenGLRenderer {
 public:
     enum class RendererState {

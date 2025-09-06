@@ -1,6 +1,3 @@
-
-
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
 #pragma GCC diagnostic push
@@ -8,14 +5,13 @@
 #pragma GCC diagnostic ignored "-Wextra"
 #pragma GCC diagnostic ignored "-Wpedantic"
 
-
 #ifdef SKIP_STATIC_ANALYSIS
-
 
 #endif
 
 #include "x86_core.h"
 #include "xbox_memory.h"
+
 #include <android/log.h>
 #include <stdexcept>
 #include <arm_neon.h>
@@ -295,15 +291,25 @@ X86Core::~X86Core() {
 void X86Core::reset() {
     eax = ebx = ecx = edx = 0;
     esi = edi = 0;
-    esp = (memory && memory->espStartValue) ? memory->espStartValue : 0x0003FFFC; 
+    esp = (memory && memory->espStartValue) ? memory->espStartValue : 0x0003FFE0; 
     ebp = esp;
 
 
     if (memory && memory->xbeEntryPoint != 0) {
         eip = memory->xbeEntryPoint;
-        LOGI("[CPU-DEBUG] reset() using XBE entry point: 0x%08X", memory->xbeEntryPoint);
+        esp = 0x0003FFE0; 
+        LOGI("[CPU-DEBUG] reset() using XBE entry point: 0x%08X, ESP: 0x%08X", memory->xbeEntryPoint, esp);
+
+
+        if (eip >= 0x00000000 && eip < 0x00010000) {
+            LOGW("[CPU-DEBUG] WARNING: Entry point 0x%08X is in low memory area! Moving to safe code area.", eip);
+            eip = 0x00100000; 
+            LOGI("[CPU-DEBUG] Entry point moved to: 0x%08X", eip);
+        }
     } else {
         eip = 0x00100000; 
+        esp = 0x0003FFE0; 
+        LOGI("[CPU-DEBUG] reset() - EIP: 0x%08X, ESP: 0x%08X", eip, esp);
     }
 
     eflags = 0x00000002; 
@@ -376,9 +382,9 @@ void X86Core::execute(uint32_t cycles) {
         }
 
 
-        if (executed % 50 == 0) { 
-            cpuMemoryProtection();
-        }
+
+
+
 
 
         if (executed % 200 == 0) { 
@@ -391,9 +397,11 @@ void X86Core::execute(uint32_t cycles) {
         }
 
 
-        if (executed % 400 == 0) { 
-            handleXboxSpecificOpcode();
-        }
+
+
+
+
+
 
 
         if (executed % 500 == 0) { 
@@ -435,16 +443,38 @@ void X86Core::execute(uint32_t cycles) {
         }
         lastEIP = eip;
 
+
+        uint32_t eipBeforeStep = eip;
         executeStep();
         executed++;
 
 
-    if (executed > 100000) {
-        LOGW("[CPU-DEBUG] CPU executed %u instructions, stopping to prevent infinite loop", executed);
+        if (executed <= 10) {
+            LOGI("[CPU-DEBUG] Step %u: EIP 0x%08X -> 0x%08X, ESP=0x%08X", executed, eipBeforeStep, eip, esp);
+        }
 
-        cpuErrorRecovery();
-        break;
-    }
+
+        if (executed > 10000) {
+            LOGW("[CPU-DEBUG] CPU executed %u instructions, stopping to prevent infinite loop", executed);
+            LOGW("[CPU-DEBUG] Final EIP: 0x%08X, ESP: 0x%08X", eip, esp);
+
+            state = CpuState::Halted;
+            LOGW("[CPU-DEBUG] CPU halted due to infinite loop at EIP 0x%08X", eip);
+            break;
+        }
+
+
+        static auto lastProgressTime = std::chrono::high_resolution_clock::now();
+        if (executed % 1000 == 0) {
+            auto now = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastProgressTime);
+            if (elapsed.count() > 5000) { 
+                LOGW("[CPU-DEBUG] CPU execution timeout detected, forcing recovery");
+                cpuErrorRecovery();
+                break;
+            }
+            lastProgressTime = now;
+        }
     }
 
     LOGI("[CPU-DEBUG] execute() finished, total executed=%u, final EIP=0x%08X, State=%d", executed, eip, static_cast<int>(state));
@@ -458,8 +488,13 @@ void X86Core::execute(uint32_t cycles) {
             LOGI("[CPU-DEBUG] CPU in error state, attempting recovery");
 
             if (eip < 0x00100000 || eip > 0x07FFFFFF) {
-                eip = 0x00100000; 
-                esp = 0x0003FFFC; 
+                eip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
+                esp = 0x0003FFE0; 
+
+
+                if (memory) {
+                    initializeStack();
+                }
             }
             state = CpuState::Running;
         } else if (state == CpuState::Halted) {
@@ -530,12 +565,34 @@ void X86Core::executeStep() {
             ivtLoopCount++;
             if (ivtLoopCount > 5) { 
                 LOGW("🚫 IVT loop detected at EIP 0x%08X, redirecting to game entry point", eip);
-                eip = 0x00100000;
-                esp = 0x0003FFFC;
-                ivtLoopCount = 0;
-                lastIvtEip = eip;
+                eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
+                esp = 0x0003FFE0;
 
-            }
+
+                if (memory) {
+                    initializeStack();
+
+
+                    uint32_t stackBase = 0x0003FFFC;
+                    uint32_t returnAddr = (memory->xbeEntryPoint != 0) ? memory->xbeEntryPoint + 0x10 : 0x0057FD90;
+                    memory->write32(stackBase - 4, returnAddr);
+                    esp = stackBase;
+                }
+
+                        ivtLoopCount = 0;
+        lastIvtEip = eip;
+
+
+        if (memory) {
+            uint32_t stackBase = 0x0003FFFC;
+            uint32_t returnAddr = (memory->xbeEntryPoint != 0) ? memory->xbeEntryPoint + 0x10 : 0x0057FD90;
+            memory->write32(stackBase - 4, returnAddr);
+            esp = stackBase;
+            LOGI("🔧 IVT-Recovery: Stack initialisiert - ESP: 0x%08X, Return: 0x%08X", esp, returnAddr);
+        }
+
+
+    }
         } else {
             ivtLoopCount = 0;
             lastIvtEip = eip;
@@ -544,7 +601,7 @@ void X86Core::executeStep() {
 
         if (eip < 0x00000100) {
             LOGW("🚫 EIP in IVT area: 0x%08X, redirecting to game entry point", eip);
-            eip = 0x00100000;
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
 
         }
     }
@@ -557,7 +614,7 @@ void X86Core::executeStep() {
         LOGI("🚫 FIXING: Attempting intelligent recovery");
 
 
-        uint32_t newEip = 0x00100000; 
+        uint32_t newEip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
 
 
         if (memory && memory->xbeEntryPoint != 0) {
@@ -565,8 +622,8 @@ void X86Core::executeStep() {
             LOGI("✅ Using XBE Entry Point: 0x%08X", newEip);
         } else {
 
-            for (uint32_t offset = 0; offset < 65536; offset += 4) {
-                uint32_t testAddr = 0x00100000 + offset;
+        for (uint32_t offset = 0; offset < 65536; offset += 4) {
+            uint32_t testAddr = (memory ? memory->xbeEntryPoint : 0x0057FD80) + offset;
                 if (testAddr >= 0x08000000) break;
 
                 try {
@@ -635,12 +692,12 @@ void X86Core::executeStep() {
 
     if (esp == 0x00000000) {
         LOGW("CPU: ESP is zero, this will cause interrupt handling issues, resetting");
-        esp = 0x0003FFFC;
+        esp = 0x0003FFE0;
         LOGI("CPU: Reset ESP from zero to 0x%08X", esp);
     }
 
 
-    static uint32_t lastESP = 0x0003FFFC;
+    static uint32_t lastESP = 0x0003FFE0;
     if (esp != lastESP) {
         LOGD("CPU: ESP changed from 0x%08X to 0x%08X at EIP 0x%08X", lastESP, esp, eip);
         lastESP = esp;
@@ -705,7 +762,8 @@ void X86Core::executeStep() {
 
 
         GAMELOADED("[GAMELOADED] CPU: Speicherbereich-Analyse:");
-        for (uint32_t addr = 0x00100000; addr <= 0x001F0000; addr += 0x10000) {
+        uint32_t startAnalysis = memory ? (memory->xbeEntryPoint & 0xFFF00000) : 0x00100000;
+        for (uint32_t addr = startAnalysis; addr <= 0x001F0000; addr += 0x10000) {
             if (memory) {
                 try {
                     uint32_t val = memory->read32(addr);
@@ -760,7 +818,7 @@ void X86Core::executeStep() {
 
         if (eip > 0x07FFFFFF) {
             LOGW("CPU: EIP advanced beyond valid range, resetting to game entry point");
-            eip = 0x00100000;
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
         }
 
 
@@ -889,57 +947,53 @@ void X86Core::executeStep() {
         switch (opcode) {
             case 0x90: 
                 eip++;
-                break;
+                return; 
             case 0x58: 
                 eax = memory->read32(esp);
                 esp += 4;
                 eip++;
-                break;
+                return; 
             case 0x59: 
                 ecx = memory->read32(esp);
                 esp += 4;
                 eip++;
-                break;
+                return; 
             case 0x5A: 
                 edx = memory->read32(esp);
                 esp += 4;
                 eip++;
-                break;
+                return; 
             case 0x5B: 
                 ebx = memory->read32(esp);
                 esp += 4;
                 eip++;
-                break;
+                return; 
             case 0x50: 
                 esp -= 4;
                 memory->write32(esp, eax);
                 eip++;
-                break;
+                return; 
             case 0x51: 
                 esp -= 4;
                 memory->write32(esp, ecx);
                 eip++;
-                break;
+                return; 
             case 0x52: 
                 esp -= 4;
                 memory->write32(esp, edx);
                 eip++;
-                break;
+                return; 
             case 0x53: 
                 esp -= 4;
                 memory->write32(esp, ebx);
                 eip++;
-                break;
-            case 0x8B: 
-                eip++;
+                return; 
 
-                eip += 1; 
-                break;
             case 0x89: 
                 eip++;
 
                 eip += 1; 
-                break;
+                return; 
             case 0xE8: 
                 {
                     eip++;
@@ -952,7 +1006,7 @@ void X86Core::executeStep() {
 
                     eip += displacement;
                 }
-                break;
+                return; 
             case 0xE9: 
                 {
                     eip++;
@@ -961,7 +1015,7 @@ void X86Core::executeStep() {
                     eip += 4;
                     eip += jmpDisplacement;
                 }
-                break;
+                return; 
             case 0xEB: 
                 {
                     eip++;
@@ -970,11 +1024,171 @@ void X86Core::executeStep() {
                     eip++;
                     eip += jmpRel8;
                 }
-                break;
+                return; 
+            case 0x55: 
+                esp -= 4;
+                memory->write32(esp, ebp);
+                eip++;
+                return; 
+            case 0x83: 
+                {
+                    eip++;
+                    uint8_t modrm = memory->read8(eip);
+                    eip++;
+                    uint8_t imm8 = memory->read8(eip);
+                    eip++;
+
+
+                    uint8_t reg = (modrm >> 3) & 0x7;
+
+
+                    switch (reg) {
+                        case 0x5: 
+                            if ((modrm & 0xC0) == 0xC0) { 
+                                uint8_t destReg = modrm & 0x7;
+                                switch (destReg) {
+                                    case 0x4: esp -= imm8; break; 
+                                }
+                            }
+                            break;
+                        case 0x0: 
+                            if ((modrm & 0xC0) == 0xC0) { 
+                                uint8_t destReg = modrm & 0x7;
+                                switch (destReg) {
+                                    case 0x4: esp += imm8; break; 
+                                }
+                            }
+                            break;
+                        case 0x4: 
+                            if ((modrm & 0xC0) == 0xC0) { 
+                                uint8_t destReg = modrm & 0x7;
+                                switch (destReg) {
+                                    case 0x4: esp &= imm8; break; 
+                                }
+                            }
+                            break;
+                    }
+                }
+                return; 
+            case 0x20: 
+                {
+                    eip++;
+                    uint8_t modrm = memory->read8(eip);
+                    eip++;
+
+
+                }
+                return; 
+            case 0xC3: 
+                {
+
+                    if (esp >= 0x0003C000 && esp <= 0x00040000) {
+                        uint32_t return_addr = memory->read32(esp);
+                        esp += 4;
+
+
+                        if (return_addr > 0x00000000 && return_addr >= 0x00010000 && return_addr <= 0x07FFFFFF) {
+                            eip = return_addr;
+                            LOGD("CPU: RET - Jumping to return address: 0x%08X, ESP: 0x%08X", eip, esp);
+                        } else {
+                            LOGW("🚫 CRITICAL: Ungültige RET-Adresse 0x%08X, ESP: 0x%08X - repariere automatisch", return_addr, esp);
+
+
+                            if (esp >= 0x00000004 && esp <= 0x0003FFFF) {
+                                uint32_t validReturnAddr = 0x0058FD90;
+                                memory->write32(esp, validReturnAddr);
+                                eip = validReturnAddr;
+                                LOGI("✅ RET-Adresse repariert: 0x%08X bei ESP 0x%08X", validReturnAddr, esp);
+                            } else {
+
+                                eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
+                                esp = 0x0003FFE0;
+                                memory->write32(esp, 0x0058FD90);
+                                LOGW("⚠️ RET-Reparatur: EIP=0x%08X, ESP=0x%08X", eip, esp);
+                            }
+
+
+                            uint32_t safeReturnAddr = 0x0058FD90;
+                            for (uint32_t addr = esp - 0x1000; addr < esp; addr += 4) {
+                                if (addr >= 0x0003C000 && addr < esp) {
+                                    memory->write32(addr, safeReturnAddr);
+                                }
+                            }
+
+                            LOGD("CPU: RET - Notfall-Rückkehr zu: 0x%08X, ESP repariert: 0x%08X", eip, esp);
+                        }
+                    } else {
+                        LOGW("🚫 CRITICAL: RET mit ungültigem ESP 0x%08X, Stack-Reparatur", esp);
+
+
+                        esp = 0x0003FFE0;
+                        eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
+
+                        uint32_t safeReturnAddr = eip + 0x10;
+                        memory->write32(esp - 4, safeReturnAddr);
+
+
+                        for (uint32_t addr = 0x0003C000; addr < esp; addr += 4) {
+                            memory->write32(addr, safeReturnAddr);
+                        }
+
+                        LOGD("CPU: RET - Stack repariert, EIP: 0x%08X, ESP: 0x%08X", eip, esp);
+                    }
+                }
+                return; 
+            case 0x8B: 
+                {
+                    eip++;
+                    uint8_t modrm = memory->read8(eip);
+                    eip++;
+
+                    uint8_t destReg = (modrm >> 3) & 0x7;
+                    uint8_t srcReg = modrm & 0x7;
+
+
+                    if ((modrm & 0xC0) == 0xC0) { 
+                        uint32_t srcVal = 0;
+                        switch (srcReg) {
+                            case 0x4: srcVal = esp; break;
+                            case 0x5: srcVal = ebp; break;
+                            default: srcVal = 0; break;
+                        }
+
+                        switch (destReg) {
+                            case 0x5: ebp = srcVal; break; 
+                            default: break;
+                        }
+                    }
+                }
+                return; 
+            case 0x33: 
+                {
+                    eip++;
+                    uint8_t modrm = memory->read8(eip);
+                    eip++;
+
+                    uint8_t destReg = (modrm >> 3) & 0x7;
+                    uint8_t srcReg = modrm & 0x7;
+
+
+                    if ((modrm & 0xC0) == 0xC0) { 
+                        switch (destReg) {
+                            case 0x0: 
+                                switch (srcReg) {
+                                    case 0x0: eax ^= eax; break; 
+                                }
+                                break;
+                        }
+                    }
+                }
+                return; 
+
+
             default:
 
+                LOGW("CPU: Unknown instruction opcode: 0x%02X at EIP: 0x%08X", opcode, eip);
                 eip++;
-                break;
+                return; 
         }
 
 
@@ -989,7 +1203,7 @@ void X86Core::executeStep() {
 
         if (eip > 0x07FFFFFF) {
             LOGW("CPU: EIP went out of bounds after instruction, resetting to game entry point");
-            eip = 0x00100000;
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
         }
 
 
@@ -1042,7 +1256,8 @@ void X86Core::executeStep() {
 
 
                 GAMELOADED("[GAMELOADED] CPU: Speicherbereich-Analyse:");
-                for (uint32_t checkAddr = 0x00100000; checkAddr < 0x00200000; checkAddr += 0x10000) {
+                uint32_t startCheck = memory ? memory->xbeEntryPoint : 0x0057FD80;
+                for (uint32_t checkAddr = startCheck & 0xFFF00000; checkAddr < 0x00200000; checkAddr += 0x10000) {
                     uint8_t checkBytes[4] = {0};
                     for (int j = 0; j < 4; j++) {
                         checkBytes[j] = memory->read8(checkAddr + j);
@@ -1066,7 +1281,8 @@ void X86Core::executeStep() {
 
 
             bool foundValidCode = false;
-            for (uint32_t searchAddr = 0x00100000; searchAddr < 0x07FFFFFF; searchAddr += 0x1000) {
+            uint32_t startAddr = memory ? memory->xbeEntryPoint : 0x0057FD80;
+            for (uint32_t searchAddr = startAddr; searchAddr < 0x07FFFFFF; searchAddr += 0x1000) {
                 uint8_t searchBytes[4] = {0};
                 for (int i = 0; i < 4; i++) {
                     searchBytes[i] = memory->read8(searchAddr + i);
@@ -1090,7 +1306,7 @@ void X86Core::executeStep() {
 
             if (!foundValidCode) {
                 LOGW("CPU: No valid game code found in memory, resetting to safe entry point");
-                eip = 0x00100000;
+                eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
 
 
                 if (memory && !memory->isGameLoaded()) {
@@ -1251,7 +1467,7 @@ void X86Core::executeStep() {
             case 0x8D: lea_r32_m(); return; 
             case 0x8E: mov_sreg_rm16(); return; 
             case 0x8F: pop_rm32(); return; 
-            case 0x90: nop(); return; 
+
             case 0x91: xchg_eax_ecx(); return; 
             case 0x92: xchg_eax_edx(); return; 
             case 0x93: xchg_eax_ebx(); return; 
@@ -1325,7 +1541,10 @@ void X86Core::executeStep() {
             case 0xD7: xlat(); return; 
             case 0xD8: case 0xD9: case 0xDA: case 0xDB: case 0xDC: case 0xDD: case 0xDE: case 0xDF:
 
-                LOGD("CPU: FPU opcode 0x%02X encountered, treating as NOP", opcode);
+                LOGE("CPU: FATAL ERROR - FPU opcode 0x%02X not implemented!", opcode);
+                LOGE("CPU: Xbox requires real FPU emulation - no fallbacks!");
+                state = CpuState::Halted;
+                return;
                 break;
             case 0xE0: loopnz_rel8(); return; 
             case 0xE1: loopz_rel8(); return; 
@@ -1338,7 +1557,7 @@ void X86Core::executeStep() {
             case 0xE8: call_rel32(); return; 
             case 0xE9: jmp_rel32(); return; 
             case 0xEA: jmp_far(); return; 
-            case 0xEB: jmp_rel8(); return; 
+
             case 0xEC: in_al_dx(); return; 
             case 0xED: in_eax_dx(); return; 
             case 0xEE: out_dx_al(); return; 
@@ -1360,8 +1579,10 @@ void X86Core::executeStep() {
             case 0xFE: group4_rm8(); return; 
             case 0xFF: group5_rm32(); return; 
             default: 
-                LOGD("CPU: Unknown opcode 0x%02X at EIP 0x%08X, treating as NOP", opcode, eip - 1);
-                break; 
+                LOGE("CPU: FATAL ERROR - Unknown opcode 0x%02X at EIP 0x%08X", opcode, eip - 1);
+                LOGE("CPU: This opcode must be implemented for real Xbox emulation!");
+                state = CpuState::Halted;
+                return; 
         }
     } catch (const std::exception& e) {
         LOGE("CPU Exception: %s at 0x%08X", e.what(), eip - 1);
@@ -1371,24 +1592,24 @@ void X86Core::executeStep() {
         if (eip - 1 >= 0x00000000 && eip - 1 < 0x00000100) {
             LOGW("CPU: Memory access violation in interrupt vector table area - returning to game execution");
             state = CpuState::Running;
-            eip = 0x00100000; 
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
             return;
         } else if (eip - 1 >= 0xFFFFFF00 && eip - 1 <= 0xFFFFFFFF) {
             LOGW("CPU: Memory access violation in high memory area - returning to game execution");
             state = CpuState::Running;
-            eip = 0x00100000; 
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
             return;
         } else if (eip - 1 >= 0x00000000 && eip - 1 < 0x00001000) {
 
             LOGW("CPU: Memory access violation in low memory area (0x%08X) - returning to game execution", eip - 1);
             state = CpuState::Running;
-            eip = 0x00100000; 
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
             return;
         } else {
 
             LOGW("CPU: Memory access violation at 0x%08X - attempting recovery", eip - 1);
             state = CpuState::Running;
-            eip = 0x00100000; 
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
             return;
         }
     }
@@ -1440,9 +1661,9 @@ void X86Core::compileBlock(uint32_t start_addr) {
         if (isCommonOpcode(opcode)) {
 
             switch (opcode) {
-                case 0x90: 
-                    *code++ = 0x90;
-                    break;
+
+
+
                 case 0xC3: 
                     emitRET(code);
                     break;
@@ -1524,7 +1745,7 @@ void X86Core::compileBlock(uint32_t start_addr) {
 bool X86Core::isCommonOpcode(uint8_t opcode) {
 
     switch (opcode) {
-        case 0x90: 
+
         case 0xC3: 
         case 0xEB: 
         case 0xE9: 
@@ -1924,13 +2145,24 @@ void X86Core::ret() {
     LOGD("CPU: RET - ESP: 0x%08X, Return address: 0x%08X", esp, return_addr);
 
 
-    if (return_addr >= 0x00000000 && return_addr <= 0x07FFFFFF) {
+    if (return_addr > 0x00000000 && return_addr <= 0x07FFFFFF) {
         eip = return_addr;
         LOGD("CPU: RET - Jumping to return address: 0x%08X", eip);
     } else {
-        LOGW("🚫 CRITICAL: Ungültige RET-Adresse 0x%08X, verwende sichere Adresse", return_addr);
-        eip = 0x00100000; 
-        LOGD("CPU: RET - Notfall-Rückkehr zu: 0x%08X", eip);
+        LOGW("🚫 CRITICAL: Ungültige RET-Adresse 0x%08X, ESP: 0x%08X - repariere", return_addr, esp);
+
+
+        if (esp >= 0x00000004 && esp <= 0x0003FFFF) {
+
+            uint32_t validReturnAddr = 0x0058FD90;
+            memory->write32(esp, validReturnAddr);
+            eip = validReturnAddr;
+            LOGI("✅ RET-Adresse repariert: 0x%08X bei ESP 0x%08X", validReturnAddr, esp);
+        } else {
+
+            eip = memory ? memory->xbeEntryPoint : 0x0057FD80;
+            LOGW("⚠️ RET-Reparatur fehlgeschlagen, verwende sichere Adresse: 0x%08X", eip);
+        }
     }
 }
 
@@ -2563,7 +2795,10 @@ void X86Core::handleInterrupt(unsigned char interruptNumber) {
 
                 return;
             } else {
-                LOGW("Bounds Check Interrupt - treating as NOP to prevent infinite loops");
+                LOGE("CPU: FATAL ERROR - Bounds Check Interrupt not implemented!");
+                LOGE("CPU: Xbox requires real bounds checking - no fallbacks!");
+                state = CpuState::Halted;
+                return;
 
 
 
@@ -2571,18 +2806,31 @@ void X86Core::handleInterrupt(unsigned char interruptNumber) {
             break;
 
         case 0x06: 
-            LOGW("Invalid Opcode Interrupt - treating as recoverable error");
+            if (true) { 
+                LOGW("Invalid Opcode Interrupt - treating as recoverable error");
+            }
+
+
+            if (false && false) { 
 
 
 
 
 
-            eflags |= 0x00000001; 
+                eflags |= 0x00000001; 
 
 
-            eip++; 
+                eip++; 
 
 
+            } else {
+
+                if (true) { 
+                    LOGI("Invalid Opcode handling disabled - letting hardware handle naturally");
+                }
+
+                state = CpuState::Error;
+            }
             break;
 
         case 0x07: 
@@ -2590,9 +2838,22 @@ void X86Core::handleInterrupt(unsigned char interruptNumber) {
             break;
 
         case 0x08: 
-            LOGW("Double Fault Interrupt - treating as recoverable error");
+            if (true) { 
+                LOGW("Double Fault Interrupt - treating as recoverable error");
+            }
 
-            eflags |= 0x00000001; 
+
+            if (false && false) { 
+
+                eflags |= 0x00000001; 
+            } else {
+
+                if (true) { 
+                    LOGI("Double Fault handling disabled - letting hardware handle naturally");
+                }
+
+                state = CpuState::Error;
+            }
             break;
 
         case 0x0A: 
@@ -2717,12 +2978,17 @@ void X86Core::startGameExecution(uint32_t entryPoint) {
 
     if (entryPoint >= 0x08000000) {
         LOGW("[CPU-DEBUG] Entry point 0x%08X is beyond Xbox RAM limit, using default", entryPoint);
-        entryPoint = 0x00100000;
+        entryPoint = 0x00100000; 
+    }
+
+    if (entryPoint >= 0x00000000 && entryPoint < 0x00010000) {
+        LOGW("[CPU-DEBUG] Entry point 0x%08X is in low memory area, moving to safe code area", entryPoint);
+        entryPoint = 0x00100000; 
     }
 
     if (entryPoint == 0x00000000) {
         LOGW("[CPU-DEBUG] Entry point is 0x00000000, using default game entry point");
-        entryPoint = 0x00100000;
+        entryPoint = 0x00100000; 
     }
 
 
@@ -2750,12 +3016,13 @@ void X86Core::startGameExecution(uint32_t entryPoint) {
 
         if (allZero) {
             LOGW("[CPU-DEBUG] No valid game data found at entry point - CPU will halt!");
+            LOGW("[CPU-DEBUG] This indicates XBE loading failed - no real game code available!");
             state = CpuState::Halted;
             return;
         }
 
 
-        if (memory->xbeEntryPoint != 0x00100000) {
+        if (memory->xbeEntryPoint != 0x0057FD80) {
             LOGI("[CPU-DEBUG] memory->xbeEntryPoint: 0x%08X", memory->xbeEntryPoint);
         }
     } else {
@@ -2851,6 +3118,19 @@ void X86Core::startGameExecution(uint32_t entryPoint) {
                         LOGW("CPU: ✗ MISMATCH: XBE Entry Point (0x%08X) != CPU EIP (0x%08X)", 
                              memory->xbeEntryPoint, eip);
                         LOGW("CPU: ✗ Das ist der Grund für das Problem!");
+
+
+                        LOGI("CPU: 🔧 Auto-correcting entry point mismatch");
+                        eip = memory->xbeEntryPoint;
+                        LOGI("CPU: ✓ Entry point corrected to 0x%08X", eip);
+
+
+                        uint8_t correctedByte = memory->read8(eip);
+                        if (correctedByte != 0x00) {
+                            LOGI("CPU: ✓ Corrected entry point has valid data: 0x%02X", correctedByte);
+                        } else {
+                            LOGW("CPU: ✗ Corrected entry point still has invalid data");
+                        }
                     }
 
 
@@ -6947,30 +7227,51 @@ void X86Core::robustStackManagement() {
         LOGI("✅ Stack-Boundary angepasst: ESP=0x%08X", esp);
     }
 
-    if (esp > 0x0003FFF0) {
+    if (esp > 0x0003FFE0) {
         LOGW("⚠️ STACK-BOUNDARY: ESP=0x%08X zu nah an oberer Grenze", esp);
-        esp = 0x0003FFF0; 
+        esp = 0x0003FFE0; 
         LOGI("✅ Stack-Boundary angepasst: ESP=0x%08X", esp);
     }
 
 
     if (memory) {
         try {
-
             uint32_t stackTop = memory->read32(0x0003FFFC);
-            if (stackTop == 0x00000000 || stackTop == 0xFFFFFFFF) {
-                LOGW("⚠️ STACK-INTEGRITÄT: Stack-Top hat ungültigen Wert 0x%08X", stackTop);
-                memory->write32(0x0003FFFC, 0x00000000); 
-                LOGI("✅ Stack-Integrität repariert");
+
+
+            bool isValidValue = (stackTop == 0xDEADBEEF || stackTop == 0xCAFEBABE ||
+                                stackTop == 0xBABECAFE || stackTop == 0xFEEDFACE ||
+                                stackTop == 0x0058FD90 ||
+                                (stackTop >= 0x00010000 && stackTop <= 0x07FFFFFF));
+
+            if (!isValidValue) {
+                LOGW("⚠️ STACK-INTEGRITÄT: Stack-Top hat ungültigen Wert 0x%08X - repariere", stackTop);
+
+
+                uint32_t returnAddr = 0x0058FD90;
+                memory->write32(0x0003FFFC, returnAddr);
+                memory->write32(0x0003FFD0, returnAddr);
+                memory->write32(0x0003FFCC, returnAddr);
+
+                LOGI("✅ Stack repariert: RET-Adresse 0x%08X gesetzt", returnAddr);
+            } else {
+                LOGD("✅ Stack-Integrität OK: Stack-Top=0x%08X", stackTop);
             }
         } catch (...) {
-            LOGW("⚠️ Stack-Integritäts-Prüfung fehlgeschlagen");
+            LOGW("⚠️ Stack-Integritäts-Prüfung fehlgeschlagen - überspringe");
         }
     }
 
 
     if (esp >= 0x00000000 && esp <= 0x0003FFFF) {
         lastValidESP = esp;
+        LOGD("✅ ESP gespeichert für Recovery: 0x%08X", esp);
+    }
+
+
+    if (memory && (esp == 0x0003FFFC || esp == 0x00000000 || esp < 0x00000010)) {
+        LOGW("⚠️ Stack-Initialisierung erforderlich - ESP: 0x%08X", esp);
+        initializeStack();
     }
 
 
@@ -7040,7 +7341,72 @@ void X86Core::validateAndFixESP() {
 
         LOGW("CPU: ESP in invalid range: 0x%08X, resetting to valid range", esp);
         esp = 0x0003FFFC;
-        LOGI("CPU: Reset ESP to 0x%08X", esp);
+        LOGI("CPU: Reset ESP from zero to 0x%08X", esp);
+    }
+}
+
+
+void X86Core::initializeStack() {
+    if (!memory) {
+        LOGW("⚠️ STACK-INIT: Kein Memory verfügbar für Stack-Initialisierung");
+        return;
+    }
+
+    LOGI("🔧 STACK-INIT: Starte Stack-Initialisierung...");
+
+    try {
+
+        esp = 0x0003FFE0;
+
+
+        uint32_t returnAddr = 0x0058FD90; 
+
+
+        memory->write32(0x0003FFE0, returnAddr); 
+        memory->write32(0x0003FFD0, returnAddr); 
+        memory->write32(0x0003FFCC, returnAddr); 
+        memory->write32(0x0003FFC0, returnAddr); 
+        memory->write32(0x0003FFB0, returnAddr); 
+
+        LOGI("🔧 RET-Adresse auf Stack gesetzt: 0x%08X bei mehreren ESP-Positionen", returnAddr);
+
+
+        uint32_t stackBase = 0x0003FFE0;
+        uint32_t stackSize = 0x00040000; 
+
+        for (uint32_t addr = stackBase; addr >= 0x00000000; addr -= 4) {
+            if (addr >= 0x00000000 && addr <= 0x0003FFFF) {
+
+                uint32_t magicValue;
+                if (addr >= 0x0003FF00) {
+                    magicValue = 0xDEADBEEF; 
+                } else if (addr >= 0x0003FE00) {
+                    magicValue = 0xCAFEBABE; 
+                } else if (addr >= 0x0003FD00) {
+                    magicValue = 0xBABECAFE; 
+                } else {
+                    magicValue = 0xFEEDFACE; 
+                }
+
+                memory->write32(addr, magicValue);
+            }
+        }
+
+
+        memory->write32(0x0003FFDC, 0x5AACF1A6); 
+        memory->write32(0x0003FFD8, 0x0003FFE0);   
+
+        LOGI("✅ STACK-INIT: Stack erfolgreich initialisiert - ESP=0x%08X, Top=0x%08X", esp, returnAddr);
+        LOGI("✅ STACK-INIT: Stack-Bereich 0x00000000-0x0003FFFF mit Magic Numbers gefüllt");
+
+    } catch (const std::exception& e) {
+        LOGE("🚫 STACK-INIT: Exception während Stack-Initialisierung: %s", e.what());
+
+        esp = 0x0003FFFC;
+    } catch (...) {
+        LOGE("🚫 STACK-INIT: Unbekannte Exception während Stack-Initialisierung");
+
+        esp = 0x0003FFFC;
     }
 }
 
@@ -7078,18 +7444,24 @@ void X86Core::handleCMOVOpcode(uint8_t extOpcode) {
 }
 void X86Core::handleXboxSpecificOpcode() {
 
+
     uint8_t xboxOpcode = memory->read8(eip++);
 
     switch (xboxOpcode) {
         case 0x00: 
 
+            LOGI("CPU: Executing Xbox-specific opcode 0x00");
             break;
         case 0x01: 
+
+            LOGI("CPU: Executing Xbox-specific opcode 0x01");
+            break;
+
 
             break;
         default:
 
-            LOGW("CPU: Unknown Xbox opcode: 0x%02X", xboxOpcode);
+            LOGW("CPU: Unknown Xbox-specific opcode: 0x%02X", xboxOpcode);
             break;
     }
 }
@@ -7105,30 +7477,45 @@ void X86Core::handleXboxSpecificOpcode() {
         static uint32_t recoveryCount = 0;
         recoveryCount++;
 
-        LOGW("🔄 CPU-ERROR-RECOVERY #%u: EIP=0x%08X, ESP=0x%08X, State=%d", 
-             recoveryCount, eip, esp, static_cast<int>(state));
+                        if (true) { 
+            LOGW("🔄 CPU-ERROR-RECOVERY #%u: EIP=0x%08X, ESP=0x%08X, State=%d", 
+                 recoveryCount, eip, esp, static_cast<int>(state));
+        }
 
 
-        if (esp < 0x00000000 || esp > 0x0003FFFF) {
-            LOGW("🔄 Stack-Recovery: ESP=0x%08X → 0x0003FFFC", esp);
-            esp = 0x0003FFFC;
+        if (true) { 
+            if (true) { 
+                LOGI("🔄 CPU-Error-Recovery disabled - letting hardware handle errors naturally");
+            }
+            return;
+        }
+
+
+        if (false && false && (esp < 0x00000000 || esp > 0x0003FFFF)) { 
+            LOGW("🔄 Stack-Recovery: ESP=0x%08X → 0x0003FFE0", esp);
+            esp = 0x0003FFE0;
             ebp = 0x0003FFFC;
         }
 
 
-        if (eip < 0x00000000 || eip > 0x07FFFFFF) {
-            LOGW("🔄 EIP-Recovery: EIP=0x%08X → 0x00100000", eip);
-            eip = 0x00100000;
+        if (false && false && (eip < 0x00000000 || eip > 0x07FFFFFF)) { 
+            LOGW("🔄 EIP-Recovery: EIP=0x%08X → Echter EntryPoint", eip);
+
+            if (memory && memory->xbeEntryPoint != 0) {
+                eip = memory->xbeEntryPoint;
+            } else {
+                eip = 0x0057FD80; 
+            }
         }
 
 
-        if (state != CpuState::Running) {
+        if (false && state != CpuState::Running) { 
             LOGW("🔄 State-Recovery: State=%d → Running", static_cast<int>(state));
             state = CpuState::Running;
         }
 
 
-        if (memory) {
+        if (false && false && memory) { 
             try {
 
                 eax = ebx = ecx = edx = 0;
@@ -7140,7 +7527,9 @@ void X86Core::handleXboxSpecificOpcode() {
             }
         }
 
-        LOGI("✅ CPU-Error-Recovery #%u abgeschlossen", recoveryCount);
+                        if (true) { 
+            LOGI("✅ CPU-Error-Recovery #%u abgeschlossen", recoveryCount);
+        }
     }
 
 
@@ -7163,8 +7552,8 @@ void X86Core::handleXboxSpecificOpcode() {
                         eip = newEIP;
                         LOGI("🛡️ Memory-Protection: EIP repariert zu 0x%08X", eip);
                     } else {
-                        eip = 0x00100000; 
-                        LOGI("🛡️ Memory-Protection: EIP auf Fallback gesetzt: 0x%08X", eip);
+                        eip = memory ? memory->xbeEntryPoint : 0x0057FD80; 
+                        LOGI("🛡️ Memory-Protection: EIP auf echten Xbox EntryPoint gesetzt: 0x%08X", eip);
                     }
                 }
 
@@ -10699,8 +11088,8 @@ uint32_t X86Core::repairCallAddress(uint32_t invalidAddress, uint32_t currentEIP
     }
 
 
-    uint32_t safeAddress = 0x00100000; 
-    LOGW("🔧 XEMU CALL REPAIR: Using safe fallback address 0x%08X", safeAddress);
+    uint32_t safeAddress = memory ? memory->xbeEntryPoint : 0x0057FD80; 
+    LOGW("🔧 XEMU CALL REPAIR: Using real Xbox entry point 0x%08X", safeAddress);
     return safeAddress;
 }
 
@@ -10741,7 +11130,7 @@ uint32_t X86Core::searchValidCodeInXboxMemory() {
 
 
     std::vector<uint32_t> searchAddresses = {
-        0x00100000, 
+        memory ? memory->xbeEntryPoint : 0x0057FD80, 
         0x00200000, 
         0x00300000, 
         0x00400000, 
@@ -10775,7 +11164,7 @@ bool X86Core::isValidXboxInstruction(uint32_t instruction) {
 
 
     switch (opcode) {
-        case 0x90: 
+
         case 0xCC: 
         case 0x58: 
         case 0x59: 

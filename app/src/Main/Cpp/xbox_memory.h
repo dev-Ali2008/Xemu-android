@@ -13,7 +13,6 @@
 #include <arm_neon.h>
 #endif
 
-
 class NV2ARenderer;
 
 class XboxMemory {
@@ -91,8 +90,10 @@ public:
 
     uint32_t allocateMemory(uint32_t size, uint32_t alignment = 4);
     uint32_t allocateProtectedMemory(uint32_t size, uint32_t alignment = 4);
+    bool allocateAt(uint32_t address, uint32_t size); 
     void freeMemory(uint32_t address);
     bool isMemoryAllocated(uint32_t address, uint32_t size) const;
+    bool isAddressRangeFree(uint32_t address, uint32_t size) const; 
 
 
     bool protectMemory(uint32_t address, uint32_t size, bool readOnly);
@@ -182,6 +183,9 @@ public:
 
 
     uint32_t getXbeEntryPoint() const { return xbeEntryPoint; }
+
+
+    void setXbeEntryPoint(uint32_t entryPoint) { xbeEntryPoint = entryPoint; }
 
     uint32_t espStartValue = 0x0003FFFC;
 

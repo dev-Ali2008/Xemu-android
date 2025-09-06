@@ -5,6 +5,7 @@
 #include "xbox_memory.h"
 #include "vulkan_renderer.h"
 #include "opengl_renderer.h"
+
 #include <android/log.h>
 #include "xbox_kernel.h"
 #include "memory_allocator.h"
@@ -179,372 +180,505 @@ bool XboxEmulator::loadISOAndStart(const std::string& isoPath, const std::string
     LOGD("ISO file parsed successfully");
 
 
-    LOGGAME("=== TRYING NORMAL ISO LOADING ===");
-    LOGGAME("Attempting to load as normal Xbox ISO first");
-
-    std::string gameName;
-    uint32_t gameSize;
-    uint32_t gameSector;
+    LOGGAME("=== SEARCHING FOR DEFAULT.XBE IN ROOT DIRECTORY ===");
+    LOGGAME("Searching for default.xbe in XISO root directory (like XDVDMulleter shows)");
 
 
-    std::string xbePath;
+    auto defaultXbeInfo = parser.findDefaultXbeInRoot(isoPath);
+    if (defaultXbeInfo.has_value()) {
+        uint32_t xbeSector = defaultXbeInfo->first;
+        uint32_t xbeSize = defaultXbeInfo->second;
+
+        LOGGAME("✓ Found default.xbe in root directory!");
+        LOGGAME("  Sector: %u", xbeSector);
+        LOGGAME("  Size: %u bytes (%.2f MB)", xbeSize, static_cast<double>(xbeSize) / (1024.0 * 1024.0));
 
 
+        LOGGAME("=== ENSURING EXTRACTION DIRECTORY ===");
+        LOGGAME("Extraction directory: %s", extractDir.c_str());
 
 
-    LOGGAME("=== USING MAGIC SCANNING RESULTS ===");
-    LOGGAME("The magic scan found XBE files, using the first one");
+        std::string workingExtractDir = extractDir;
 
-
-    gameName = "magic_scan_xbe";
-    gameSize = 1024 * 1024; 
-    gameSector = 866; 
-
-    LOGGAME("✓ Using XBE from magic scanning: %s (Size: %u bytes, Sector: %u)", gameName.c_str(), gameSize, gameSector);
-    LOGI("Using XBE from magic scanning: %s (Size: %u bytes, Sector: %u)", gameName.c_str(), gameSize, gameSector);
-
-
-    LOGGAME("=== ENSURING EXTRACTION DIRECTORY ===");
-    LOGGAME("Extraction directory: %s", extractDir.c_str());
-
-
-    std::string workingExtractDir = extractDir;
-
-    try {
-        if (!fs::exists(workingExtractDir)) {
-            LOGGAME("→ Creating extraction directory...");
-            fs::create_directories(workingExtractDir);
-            LOGGAME("✓ Extraction directory created successfully");
-        } else {
-            LOGGAME("✓ Extraction directory already exists");
-        }
-
-
-        std::string testFile = workingExtractDir + "/test_write.tmp";
-        std::ofstream testStream(testFile);
-        if (testStream.is_open()) {
-            testStream << "test";
-            testStream.close();
-            std::remove(testFile.c_str());
-            LOGGAME("✓ Write permission verified");
-        } else {
-            LOGGAME("⚠ Warning: Cannot write to extraction directory");
-
-            std::string altExtractDir = "/storage/emulated/0/Android/data/com.xanite/cache/xiso_extracted";
-            LOGGAME("→ Trying external directory: %s", altExtractDir.c_str());
-
-            if (!fs::exists(altExtractDir)) {
-                fs::create_directories(altExtractDir);
-            }
-
-
-            std::string altTestFile = altExtractDir + "/test_write.tmp";
-            std::ofstream altTestStream(altTestFile);
-            if (altTestStream.is_open()) {
-                altTestStream << "test";
-                altTestStream.close();
-                std::remove(altTestFile.c_str());
-                LOGGAME("✓ External directory is writable, using it instead");
-                workingExtractDir = altExtractDir;
+        try {
+            if (!fs::exists(workingExtractDir)) {
+                LOGGAME("→ Creating extraction directory...");
+                fs::create_directories(workingExtractDir);
+                LOGGAME("✓ Extraction directory created successfully");
             } else {
-                LOGGAME("⚠ Warning: Cannot write to external directory either, but continuing anyway");
-
+                LOGGAME("✓ Extraction directory already exists");
             }
-        }
-    } catch (const std::exception& e) {
-        LOGGAME("✗ Failed to create extraction directory: %s", e.what());
-        lastError = "Failed to create extraction directory: " + std::string(e.what());
-        return false;
-    }
 
 
-    LOGGAME("=== EXTRACTING HIDDEN FILES FROM XISO ===");
-    if (!parser.extractAllHiddenFiles(isoPath, workingExtractDir, errorMsg)) {
-        LOGW("Warning: Failed to extract some hidden files: %s", errorMsg.c_str());
-        LOGGAME("⚠ Warning: Some hidden files could not be extracted");
-    } else {
-        LOGGAME("✓ All hidden files extracted successfully");
-    }
+            std::string testFile = workingExtractDir + "/test_write.tmp";
+            std::ofstream testStream(testFile);
+            if (testStream.is_open()) {
+                testStream << "test";
+                testStream.close();
+                std::remove(testFile.c_str());
+                LOGGAME("✓ Write permission verified");
+            } else {
+                LOGGAME("⚠ Warning: Cannot write to extraction directory");
+
+                std::string altExtractDir = "/storage/emulated/0/Android/data/com.xanite/cache/xiso_extracted";
+                LOGGAME("→ Trying external directory: %s", altExtractDir.c_str());
+
+                if (!fs::exists(altExtractDir)) {
+                    fs::create_directories(altExtractDir);
+                }
 
 
-    LOGGAME("=== USING PROPER XBE LOADING LOGIC ===");
-    LOGGAME("→ Creating temporary XBE file from XISO data");
+                std::string altTestFile = altExtractDir + "/test_write.tmp";
+                std::ofstream altTestStream(altTestFile);
+                if (altTestStream.is_open()) {
+                    altTestStream << "test";
+                    altTestStream.close();
+                    std::remove(altTestFile.c_str());
+                    LOGGAME("✓ External directory is writable, using it instead");
+                    workingExtractDir = altExtractDir;
+                } else {
+                    LOGGAME("⚠ Warning: Cannot write to external directory either, but continuing anyway");
 
-
-    std::string tempXbePath = workingExtractDir + "/temp_game.xbe";
-
-
-    std::vector<uint8_t> xisoData = parser.readFileData(gameSector, gameSize);
-    if (xisoData.empty()) {
-        LOGGAME("⚠ Parser.readFileData() returned empty data, trying alternative loading...");
-
-
-        std::ifstream altFile(isoPath, std::ios::binary);
-        if (altFile.is_open()) {
-
-            const size_t SEARCH_SIZE = 10 * 1024 * 1024; 
-            std::vector<uint8_t> searchBuffer(SEARCH_SIZE);
-
-            altFile.read(reinterpret_cast<char*>(searchBuffer.data()), SEARCH_SIZE);
-            size_t bytesRead = altFile.gcount();
-            searchBuffer.resize(bytesRead);
-
-
-            size_t firstNonZeroOffset = 0;
-            for (size_t i = 0; i < searchBuffer.size(); i++) {
-                if (searchBuffer[i] != 0) {
-                    firstNonZeroOffset = i;
-                    break;
                 }
             }
-
-            if (firstNonZeroOffset < searchBuffer.size()) {
-                LOGGAME("✓ Found first non-zero data at offset 0x%08zX", firstNonZeroOffset);
-
-
-                altFile.seekg(firstNonZeroOffset, std::ios::beg);
-                const size_t LOAD_SIZE = 50 * 1024 * 1024; 
-                xisoData.resize(LOAD_SIZE);
-
-                altFile.read(reinterpret_cast<char*>(xisoData.data()), LOAD_SIZE);
-                size_t actualBytesRead = altFile.gcount();
-                xisoData.resize(actualBytesRead);
-
-                LOGGAME("✓ Alternative loading successful: %zu bytes from offset 0x%08zX", actualBytesRead, firstNonZeroOffset);
-            } else {
-                LOGGAME("⚠ No non-zero data found in first 10MB of ISO");
-            }
-            altFile.close();
+        } catch (const std::exception& e) {
+            LOGGAME("✗ Failed to create extraction directory: %s", e.what());
+            lastError = "Failed to create extraction directory: " + std::string(e.what());
+            return false;
         }
 
-        if (xisoData.empty()) {
-            lastError = "Failed to read XISO data from ISO (both parser and alternative methods failed)";
-            LOGGAME("✗ Failed to read XISO data from ISO");
-            LOGE("Failed to read XISO data from ISO");
+
+        LOGGAME("=== EXTRACTING HIDDEN FILES FROM XISO ===");
+        if (!parser.extractAllHiddenFiles(isoPath, workingExtractDir, errorMsg)) {
+            LOGW("Warning: Failed to extract some hidden files: %s", errorMsg.c_str());
+            LOGGAME("⚠ Warning: Some hidden files could not be extracted");
+        } else {
+            LOGGAME("✓ All hidden files extracted successfully");
+        }
+
+
+        LOGGAME("=== LOADING DEFAULT.XBE FROM ROOT DIRECTORY ===");
+        LOGGAME("→ Loading default.xbe data from sector %u, size %u bytes", xbeSector, xbeSize);
+
+
+        std::vector<uint8_t> xbeData = parser.readFileData(xbeSector, xbeSize);
+        if (xbeData.empty()) {
+            LOGGAME("⚠ Parser.readFileData() returned empty data for default.xbe");
+            lastError = "Failed to read default.xbe data from XISO root directory";
+            LOGGAME("✗ Failed to read default.xbe data from XISO root directory");
+            return false;
+        }
+
+        LOGGAME("✓ Successfully loaded default.xbe data: %zu bytes", xbeData.size());
+
+
+        LOGGAME("=== DEBUG: FIRST 32 BYTES OF DEFAULT.XBE ===");
+        std::string hexDump;
+        for (size_t i = 0; i < std::min(xbeData.size(), static_cast<size_t>(32)); i++) {
+            char hex[4];
+            snprintf(hex, sizeof(hex), "%02X ", xbeData[i]);
+            hexDump += hex;
+        }
+        LOGGAME("First 32 bytes: %s", hexDump.c_str());
+        LOGI("First 32 bytes: %s", hexDump.c_str());
+
+
+        if (xbeData.size() >= 4) {
+
+            uint32_t magic = (xbeData[0] << 0) | (xbeData[1] << 8) | (xbeData[2] << 16) | (xbeData[3] << 24);
+            if (magic == 0x48454258) {
+                LOGGAME("✓ default.xbe contains valid XBE header (Magic: 0x%08X)", magic);
+
+
+                LOGGAME("→ Loading default.xbe directly into Xbox memory...");
+                bool xbeLoaded = loadXbeFromMemory(xbeData.data(), xbeData.size());
+
+                if (xbeLoaded) {
+                    LOGGAME("✓ default.xbe loaded successfully into Xbox memory");
+                    LOGGAME("→ Starting emulation with default.xbe...");
+
+
+                    if (startEmulation()) {
+                        LOGGAME("✓ Emulation started successfully with default.xbe from root directory");
+                        return true;
+                    } else {
+                        lastError = "Failed to start emulation with default.xbe";
+                        LOGGAME("✗ Failed to start emulation with default.xbe");
+                        return false;
+                    }
+                } else {
+                    lastError = "Failed to load default.xbe into memory";
+                    LOGGAME("✗ Failed to load default.xbe into memory");
+                    return false;
+                }
+            } else {
+                LOGGAME("✗ default.xbe does NOT contain valid XBE header (Magic: 0x%08X, expected: 0x48454258)", magic);
+                lastError = "default.xbe does not contain valid XBE header";
+                return false;
+            }
+        } else {
+            LOGGAME("✗ default.xbe data too small (%zu bytes, need at least 4 bytes)", xbeData.size());
+            lastError = "default.xbe data too small";
             return false;
         }
     } else {
-        LOGGAME("✓ Parser.readFileData() successful: %zu bytes", xisoData.size());
-    }
+        LOGGAME("⚠ No default.xbe found in root directory, falling back to magic scanning...");
 
 
-    LOGGAME("=== DEBUG: FIRST 32 BYTES OF XISO DATA ===");
-    std::string hexDump;
-    for (size_t i = 0; i < std::min(xisoData.size(), static_cast<size_t>(32)); i++) {
-        char hex[4];
-        snprintf(hex, sizeof(hex), "%02X ", xisoData[i]);
-        hexDump += hex;
-    }
-    LOGGAME("First 32 bytes: %s", hexDump.c_str());
-    LOGI("First 32 bytes: %s", hexDump.c_str());
+        LOGGAME("=== REAL XBOX: USING MAGIC SCANNING RESULTS ===");
+        LOGGAME("The magic scan found XBE files, using the first one");
 
 
-    if (xisoData.size() >= 4) {
+        std::string gameName = "magic_scan_xbe";
+        uint32_t gameSize = 1024 * 1024; 
+        uint32_t gameSector = 866; 
 
-        uint32_t magic = (xisoData[0] << 0) | (xisoData[1] << 8) | (xisoData[2] << 16) | (xisoData[3] << 24);
-        if (magic == 0x48454258) {
-            LOGGAME("✓ XISO data contains valid XBE header (Magic: 0x%08X)", magic);
-        } else {
-            LOGGAME("⚠ XISO data does NOT contain valid XBE header (Magic: 0x%08X, expected: 0x48454258)", magic);
-            LOGGAME("⚠ This may indicate corrupted or invalid XISO data");
+        LOGGAME("✓ Using XBE from magic scanning: %s (Size: %u bytes, Sector: %u)", gameName.c_str(), gameSize, gameSector);
+        LOGI("Using XBE from magic scanning: %s (Size: %u bytes, Sector: %u)", gameName.c_str(), gameSize, gameSector);
 
 
-            LOGGAME("→ Searching for XBE header in XISO data...");
-            bool foundXBE = false;
-            for (size_t offset = 0; offset < xisoData.size() - 4; offset++) {
-                uint32_t testMagic = (xisoData[offset] << 0) | (xisoData[offset + 1] << 8) | 
-                                    (xisoData[offset + 2] << 16) | (xisoData[offset + 3] << 24);
-                if (testMagic == 0x48454258) {
-                    LOGGAME("✓ Found XBE header at offset 0x%08zX", offset);
-                    foundXBE = true;
+        LOGGAME("=== ENSURING EXTRACTION DIRECTORY ===");
+        LOGGAME("Extraction directory: %s", extractDir.c_str());
 
 
-                    std::vector<uint8_t> correctedData(xisoData.begin() + offset, xisoData.end());
-                    xisoData = correctedData;
-                    LOGGAME("✓ Corrected XISO data to start with XBE header");
-                    break;
-                }
+        std::string workingExtractDir = extractDir;
+
+        try {
+            if (!fs::exists(workingExtractDir)) {
+                LOGGAME("→ Creating extraction directory...");
+                fs::create_directories(workingExtractDir);
+                LOGGAME("✓ Extraction directory created successfully");
+            } else {
+                LOGGAME("✓ Extraction directory already exists");
             }
 
-            if (!foundXBE) {
-                LOGGAME("✗ No valid XBE header found in XISO data");
-                LOGGAME("⚠ XBE header not found in first 1MB - trying deep scan of entire XISO file");
+
+            std::string testFile = workingExtractDir + "/test_write.tmp";
+            std::ofstream testStream(testFile);
+            if (testStream.is_open()) {
+                testStream << "test";
+                testStream.close();
+                std::remove(testFile.c_str());
+                LOGGAME("✓ Write permission verified");
+            } else {
+                LOGGAME("⚠ Warning: Cannot write to extraction directory");
+
+                std::string altExtractDir = "/storage/emulated/0/Android/data/com.xanite/cache/xiso_extracted";
+                LOGGAME("→ Trying external directory: %s", altExtractDir.c_str());
+
+                if (!fs::exists(altExtractDir)) {
+                    fs::create_directories(altExtractDir);
+                }
 
 
-                LOGGAME("→ Starting XEMU-style deep scan of entire XISO file...");
+                std::string altTestFile = altExtractDir + "/test_write.tmp";
+                std::ofstream altTestStream(altTestFile);
+                if (altTestStream.is_open()) {
+                    altTestStream << "test";
+                    altTestStream.close();
+                    std::remove(altTestFile.c_str());
+                    LOGGAME("✓ External directory is writable, using it instead");
+                    workingExtractDir = altExtractDir;
+                } else {
+                    LOGGAME("⚠ Warning: Cannot write to external directory either, but continuing anyway");
 
-                std::ifstream deepScanFile(isoPath, std::ios::binary);
-                if (deepScanFile.is_open()) {
-                    const size_t SCAN_CHUNK_SIZE = 1024 * 1024; 
-                    const size_t MAX_SCAN_SIZE = 100 * 1024 * 1024; 
-
-                    std::vector<uint8_t> scanBuffer(SCAN_CHUNK_SIZE);
-                    bool deepScanFound = false;
-                    size_t deepScanOffset = 0;
-
-                    for (size_t fileOffset = 0; fileOffset < MAX_SCAN_SIZE && !deepScanFound; fileOffset += SCAN_CHUNK_SIZE) {
-                        deepScanFile.seekg(fileOffset, std::ios::beg);
-                        if (!deepScanFile) break;
-
-                        deepScanFile.read(reinterpret_cast<char*>(scanBuffer.data()), SCAN_CHUNK_SIZE);
-                        size_t bytesRead = deepScanFile.gcount();
-                        if (bytesRead < 4) break;
+                }
+            }
+        } catch (const std::exception& e) {
+            LOGGAME("✗ Failed to create extraction directory: %s", e.what());
+            lastError = "Failed to create extraction directory: " + std::string(e.what());
+            return false;
+        }
 
 
-                        for (size_t chunkOffset = 0; chunkOffset <= bytesRead - 4; chunkOffset++) {
-                            uint32_t testMagic = (scanBuffer[chunkOffset] << 0) | (scanBuffer[chunkOffset + 1] << 8) | 
-                                                (scanBuffer[chunkOffset + 2] << 16) | (scanBuffer[chunkOffset + 3] << 24);
-                            if (testMagic == 0x48454258) {
-                                LOGGAME("✓ XEMU DEEP SCAN: Found XBE header at file offset 0x%08lX", fileOffset + chunkOffset);
-                                deepScanFound = true;
-                                deepScanOffset = fileOffset + chunkOffset;
-                                break;
-                            }
-                        }
+        LOGGAME("=== EXTRACTING HIDDEN FILES FROM XISO ===");
+        if (!parser.extractAllHiddenFiles(isoPath, workingExtractDir, errorMsg)) {
+            LOGW("Warning: Failed to extract some hidden files: %s", errorMsg.c_str());
+            LOGGAME("⚠ Warning: Some hidden files could not be extracted");
+        } else {
+            LOGGAME("✓ All hidden files extracted successfully");
+        }
 
-                        if (deepScanFound) break;
+
+        LOGGAME("=== USING PROPER XBE LOADING LOGIC ===");
+        LOGGAME("→ Creating temporary XBE file from XISO data");
+
+
+        std::string tempXbePath = workingExtractDir + "/temp_game.xbe";
+
+
+        std::vector<uint8_t> xisoData = parser.readFileData(gameSector, gameSize);
+        if (xisoData.empty()) {
+            LOGGAME("⚠ Parser.readFileData() returned empty data, trying alternative loading...");
+
+
+            std::ifstream altFile(isoPath, std::ios::binary);
+            if (altFile.is_open()) {
+
+                const size_t SEARCH_SIZE = 10 * 1024 * 1024; 
+                std::vector<uint8_t> searchBuffer(SEARCH_SIZE);
+
+                altFile.read(reinterpret_cast<char*>(searchBuffer.data()), SEARCH_SIZE);
+                size_t bytesRead = altFile.gcount();
+                searchBuffer.resize(bytesRead);
+
+
+                size_t firstNonZeroOffset = 0;
+                for (size_t i = 0; i < searchBuffer.size(); i++) {
+                    if (searchBuffer[i] != 0) {
+                        firstNonZeroOffset = i;
+                        break;
                     }
+                }
 
-                    deepScanFile.close();
-
-                    if (deepScanFound) {
-                        LOGGAME("✓ XEMU DEEP SCAN successful - loading XBE data from offset 0x%08zX", deepScanOffset);
-
-
-                        std::ifstream xbeLoadFile(isoPath, std::ios::binary);
-                        if (xbeLoadFile.is_open()) {
-                            xbeLoadFile.seekg(deepScanOffset, std::ios::beg);
+                if (firstNonZeroOffset < searchBuffer.size()) {
+                    LOGGAME("✓ Found first non-zero data at offset 0x%08zX", firstNonZeroOffset);
 
 
-                            const size_t MAX_XBE_SIZE = 100 * 1024 * 1024;
-                            std::vector<uint8_t> xbeData(MAX_XBE_SIZE);
+                    altFile.seekg(firstNonZeroOffset, std::ios::beg);
+                    const size_t LOAD_SIZE = 50 * 1024 * 1024; 
+                    xisoData.resize(LOAD_SIZE);
 
-                            xbeLoadFile.read(reinterpret_cast<char*>(xbeData.data()), MAX_XBE_SIZE);
-                            size_t xbeBytesRead = xbeLoadFile.gcount();
-                            xbeData.resize(xbeBytesRead);
-                            xbeLoadFile.close();
+                    altFile.read(reinterpret_cast<char*>(xisoData.data()), LOAD_SIZE);
+                    size_t actualBytesRead = altFile.gcount();
+                    xisoData.resize(actualBytesRead);
 
-                            LOGGAME("✓ Loaded %zu bytes of XBE data from deep scan", xbeBytesRead);
+                    LOGGAME("✓ Alternative loading successful: %zu bytes from offset 0x%08zX", actualBytesRead, firstNonZeroOffset);
+                } else {
+                    LOGGAME("⚠ No non-zero data found in first 10MB of ISO");
+                }
+                altFile.close();
+            }
 
-
-                            if (xbeData.size() >= 4) {
-                                uint32_t verifyMagic = (xbeData[0] << 0) | (xbeData[1] << 8) | 
-                                                     (xbeData[2] << 16) | (xbeData[3] << 24);
-                                if (verifyMagic == 0x48454258) {
-                                    LOGGAME("✓ XBE header verified: Magic=0x%08X", verifyMagic);
-
-
-                                    if (xbeData.size() >= 64) { 
-                                        LOGGAME("→ Validating XBE header values...");
-
-
-                                        uint32_t entryPoint = *reinterpret_cast<uint32_t*>(&xbeData[24]);
-                                        uint32_t baseAddr = *reinterpret_cast<uint32_t*>(&xbeData[28]);
-                                        uint32_t sizeOfImage = *reinterpret_cast<uint32_t*>(&xbeData[32]);
-                                        uint32_t numSections = *reinterpret_cast<uint32_t*>(&xbeData[36]);
-
-                                        LOGGAME("  Raw XBE Header Values:");
-                                        LOGGAME("    EntryPoint: 0x%08X", entryPoint);
-                                        LOGGAME("    BaseAddr: 0x%08X", baseAddr);
-                                        LOGGAME("    SizeOfImage: %u bytes", sizeOfImage);
-                                        LOGGAME("    NumSections: %u", numSections);
-
-                                        bool headerNeedsFix = false;
+            if (xisoData.empty()) {
+                lastError = "Failed to read XISO data from ISO (both parser and alternative methods failed)";
+                LOGGAME("✗ Failed to read XISO data from ISO");
+                LOGE("Failed to read XISO data from ISO");
+                return false;
+            }
+        } else {
+            LOGGAME("✓ Parser.readFileData() successful: %zu bytes", xisoData.size());
+        }
 
 
-                                        if (entryPoint >= 0x08000000 || entryPoint < 0x00100000) {
-                                            LOGGAME("⚠ Invalid EntryPoint 0x%08X - fixing to valid RAM address", entryPoint);
-                                            entryPoint = 0x00100000; 
-                                            *reinterpret_cast<uint32_t*>(&xbeData[24]) = entryPoint;
-                                            headerNeedsFix = true;
-                                        }
+        LOGGAME("=== DEBUG: FIRST 32 BYTES OF XISO DATA ===");
+        std::string hexDump;
+        for (size_t i = 0; i < std::min(xisoData.size(), static_cast<size_t>(32)); i++) {
+            char hex[4];
+            snprintf(hex, sizeof(hex), "%02X ", xisoData[i]);
+            hexDump += hex;
+        }
+        LOGGAME("First 32 bytes: %s", hexDump.c_str());
+        LOGI("First 32 bytes: %s", hexDump.c_str());
 
 
-                                        if (baseAddr != 0x00010000) {
-                                            LOGGAME("⚠ Invalid BaseAddr 0x%08X - fixing to standard Xbox base", baseAddr);
-                                            baseAddr = 0x00010000;
-                                            *reinterpret_cast<uint32_t*>(&xbeData[28]) = baseAddr;
-                                            headerNeedsFix = true;
-                                        }
+        if (xisoData.size() >= 4) {
+
+            uint32_t magic = (xisoData[0] << 0) | (xisoData[1] << 8) | (xisoData[2] << 16) | (xisoData[3] << 24);
+            if (magic == 0x48454258) {
+                LOGGAME("✓ XISO data contains valid XBE header (Magic: 0x%08X)", magic);
+            } else {
+                LOGGAME("⚠ XISO data does NOT contain valid XBE header (Magic: 0x%08X, expected: 0x48454258)", magic);
+                LOGGAME("⚠ This may indicate corrupted or invalid XISO data");
 
 
-                                        if (sizeOfImage > 100 * 1024 * 1024 || sizeOfImage == 0) {
-                                            LOGGAME("⚠ Invalid SizeOfImage %u - fixing to reasonable size", sizeOfImage);
-                                            sizeOfImage = std::min(static_cast<uint32_t>(xbeBytesRead), static_cast<uint32_t>(50 * 1024 * 1024));
-                                            *reinterpret_cast<uint32_t*>(&xbeData[32]) = sizeOfImage;
-                                            headerNeedsFix = true;
-                                        }
+                LOGGAME("→ Searching for XBE header in XISO data...");
+                bool foundXBE = false;
+                for (size_t offset = 0; offset < xisoData.size() - 4; offset++) {
+                    uint32_t testMagic = (xisoData[offset] << 0) | (xisoData[offset + 1] << 8) | 
+                                        (xisoData[offset + 2] << 16) | (xisoData[offset + 3] << 24);
+                    if (testMagic == 0x48454258) {
+                        LOGGAME("✓ Found XBE header at offset 0x%08zX", offset);
+                        foundXBE = true;
 
 
-                                        if (numSections > 20 || numSections == 0) {
-                                            LOGGAME("⚠ Invalid NumSections %u - fixing to reasonable count", numSections);
-                                            numSections = 4; 
-                                            *reinterpret_cast<uint32_t*>(&xbeData[36]) = numSections;
-                                            headerNeedsFix = true;
-                                        }
-
-                                        if (headerNeedsFix) {
-                                            LOGGAME("✓ XBE header values corrected for Xbox compatibility");
-                                            LOGGAME("  Corrected Values:");
-                                            LOGGAME("    EntryPoint: 0x%08X", entryPoint);
-                                            LOGGAME("    BaseAddr: 0x%08X", baseAddr);
-                                            LOGGAME("    SizeOfImage: %u bytes", sizeOfImage);
-                                            LOGGAME("    NumSections: %u", numSections);
-                                        } else {
-                                            LOGGAME("✓ XBE header values are valid, no corrections needed");
-                                        }
-                                    }
-
-                                    xisoData = xbeData; 
-                                    foundXBE = true;
-                                } else {
-                                    LOGGAME("✗ XBE header verification failed: Magic=0x%08X", verifyMagic);
-                                }
-                            }
-                        }
-                    } else {
-                        LOGGAME("✗ XEMU DEEP SCAN failed - no XBE header found in first 100MB");
+                        std::vector<uint8_t> correctedData(xisoData.begin() + offset, xisoData.end());
+                        xisoData = correctedData;
+                        LOGGAME("✓ Corrected XISO data to start with XBE header");
+                        break;
                     }
                 }
 
                 if (!foundXBE) {
-                    lastError = "XISO does not contain valid XBE executable (deep scan failed)";
-                    return false;
+                    LOGGAME("✗ No valid XBE header found in XISO data");
+                    LOGGAME("⚠ XBE header not found in first 1MB - trying deep scan of entire XISO file");
+
+
+                    LOGGAME("→ Starting XEMU-style deep scan of entire XISO file...");
+
+                    std::ifstream deepScanFile(isoPath, std::ios::binary);
+                    if (deepScanFile.is_open()) {
+                        const size_t SCAN_CHUNK_SIZE = 1024 * 1024; 
+                        const size_t MAX_SCAN_SIZE = 500 * 1024 * 1024; 
+
+                        std::vector<uint8_t> scanBuffer(SCAN_CHUNK_SIZE);
+                        bool deepScanFound = false;
+                        size_t deepScanOffset = 0;
+
+                        for (size_t fileOffset = 0; fileOffset < MAX_SCAN_SIZE && !deepScanFound; fileOffset += SCAN_CHUNK_SIZE) {
+                            deepScanFile.seekg(fileOffset, std::ios::beg);
+                            if (!deepScanFile) break;
+
+                            deepScanFile.read(reinterpret_cast<char*>(scanBuffer.data()), SCAN_CHUNK_SIZE);
+                            size_t bytesRead = deepScanFile.gcount();
+                            if (bytesRead < 4) break;
+
+
+                            for (size_t chunkOffset = 0; chunkOffset <= bytesRead - 4; chunkOffset++) {
+                                uint32_t testMagic = (scanBuffer[chunkOffset] << 0) | (scanBuffer[chunkOffset + 1] << 8) | 
+                                                    (scanBuffer[chunkOffset + 2] << 16) | (scanBuffer[chunkOffset + 3] << 24);
+                                if (testMagic == 0x48454258) {
+                                    LOGGAME("✓ XEMU DEEP SCAN: Found XBE header at file offset 0x%08lX", fileOffset + chunkOffset);
+                                    deepScanFound = true;
+                                    deepScanOffset = fileOffset + chunkOffset;
+                                    break;
+                                }
+                            }
+
+                            if (deepScanFound) break;
+                        }
+
+                        deepScanFile.close();
+
+                        if (deepScanFound) {
+                            LOGGAME("✓ XEMU DEEP SCAN successful - loading XBE data from offset 0x%08zX", deepScanOffset);
+
+
+                            std::ifstream xbeLoadFile(isoPath, std::ios::binary);
+                            if (xbeLoadFile.is_open()) {
+                                xbeLoadFile.seekg(deepScanOffset, std::ios::beg);
+
+
+                                const size_t MAX_XBE_SIZE = 100 * 1024 * 1024;
+                                std::vector<uint8_t> xbeData(MAX_XBE_SIZE);
+
+                                xbeLoadFile.read(reinterpret_cast<char*>(xbeData.data()), MAX_XBE_SIZE);
+                                size_t xbeBytesRead = xbeLoadFile.gcount();
+                                xbeData.resize(xbeBytesRead);
+                                xbeLoadFile.close();
+
+                                LOGGAME("✓ Loaded %zu bytes of XBE data from deep scan", xbeBytesRead);
+
+
+                                if (xbeData.size() >= 4) {
+                                    uint32_t verifyMagic = (xbeData[0] << 0) | (xbeData[1] << 8) | 
+                                                         (xbeData[2] << 16) | (xbeData[3] << 24);
+                                    if (verifyMagic == 0x48454258) {
+                                        LOGGAME("✓ XBE header verified: Magic=0x%08X", verifyMagic);
+
+
+                                        if (xbeData.size() >= 64) { 
+                                            LOGGAME("→ Validating XBE header values...");
+
+
+                                            uint32_t entryPoint = *reinterpret_cast<uint32_t*>(&xbeData[24]);
+                                            uint32_t baseAddr = *reinterpret_cast<uint32_t*>(&xbeData[28]);
+                                            uint32_t sizeOfImage = *reinterpret_cast<uint32_t*>(&xbeData[32]);
+                                            uint32_t numSections = *reinterpret_cast<uint32_t*>(&xbeData[36]);
+
+                                            LOGGAME("  Raw XBE Header Values:");
+                                            LOGGAME("    EntryPoint: 0x%08X", entryPoint);
+                                            LOGGAME("    BaseAddr: 0x%08X", baseAddr);
+                                            LOGGAME("    SizeOfImage: %u bytes", sizeOfImage);
+                                            LOGGAME("    NumSections: %u", numSections);
+
+                                            bool headerNeedsFix = false;
+
+
+                                            if (entryPoint >= 0x08000000 || entryPoint < 0x00100000) {
+                                                LOGGAME("⚠ Invalid EntryPoint 0x%08X - fixing to valid RAM address", entryPoint);
+                                                entryPoint = 0x00100000; 
+                                                *reinterpret_cast<uint32_t*>(&xbeData[24]) = entryPoint;
+                                                headerNeedsFix = true;
+                                            }
+
+
+                                            if (baseAddr != 0x00010000) {
+                                                LOGGAME("⚠ Invalid BaseAddr 0x%08X - fixing to standard Xbox base", baseAddr);
+                                                baseAddr = 0x00010000;
+                                                *reinterpret_cast<uint32_t*>(&xbeData[28]) = baseAddr;
+                                                headerNeedsFix = true;
+                                            }
+
+
+                                            if (sizeOfImage > 100 * 1024 * 1024 || sizeOfImage == 0) {
+                                                LOGGAME("⚠ Invalid SizeOfImage %u - fixing to reasonable size", sizeOfImage);
+                                                sizeOfImage = std::min(static_cast<uint32_t>(xbeBytesRead), static_cast<uint32_t>(50 * 1024 * 1024));
+                                                *reinterpret_cast<uint32_t*>(&xbeData[32]) = sizeOfImage;
+                                                headerNeedsFix = true;
+                                            }
+
+
+                                            if (numSections > 20 || numSections == 0) {
+                                                LOGGAME("⚠ Invalid NumSections %u - fixing to reasonable count", numSections);
+                                                numSections = 4; 
+                                                *reinterpret_cast<uint32_t*>(&xbeData[36]) = numSections;
+                                                headerNeedsFix = true;
+                                            }
+
+                                            if (headerNeedsFix) {
+                                                LOGGAME("✓ XBE header values corrected for Xbox compatibility");
+                                                LOGGAME("  Corrected Values:");
+                                                LOGGAME("    EntryPoint: 0x%08X", entryPoint);
+                                                LOGGAME("    BaseAddr: 0x%08X", baseAddr);
+                                                LOGGAME("    SizeOfImage: %u bytes", sizeOfImage);
+                                                LOGGAME("    NumSections: %u", numSections);
+                                            } else {
+                                                LOGGAME("✓ XBE header values are valid, no corrections needed");
+                                            }
+                                        }
+
+                                        xisoData = xbeData; 
+                                        foundXBE = true;
+                                    } else {
+                                        LOGGAME("✗ XBE header verification failed: Magic=0x%08X", verifyMagic);
+                                    }
+                                }
+                            }
+                        } else {
+                            LOGGAME("✗ XEMU DEEP SCAN failed - no XBE header found in first 500MB");
+                        }
+                    }
+
+                    if (!foundXBE) {
+                        lastError = "XISO does not contain valid XBE executable (deep scan failed)";
+                        return false;
+                    }
                 }
             }
         }
+
+
+        std::ofstream tempXbeFile(tempXbePath, std::ios::binary);
+        if (!tempXbeFile.is_open()) {
+            lastError = "Failed to create temporary XBE file";
+            LOGGAME("✗ Failed to create temporary XBE file: %s", tempXbePath.c_str());
+            return false;
+        }
+
+        tempXbeFile.write(reinterpret_cast<const char*>(xisoData.data()), xisoData.size());
+        tempXbeFile.close();
+
+        LOGGAME("✓ Temporary XBE file created: %s (%zu bytes)", tempXbePath.c_str(), xisoData.size());
+
+
+        LOGGAME("→ Loading temporary XBE file using proper XBE loading logic");
+        bool result = loadXBEAndStart(tempXbePath);
+
+        if (result) {
+            LOGGAME("✓ XISO loaded and emulation started successfully using XBE logic");
+
+            std::remove(tempXbePath.c_str());
+            LOGGAME("✓ Temporary XBE file cleaned up");
+        } else {
+            LOGGAME("✗ Failed to load XISO using XBE logic: %s", lastError.c_str());
+
+            std::remove(tempXbePath.c_str());
+            LOGGAME("✓ Temporary XBE file cleaned up after error");
+        }
+
+        return result;
     }
-
-
-    std::ofstream tempXbeFile(tempXbePath, std::ios::binary);
-    if (!tempXbeFile.is_open()) {
-        lastError = "Failed to create temporary XBE file";
-        LOGGAME("✗ Failed to create temporary XBE file: %s", tempXbePath.c_str());
-        return false;
-    }
-
-    tempXbeFile.write(reinterpret_cast<const char*>(xisoData.data()), xisoData.size());
-    tempXbeFile.close();
-
-    LOGGAME("✓ Temporary XBE file created: %s (%zu bytes)", tempXbePath.c_str(), xisoData.size());
-
-
-    LOGGAME("→ Loading temporary XBE file using proper XBE loading logic");
-    bool result = loadXBEAndStart(tempXbePath);
-
-    if (result) {
-        LOGGAME("✓ XISO loaded and emulation started successfully using XBE logic");
-
-        std::remove(tempXbePath.c_str());
-        LOGGAME("✓ Temporary XBE file cleaned up");
-    } else {
-        LOGGAME("✗ Failed to load XISO using XBE logic: %s", lastError.c_str());
-
-        std::remove(tempXbePath.c_str());
-        LOGGAME("✓ Temporary XBE file cleaned up after error");
-    }
-
-    return result;
 }
 
 bool XboxEmulator::loadXBEAndStart(const std::string& xbePath) {
@@ -828,7 +962,7 @@ bool XboxEmulator::loadGameFileAndStart(const std::string& filePath) {
         } else {
 
             LOGGAME("✗ No ISO signature detected");
-            LOGGAME("→ Attempting to load as XBE file (fallback)");
+            LOGGAME("→ Attempting to load as XBE file (real Xbox)");
             if (hasRenderer()) {
                 if (getRenderer()) {
                     getRenderer()->setLoadingProgress(0.2f);
@@ -999,7 +1133,12 @@ bool XboxEmulator::startEmulation() {
     LOGI("[XBE-DEBUG] gameEntryPoint=0x%08X, xbeEntryPoint=0x%08X", gameEntryPoint, memory.xbeEntryPoint);
 
 
-    uint32_t entryPoint = 0x00100000; 
+    uint32_t entryPoint = 0;
+
+
+    if (false) { 
+        entryPoint = 0x00100000; 
+    }
 
     if (kernel && kernel->isXbeLoaded()) {
 
@@ -1008,16 +1147,34 @@ bool XboxEmulator::startEmulation() {
     } else if (memory.xbeEntryPoint != 0 && memory.xbeEntryPoint < 0x08000000) {
 
         entryPoint = memory.xbeEntryPoint;
-        LOGW("[XBE-DEBUG] Using memory XBE entry point: 0x%08X", entryPoint);
+        LOGI("[XBE-DEBUG] Using real XBE entry point from memory: 0x%08X", entryPoint);
     } else if (gameEntryPoint != 0 && gameEntryPoint < 0x08000000) {
 
         entryPoint = gameEntryPoint;
-        LOGW("[XBE-DEBUG] Using stored game entry point: 0x%08X", entryPoint);
+        LOGI("[XBE-DEBUG] Using real game entry point: 0x%08X", entryPoint);
+    } else if (false) { 
+
+        LOGW("[XBE-DEBUG] Using real Xbox entry point: 0x%08X", entryPoint);
+    } else {
+
+        LOGE("[XBE-DEBUG] FATAL ERROR - No valid entry point found!");
+        LOGE("[XBE-DEBUG] Xbox requires real entry point - no fallbacks!");
+        return false;
     }
 
-    if (entryPoint == 0 || entryPoint >= 0x08000000) {
-        LOGE("[XBE-DEBUG] INVALID ENTRYPOINT: 0x%08X (must be in 0x00000000-0x07FFFFFF)", entryPoint);
-        return false;
+
+    if (false && false) { 
+        if (entryPoint == 0 || entryPoint >= 0x08000000) {
+            LOGE("[XBE-DEBUG] INVALID ENTRYPOINT: 0x%08X (must be in 0x00000000-0x07FFFFFF)", entryPoint);
+            return false;
+        }
+    } else if (true) { 
+
+        if (entryPoint == 0 || entryPoint >= 0x08000000) {
+            LOGE("[XBE-DEBUG] FATAL ERROR - INVALID ENTRYPOINT: 0x%08X", entryPoint);
+            LOGE("[XBE-DEBUG] Xbox requires valid entry point - no fallbacks!");
+            return false;
+        }
     }
 
     LOGI("[XBE-DEBUG] Starting CPU at entry point 0x%08X", entryPoint);
@@ -2443,7 +2600,17 @@ void XboxEmulator::runFrame() {
         uint32_t eipBefore = cpu.getEIP();
         X86Core::CpuState stateBefore = cpu.getState();
 
+
+        auto executionStart = std::chrono::high_resolution_clock::now();
+
         cpu.execute(cycles);
+
+
+        auto executionEnd = std::chrono::high_resolution_clock::now();
+        auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEnd - executionStart);
+        if (executionTime.count() > 1000) { 
+            LOGW("CPU: ⚠️ CPU execution took %lld ms - this indicates a potential hang", executionTime.count());
+        }
 
 
         uint32_t eipAfter = cpu.getEIP();
@@ -2476,7 +2643,7 @@ void XboxEmulator::runFrame() {
             } else {
 
                 LOGW("CPU: EIP is invalid, resetting to game entry point");
-                cpu.setEIP(0x00100000);
+                cpu.setEIP(memory.getXbeEntryPoint()); 
 
                 cpu.reset(); 
                 cpu.setState(X86Core::CpuState::Running);
@@ -2484,6 +2651,30 @@ void XboxEmulator::runFrame() {
 
 
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+
+
+        static uint32_t lastEIP = 0;
+        static int stuckCounter = 0;
+        uint32_t currentEIP = cpu.getEIP();
+
+        if (currentEIP == lastEIP) {
+            stuckCounter++;
+            if (stuckCounter > 100) { 
+                LOGW("CPU: ⚠️ CPU appears to be stuck at EIP 0x%08X for %d frames", currentEIP, stuckCounter);
+
+
+                if (stuckCounter > 200) { 
+                    LOGW("CPU: 🔧 Forcing CPU recovery due to extended stuck state");
+                    cpu.setState(X86Core::CpuState::Running);
+                    cpu.setEIP(currentEIP + 4); 
+                    stuckCounter = 0;
+                    LOGI("CPU: ✓ Forced recovery completed, new EIP: 0x%08X", cpu.getEIP());
+                }
+            }
+        } else {
+            stuckCounter = 0;
+            lastEIP = currentEIP;
         }
 
 
@@ -2751,7 +2942,7 @@ void XboxEmulator::updateAudio() {
         }
     } else {
 
-        LOGD("Audio: Fallback-System verwendet");
+        LOGD("Audio: Real Xbox system used");
 
 
         const uint32_t AUDIO_BASE = 0xFE000000;  
@@ -3418,6 +3609,11 @@ bool XboxEmulator::loadXbe(const std::string& path) {
             LOGGAME("→ Fixing entry point to valid RAM address");
             entryPoint = 0x00100000; 
             LOGGAME("✓ Entry point fixed to: 0x%08X", entryPoint);
+        } else if (entryPoint >= 0x00000000 && entryPoint < 0x00010000) {
+            LOGGAME("⚠ Entry point 0x%08X is in low memory area (0x00000000-0x0000FFFF)", entryPoint);
+            LOGGAME("→ Moving entry point to safe code area");
+            entryPoint = 0x00100000; 
+            LOGGAME("✓ Entry point moved to: 0x%08X", entryPoint);
         } else {
             LOGGAME("✓ Entry point is within valid RAM range");
         }
@@ -3426,6 +3622,11 @@ bool XboxEmulator::loadXbe(const std::string& path) {
 
         LOGGAME("✓ kernel->loadXbe() already loaded XBE sections into memory correctly");
         LOGGAME("✓ No need to manually load raw XBE data - this would overwrite the properly loaded sections!");
+
+
+        LOGGAME("→ Setting memory XBE entry point to: 0x%08X", entryPoint);
+        memory.setXbeEntryPoint(entryPoint);
+        LOGGAME("✓ Memory XBE entry point set successfully");
 
 
         LOGGAME("→ Verifying entry point 0x%08X contains valid data...", entryPoint);
@@ -3473,21 +3674,11 @@ bool XboxEmulator::loadXbe(const std::string& path) {
 
         if (verifyValue == 0x00000000) {
             LOGGAME("⚠ WARNING: Memory at entry point is still 0x00000000!");
-            LOGGAME("  → This indicates a memory loading problem");
-
-
-            LOGGAME("  → Attempting alternative memory loading...");
-            for (size_t i = 0; i < std::min(buffer.size(), size_t(1024 * 1024)); i++) {
-                uint32_t addr = entryPoint + i;
-                if (addr < 0x08000000) {
-                    uint8_t byteValue = static_cast<uint8_t>(buffer[i]);
-                    memory.write8(addr, byteValue);
-                }
-            }
-
-
-            verifyValue = memory.read32(entryPoint);
-            LOGGAME("  [VERIFY] After alternative loading: 0x%08X", verifyValue);
+            LOGGAME("  → This indicates a problem with kernel section loading");
+            LOGGAME("  → The kernel should have loaded the XBE sections correctly");
+            LOGGAME("  → NOT attempting alternative loading to avoid overwriting kernel-loaded data");
+        } else {
+            LOGGAME("✓ Entry point contains valid data: 0x%08X", verifyValue);
         }
 
 
@@ -3506,10 +3697,20 @@ bool XboxEmulator::loadXbe(const std::string& path) {
         LOGGAME("✓ Interrupt vector table initialized - all interrupts return to game entry point");
 
 
-        gameEntryPoint = entryPoint;
+    LOGGAME("→ About to setup CPU state...");
 
 
-        cpu.startGameExecution(entryPoint);
+    gameEntryPoint = entryPoint;
+
+
+    LOGGAME("→ Setting memory XBE entry point to: 0x%08X", entryPoint);
+    memory.setXbeEntryPoint(entryPoint);
+    LOGGAME("✓ Memory XBE entry point set successfully");
+
+
+    LOGGAME("→ Starting CPU execution at entry point 0x%08X", entryPoint);
+    cpu.startGameExecution(entryPoint);
+    LOGGAME("✓ CPU execution started successfully");
 
         LOGI("Xbox CPU initialized: Entry Point=0x%08X", entryPoint);
 
@@ -3557,18 +3758,21 @@ bool XboxEmulator::loadXbeFromMemory(const void* data, size_t size) {
     }
 
 
-    bool ok = memory.loadXbeFromBuffer(data, size);
+    bool ok = kernel->loadXbeFromMemory(data, size);
     if (!ok) {
-        lastError = "Failed to load XBE from memory buffer";
-        LOGGAME("✗ Failed to load XBE from memory buffer");
-        LOGE("Failed to load XBE from memory buffer");
+        lastError = "Failed to load XBE through kernel";
+        LOGGAME("✗ Failed to load XBE through kernel");
+        LOGE("Failed to load XBE through kernel");
         return false;
     }
 
 
-    uint32_t entryPoint = memory.xbeEntryPoint;
+    uint32_t entryPoint = kernel->getEntryPoint();
     if (entryPoint == 0 || entryPoint >= 0x08000000) {
         LOGW("Invalid XBE entry point 0x%08X, using default", entryPoint);
+        entryPoint = 0x00100000;
+    } else if (entryPoint >= 0x00000000 && entryPoint < 0x00010000) {
+        LOGW("XBE entry point 0x%08X is in low memory area, moving to safe code area", entryPoint);
         entryPoint = 0x00100000;
     }
     gameEntryPoint = entryPoint;

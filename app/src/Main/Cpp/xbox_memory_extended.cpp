@@ -34,6 +34,25 @@ uint32_t XboxMemory::allocateProtectedMemory(uint32_t size, uint32_t alignment) 
     return address;
 }
 
+
+bool XboxMemory::allocateAt(uint32_t address, uint32_t size) {
+    std::lock_guard<std::mutex> lock(memoryMutex);
+
+
+    if (!isAddressRangeFree(address, size)) {
+        LOGE("Cannot allocate %u bytes at 0x%08X - address range not free", size, address);
+        return false;
+    }
+
+
+    MemoryBlock block(address, size);
+    block.allocated = true;
+    memoryBlocks.push_back(block);
+
+    LOGI("Allocated %u bytes at specific address 0x%08X", size, address);
+    return true;
+}
+
 void XboxMemory::freeMemory(uint32_t address) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
@@ -105,6 +124,28 @@ bool XboxMemory::isMemoryProtected(uint32_t address) const {
 
 bool XboxMemory::isMemoryReadOnly(uint32_t address) const {
     return isAddressReadOnly(address);
+}
+
+
+bool XboxMemory::isAddressRangeFree(uint32_t address, uint32_t size) const {
+    std::lock_guard<std::mutex> lock(memoryMutex);
+
+
+    for (const auto& block : memoryBlocks) {
+        if (block.allocated) {
+
+            if (!(address + size <= block.address || block.address + block.size <= address)) {
+                return false; 
+            }
+        }
+    }
+
+
+    if (address < RAM_BASE || address + size > RAM_BASE + RAM_SIZE) {
+        return false; 
+    }
+
+    return true;
 }
 
 

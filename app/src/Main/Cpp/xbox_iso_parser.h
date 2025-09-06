@@ -90,6 +90,12 @@ public:
     std::optional<uint32_t> scanForXbeMagicAnywhereTolerant(const std::string& isoPath);
     std::optional<std::pair<uint32_t, uint32_t>> findDefaultXbeInRoot(const std::string& isoPath);
 
+
+    std::pair<uint32_t, uint32_t> tryXaniteExtendedSearch(const std::string& isoPath, uint32_t failedSector);
+
+
+    std::pair<uint32_t, uint32_t> tryXaniteIntelligentBypass(const std::string& isoPath);
+
     static constexpr const char* ALT_XBE_NAMES[] = {
         "default.xbe", "main.xbe", "game.xbe", "dash.xbe", "xboxdash.xbe", "update.xbe", "default.bin", "default.dat"
     };

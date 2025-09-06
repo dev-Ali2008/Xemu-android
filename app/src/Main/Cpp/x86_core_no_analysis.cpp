@@ -1,13 +1,4 @@
-
-
-
-
-
-
-
-
-
-
+//Xanite From scratch without use Xemu 
 
 #include "x86_core.h"
 #include "xbox_memory.h"
