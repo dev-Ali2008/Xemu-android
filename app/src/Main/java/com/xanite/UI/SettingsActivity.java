@@ -1,4 +1,3 @@
-// app/src/main/java/com/xanite/ui/SettingsActivity.java
 package com.xanite.ui;
 
 import android.os.Bundle;
