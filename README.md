@@ -54,7 +54,7 @@ Developed by @FreePalestine1970,@Yebot32 and other developers on Telegram and di
 Special thanks to all Xanite supporters.
 
 ## DISCLAIMER !
-Xanite is an open-source project not affiliated with Microsoft, Xemu, or Xenia. It is intended for educational  
+Xanite is an open-source project not affiliated with Microsoft, Xemu, or Xenia. It is intended for educational purposes and, We are porting.  
 
 We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator itself is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
 
