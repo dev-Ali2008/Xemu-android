@@ -1,4 +1,3 @@
-// app/src/main/java/com/xanite/ui/GameLibraryActivity.java
 package com.xanite.ui;
 
 import android.os.Bundle;
@@ -30,6 +29,6 @@ public class GameLibraryActivity extends AppCompatActivity {
     }
     
     private void loadGames() {
-        // تحميل الألعاب من التخزين
+        //install and save games 
     }
 }
