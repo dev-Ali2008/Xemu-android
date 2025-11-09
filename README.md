@@ -61,8 +61,8 @@ you can manually adjust the resolution and performance in settings for experimen
   - 12+ GB recommended
 
 ### Graphics:
-- 3.2 opengl 
-- (vulkan coming soon)
+- (opengl coming soon)
+- Vulkan 1.1
 
 ### OS Requirements:
 - Android 10+ (no root)
