@@ -5,34 +5,21 @@
 </p>
 
 <h1 align="center"> Xanite -
- Xbox OG/360 emulator </h1>
+ Xbox 360 emulator </h1>
 
 Xanite is a "proof of concept" emulator. 
 
-This project emulates both the original Xbox and Xbox 360 consoles on Android, supporting game ROMs in various formats.
+This project emulates the Xbox 360 console on Android, supporting games in iso formats.
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
-
-- Dual Console Support:  
-Play both Xbox and Xbox 360 games in one emulator
 
 - Performance Scaling:  
 you can manually adjust the resolution and performance in settings for experiment or low end devices
 
 ## System Requirements
 
-### For Xbox Original
-- Processors:
-  - Snapdragon 855 or better
-  - Exynos 990 or better
-  - Dimensity 1000 or better
-
-- RAM:
-  - 4 GB minimum
-  - 8+ GB recommended
-
-### For Xbox 360 (higher requirements)
+### For Xbox 360
 - Processors:
 
   - Snapdragon 888 or better
@@ -53,13 +40,10 @@ you can manually adjust the resolution and performance in settings for experimen
 
 ## How to Use
 
-1. For Xbox Original:
-   - Install BIOS from your own Xbox
-   - Obtain games in iso/xiso format from your personal game copies
-
-2. For Xbox 360:
+For Xbox 360:
    - Requires Xbox 360 system files from your console
-   - Games in iso/xex/god format from your personal collection
+
+   - Games in iso format from your personal collection
 
 ## Contributing
 
