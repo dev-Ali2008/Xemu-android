@@ -11,8 +11,6 @@ Xanite is a "proof of concept" emulator.
 
 This project emulates both the original Xbox and Xbox 360 consoles on Android, supporting game ROMs in various formats.
 
-- Key Features
-
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
 
