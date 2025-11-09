@@ -22,7 +22,7 @@ you can manually adjust the resolution and performance in settings for experimen
 ### For Xbox 360
 - Processors:
 
-  - Snapdragon 888 or better
+  - Snapdragon 855 or better
   - Exynos 2200 or better
   - Dimensity 8300 or better
 
