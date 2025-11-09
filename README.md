@@ -11,21 +11,6 @@ Xanite is a "proof of concept" emulator.
 
 This project emulates both the original Xbox and Xbox 360 consoles on Android, supporting game ROMs in various formats.
 
-## Game Compatibility
-
-### Xbox Original
-- Supported formats: xiso
-- BIOS required (must be obtained from your own Xbox)
-
-### Xbox 360
-- Supported formats: iso
-
-the games you can play depends on your device's performance and storage capacity.
-
-## Platform Support
-
-  <img height="200px" src="https://github.com/dev-Ali2008/xanite/blob/e718259484b8afd71a774a7cae3a15f5caacf5e5/test.png" />
-    </a>
 - Key Features
 
 - Hardware Detection:  
