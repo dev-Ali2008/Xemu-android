@@ -2,172 +2,282 @@
 #define XANITE_ANDROID_SETTINGS_H
 
 #include <string>
+#include <unordered_map>
+#include <vector>
+#include <cstdint>
+#include <memory>
+#include <functional>
 
 namespace xanite {
 
-enum class PerformanceMode {
-    POWER_SAVING = 0,
-    BALANCED = 1,
-    PERFORMANCE = 2,
-    MAXIMUM = 3
+enum class GraphicsBackend {
+    VULKAN,
+    OPENGL_ES,
+    D3D12
 };
 
-enum class ControlScheme {
-    TOUCH_GAMEPAD = 0,
-    GESTURE_BASED = 1,
-    EXTERNAL_GAMEPAD = 2,
-    HYBRID = 3
+enum class ResolutionScale {
+    NATIVE = 1,
+    HALF = 2,
+    QUARTER = 4,
+    CUSTOM = 8
 };
 
-enum class ButtonLayout {
-    STANDARD = 0,
-    COMPACT = 1,
-    LEFT_HANDED = 2,
-    CUSTOM = 3
-};
-
-enum class RenderAPI {
-    OPENGL_ES = 0,
-    VULKAN = 1,
-    AUTOMATIC = 2
+enum class TextureFiltering {
+    POINT,
+    LINEAR,
+    ANISOTROPIC_2X,
+    ANISOTROPIC_4X,
+    ANISOTROPIC_8X,
+    ANISOTROPIC_16X
 };
 
 enum class AudioBackend {
-    OPENSLES = 0,
-    AAUDIO = 1,
-    OBOE = 2
+    OPENSL_ES,
+    AAUDIO,
+    SDL_AUDIO
 };
 
-struct InterfaceSettings {
-    std::string theme = "dark";
-    int language = 1; 
-    bool show_fps = true;
-    bool show_controller = true;
-    bool touch_controls = true;
-    float touch_opacity = 0.7f;
-    float vibration_strength = 0.8f;
-    float button_size = 1.0f;
-    float analog_stick_size = 1.0f;
-    bool auto_hide_controls = false;
-    int hide_delay = 3000; 
+enum class ControllerLayout {
+    XBOX_360,
+    XBOX_ONE,
+    PS4,
+    PS5,
+    NINTENDO_SWITCH,
+    CUSTOM
 };
 
-struct PerformanceSettings {
-    PerformanceMode performance_mode = PerformanceMode::BALANCED;
-    int frame_limit = 60;
-    bool power_saving = false;
-    bool thermal_throttling = true;
-    bool background_audio = false;
-    bool suspend_on_focus_loss = true;
-    int memory_usage_limit = 75; 
+enum class PerformanceProfile {
+    BATTERY_SAVER,
+    BALANCED,
+    PERFORMANCE,
+    ULTRA_PERFORMANCE
 };
 
-struct ControlSettings {
-    ControlScheme control_scheme = ControlScheme::TOUCH_GAMEPAD;
-    float touch_sensitivity = 1.0f;
-    float analog_deadzone = 0.15f;
-    float trigger_deadzone = 0.1f;
-    ButtonLayout button_layout = ButtonLayout::STANDARD;
-    bool enable_gestures = true;
-    bool swipe_gestures = true;
-    bool tap_zones = true;
-    bool haptic_feedback = true;
+enum class ThermalMode {
+    AGGRESSIVE_COOLING,
+    BALANCED,
+    QUIET
 };
 
 struct GraphicsSettings {
-    float resolution_scale = 1.0f;
-    int texture_filtering = 2; 
-    int msaa_level = 2;
+    GraphicsBackend backend = GraphicsBackend::VULKAN;
+    ResolutionScale resolution_scale = ResolutionScale::NATIVE;
+    float custom_scale = 1.0f;
     bool vsync = true;
-    int anisotropic_filtering = 4;
+    bool fullscreen = true;
+    TextureFiltering texture_filtering = TextureFiltering::ANISOTROPIC_4X;
+    int msaa_samples = 1;
+    bool depth_stencil = true;
     bool gpu_timing = false;
-    RenderAPI render_api = RenderAPI::VULKAN;
-    bool post_processing = false;
-    float brightness = 1.0f;
-    float contrast = 1.0f;
+    bool frame_rate_limit = false;
+    int max_frame_rate = 60;
+    bool triple_buffering = true;
+    bool async_presentation = true;
+    bool hardware_acceleration = true;
+    
+    bool disable_srgb = false;
+    bool disable_alpha_to_coverage = false;
+    bool disable_primitive_restart = false;
+    bool force_host_GPU_cache = false;
+    int texture_cache_memory_limit_mb = 512;
+    int shader_cache_memory_limit_mb = 256;
 };
 
 struct AudioSettings {
-    int audio_latency = 128; 
-    float volume = 1.0f;
-    bool mute_on_focus_loss = true;
-    AudioBackend audio_backend = AudioBackend::OPENSLES;
-    bool surround_sound = false;
-    bool audio_boost = false;
+    AudioBackend backend = AudioBackend::AAUDIO;
+    int sample_rate = 48000;
+    int buffer_size = 1024;
+    int channels = 2;
+    bool enable_audio = true;
+    bool enable_3d_audio = true;
+    float master_volume = 1.0f;
+    float game_volume = 1.0f;
+    float music_volume = 0.8f;
+    float effects_volume = 1.0f;
+    bool audio_stretching = true;
+    int resampling_quality = 2;
+    
+    bool enable_audio_dump = false;
+    bool enable_audio_loopback = false;
+    int audio_processing_threads = 2;
 };
 
-struct StorageSettings {
-    std::string content_directory = "/sdcard/xenia/content";
-    std::string cache_directory = "/sdcard/xenia/cache";
-    std::string save_directory = "/sdcard/xenia/saves";
-    std::string screenshot_directory = "/sdcard/xenia/screenshots";
-    bool auto_save = true;
-    bool save_compression = true;
-    bool cloud_sync = false;
+struct InputSettings {
+    ControllerLayout controller_layout = ControllerLayout::XBOX_360;
+    float touch_sensitivity = 1.0f;
+    float analog_deadzone = 0.15f;
+    float trigger_deadzone = 0.1f;
+    bool vibration_enabled = true;
+    bool motion_controls = false;
+    float motion_sensitivity = 1.0f;
+    bool touch_gamepad = true;
+    bool physical_controller_priority = true;
+    bool button_remapping = false;
+    
+    struct TouchZone {
+        float x, y, width, height;
+        int button_id;
+        bool visible;
+        float opacity;
+    };
+    
+    std::vector<TouchZone> touch_zones;
+    bool show_touch_controls = true;
+    float touch_opacity = 0.7f;
+    bool touch_haptic_feedback = true;
+};
+
+struct SystemSettings {
+    PerformanceProfile performance_profile = PerformanceProfile::BALANCED;
+    ThermalMode thermal_mode = ThermalMode::BALANCED;
+    bool enable_thermal_throttling = true;
+    int cpu_thread_count = 0;
+    bool enable_smt = true;
+    int gpu_clock_boost = 0;
+    bool memory_optimization = true;
+    int cache_size_mb = 256;
+    bool background_processing = false;
+    bool power_saving_suspend = true;
+    
+    bool enable_debugging = false;
+    bool enable_profiling = false;
+    bool enable_tracing = false;
+    int log_level = 2;
+    bool crash_dumps = true;
+    bool performance_counters = true;
+};
+
+struct DisplaySettings {
+    int screen_orientation = 0;
+    bool keep_screen_on = true;
+    bool fullscreen_immersive = true;
+    bool show_fps = true;
+    bool show_statistics = false;
+    bool show_controller_overlay = true;
+    int brightness_boost = 0;
+    bool hdr_support = false;
+    bool force_rgb_range = false;
+    bool color_correction = true;
+    
+    struct OSDConfig {
+        bool enabled = true;
+        int position = 0;
+        float scale = 1.0f;
+        int opacity = 80;
+        std::vector<std::string> elements;
+    };
+    
+    OSDConfig osd_config;
 };
 
 struct NetworkSettings {
-    bool enable_network = false;
-    bool xbox_live = false;
-    bool upnp = false;
-    bool port_forwarding = false;
+    bool enable_network_emulation = false;
+    bool xbox_live_emulation = false;
+    bool system_link_emulation = false;
+    std::string network_adapter = "default";
+    int network_latency_ms = 0;
+    int packet_loss_percent = 0;
+    
+    bool enable_multiplayer = false;
+    int max_players = 4;
+    bool nat_traversal = true;
+    int port_forwarding = 0;
 };
 
-struct DebugSettings {
-    int log_level = 1; 
-    bool show_log_window = false;
-    bool performance_overlay = false;
-    bool crash_reporting = true;
-    bool analytics = false;
-    bool developer_mode = false;
+struct GameSpecificSettings {
+    std::string title_id;
+    std::string profile_name;
+    bool use_global_settings = false;
+    
+    GraphicsSettings graphics_overrides;
+    AudioSettings audio_overrides;
+    InputSettings input_overrides;
+    SystemSettings system_overrides;
+    
+    bool force_compatibility_mode = false;
+    bool disable_specific_features = false;
+    std::vector<std::string> enabled_patches;
+    std::vector<std::string> disabled_patches;
 };
 
 class AndroidSettings {
 public:
     AndroidSettings();
     ~AndroidSettings();
-    
-    InterfaceSettings& GetInterfaceSettings();
-    PerformanceSettings& GetPerformanceSettings();
-    ControlSettings& GetControlSettings();
-    GraphicsSettings& GetGraphicsSettings();
-    AudioSettings& GetAudioSettings();
-    StorageSettings& GetStorageSettings();
-    NetworkSettings& GetNetworkSettings();
-    DebugSettings& GetDebugSettings();
-  
-    void SetInterfaceSettings(const InterfaceSettings& settings);
-    void SetPerformanceSettings(const PerformanceSettings& settings);
-    void SetControlSettings(const ControlSettings& settings);
-    void SetGraphicsSettings(const GraphicsSettings& settings);
-    void SetAudioSettings(const AudioSettings& settings);
-    void SetStorageSettings(const StorageSettings& settings);
-    void SetNetworkSettings(const NetworkSettings& settings);
-    void SetDebugSettings(const DebugSettings& settings);
-   
+
+    bool LoadFromFile(const std::string& file_path);
+    bool SaveToFile(const std::string& file_path);
     void ResetToDefaults();
-    bool ExportSettings(const std::string& filename);
-    bool ImportSettings(const std::string& filename);
+    bool ValidateSettings() const;
+
+    bool SaveProfile(const std::string& profile_name);
+    bool LoadProfile(const std::string& profile_name);
+    bool DeleteProfile(const std::string& profile_name);
+    std::vector<std::string> GetAvailableProfiles() const;
+
+    bool LoadGameSettings(const std::string& title_id);
+    bool SaveGameSettings(const std::string& title_id);
+    bool DeleteGameSettings(const std::string& title_id);
+    std::vector<std::string> GetConfiguredGames() const;
+
+    GraphicsSettings& GetGraphicsSettings() { return graphics_; }
+    AudioSettings& GetAudioSettings() { return audio_; }
+    InputSettings& GetInputSettings() { return input_; }
+    SystemSettings& GetSystemSettings() { return system_; }
+    DisplaySettings& GetDisplaySettings() { return display_; }
+    NetworkSettings& GetNetworkSettings() { return network_; }
+
+    const GraphicsSettings& GetGraphicsSettings() const { return graphics_; }
+    const AudioSettings& GetAudioSettings() const { return audio_; }
+    const InputSettings& GetInputSettings() const { return input_; }
+    const SystemSettings& GetSystemSettings() const { return system_; }
+    const DisplaySettings& GetDisplaySettings() const { return display_; }
+    const NetworkSettings& GetNetworkSettings() const { return network_; }
+
+    bool GetGameSettings(const std::string& title_id, GameSpecificSettings& settings) const;
+    bool SetGameSettings(const std::string& title_id, const GameSpecificSettings& settings);
+
+    void ApplyPerformanceProfile(PerformanceProfile profile);
+    void ApplyThermalProfile(ThermalMode mode);
+    void OptimizeForBattery();
+    void OptimizeForPerformance();
+    void AutoDetectOptimalSettings();
+
+    std::string ToJson() const;
+    bool FromJson(const std::string& json_string);
+    std::string GetSettingsSummary() const;
+    bool HasUnsavedChanges() const { return has_unsaved_changes_; }
+
+    using SettingsChangedCallback = std::function<void(const std::string& setting_name)>;
+    void RegisterSettingsCallback(const std::string& setting_name, SettingsChangedCallback callback);
+    void UnregisterSettingsCallback(const std::string& setting_name);
 
 private:
-    void LoadSettings();
-    void SaveSettings();
-    void CreateDefaultSettings();
-    void ProcessSettingsValue(const std::string& section, const std::string& key, const std::string& value);
-    std::string GetSettingsPath();
+    void InitializeDefaults();
+    void NotifyCallbacks(const std::string& setting_name);
 
-    InterfaceSettings interface_settings_;
-    PerformanceSettings performance_settings_;
-    ControlSettings control_settings_;
-    GraphicsSettings graphics_settings_;
-    AudioSettings audio_settings_;
-    StorageSettings storage_settings_;
-    NetworkSettings network_settings_;
-    DebugSettings debug_settings_;
+    GraphicsSettings graphics_;
+    AudioSettings audio_;
+    InputSettings input_;
+    SystemSettings system_;
+    DisplaySettings display_;
+    NetworkSettings network_;
 
-    std::string settings_path_;
+    std::unordered_map<std::string, GameSpecificSettings> game_settings_;
+    std::unordered_map<std::string, std::string> profiles_;
+    std::string current_profile_ = "default";
+
+    std::unordered_map<std::string, std::vector<SettingsChangedCallback>> callbacks_;
+
+    bool has_unsaved_changes_ = false;
+    std::string config_file_path_;
+    bool is_initialized_ = false;
+
+    uint64_t last_optimization_time_ = 0;
+    int optimization_count_ = 0;
 };
 
-} 
+} // namespace xanite
 
-#endif 
+#endif // XANITE_ANDROID_SETTINGS_H

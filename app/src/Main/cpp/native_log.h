@@ -52,7 +52,7 @@ private:
     };
 
     static constexpr size_t MAX_LOG_ENTRIES = 10000;
-    static constexpr size_t MAX_LOG_BUFFER = 1024 * 1024; 
+    static constexpr size_t MAX_LOG_BUFFER = 1024 * 1024; // 1MB
     static constexpr size_t MAX_LOG_LINE = 4096;
 
     LogLevel log_level_;
@@ -62,6 +62,6 @@ private:
     mutable std::mutex log_mutex_;
 };
 
-} 
+} // namespace xanite
 
-#endif 
+#endif // NATIVE_LOG_H

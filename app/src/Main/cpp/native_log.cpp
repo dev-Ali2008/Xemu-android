@@ -11,6 +11,7 @@
 
 namespace xanite {
 
+// Global log instance
 static NativeLog* g_native_log = nullptr;
 static std::mutex g_log_mutex;
 
@@ -55,33 +56,33 @@ void NativeLog::Log(LogLevel level, const char* tag, const char* format, ...) {
     char message_buffer[MAX_LOG_LINE];
     va_list args;
     
-    
+    // Format the message
     va_start(args, format);
     vsnprintf(message_buffer, sizeof(message_buffer), format, args);
     va_end(args);
     
-    
+    // Get current time
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         now.time_since_epoch()) % 1000;
     
-    
+    // Format timestamp
     char timestamp[32];
     std::strftime(timestamp, sizeof(timestamp), "%H:%M:%S", std::localtime(&time_t));
     
-    
+    // Create full log entry
     char full_message[MAX_LOG_LINE + 64];
     snprintf(full_message, sizeof(full_message), "[%s.%03lld] %s: %s", 
              timestamp, static_cast<long long>(ms.count()), tag, message_buffer);
     
-    
+    // Send to Android log
     SendToAndroidLog(level, tag, full_message);
     
-    
+    // Add to buffer
     AddToBuffer(full_message);
     
-    
+    // Call callback if set
     if (log_callback_) {
         log_callback_(level, full_message);
     }
@@ -117,7 +118,7 @@ void NativeLog::SendToAndroidLog(LogLevel level, const char* tag, const char* me
 void NativeLog::AddToBuffer(const char* message) {
     std::lock_guard<std::mutex> lock(log_mutex_);
     
-    
+    // Add to circular buffer
     if (log_entries_.size() >= MAX_LOG_ENTRIES) {
         log_entries_.pop_front();
     }
@@ -128,11 +129,11 @@ void NativeLog::AddToBuffer(const char* message) {
     
     log_entries_.push_back(entry);
     
-    
+    // Also add to continuous buffer for file output
     log_buffer_ += message;
     log_buffer_ += "\n";
     
-    
+    // Trim buffer if too large
     if (log_buffer_.size() > MAX_LOG_BUFFER) {
         size_t excess = log_buffer_.size() - MAX_LOG_BUFFER;
         size_t newline_pos = log_buffer_.find('\n', excess);
@@ -170,7 +171,7 @@ bool NativeLog::SaveToFile(const std::string& filename) {
     
     std::string actual_filename = filename;
     if (actual_filename.empty()) {
-        
+        // Generate default filename with timestamp
         auto now = std::chrono::system_clock::now();
         auto time_t = std::chrono::system_clock::to_time_t(now);
         char time_str[64];
@@ -183,13 +184,13 @@ bool NativeLog::SaveToFile(const std::string& filename) {
         return false;
     }
     
-    
+    // Write log header
     fprintf(file, "=== Xanite Emulator Log ===\n");
     fprintf(file, "Generated: %s\n", GetCurrentTimestamp().c_str());
     fprintf(file, "Log Level: %s\n", LogLevelToString(log_level_));
     fprintf(file, "===========================\n\n");
     
-    
+    // Write log entries
     if (fwrite(log_buffer_.c_str(), 1, log_buffer_.size(), file) != log_buffer_.size()) {
         fclose(file);
         return false;
@@ -223,6 +224,7 @@ const char* NativeLog::LogLevelToString(LogLevel level) const {
     }
 }
 
+// C-style interface for JNI
 extern "C" {
 
 JNIEXPORT void JNICALL
@@ -255,8 +257,9 @@ Java_com_xanite_emulator_NativeLogger_clearLogs(JNIEnv* env, jclass clazz) {
     NativeLog::GetInstance()->ClearLogBuffer();
 }
 
-} 
+} // extern "C"
 
+// Integration with Xenia's logging system
 namespace xe {
 namespace internal {
 
@@ -265,12 +268,12 @@ void AndroidLogOutput(LogLevel level, const char* file_path, uint32_t line_numbe
     char message_buffer[1024];
     va_list args;
     
-    
+    // Format the message
     va_start(args, format);
     vsnprintf(message_buffer, sizeof(message_buffer), format, args);
     va_end(args);
     
-    
+    // Extract filename from path
     const char* filename = strrchr(file_path, '/');
     if (filename) {
         filename++;
@@ -278,7 +281,7 @@ void AndroidLogOutput(LogLevel level, const char* file_path, uint32_t line_numbe
         filename = file_path;
     }
     
-    
+    // Create formatted log message
     char formatted_message[2048];
     if (level == LogLevel::LOG_ERROR) {
         snprintf(formatted_message, sizeof(formatted_message), 
@@ -287,7 +290,7 @@ void AndroidLogOutput(LogLevel level, const char* file_path, uint32_t line_numbe
         snprintf(formatted_message, sizeof(formatted_message), "%s", message_buffer);
     }
     
-    
+    // Convert Xenia log level to Android log level
     LogLevel android_level;
     switch (level) {
         case LogLevel::LOG_ERROR:
@@ -304,9 +307,11 @@ void AndroidLogOutput(LogLevel level, const char* file_path, uint32_t line_numbe
             break;
     }
     
-    
+    // Send to native log
     NativeLog::GetInstance()->Log(android_level, "Xenia", "%s", formatted_message);
-      }
-    } 
-  } 
-} 
+}
+
+} // namespace internal
+} // namespace xe
+
+} // namespace xanite
