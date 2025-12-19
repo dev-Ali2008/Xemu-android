@@ -49,10 +49,6 @@ For Xbox 360:
 
 If you want to contribute as a developer, please contact us in discord
 
-## Credits
-Developed by @FreePalestine1970,@Yebot32 and other developers on Telegram and discord.  
-Special thanks to all Xanite supporters.
-
 ## DISCLAIMER !
 Xanite is an open-source project not affiliated with Microsoft, Xemu, or Xenia. It is intended for educational purposes and, We are porting.  
 
