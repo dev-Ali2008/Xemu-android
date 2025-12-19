@@ -5,11 +5,11 @@
 </p>
 
 <h1 align="center"> Xanite -
- Xbox 360 emulator </h1>
+ Xbox 360 emulator Android </h1>
 
-Xanite is a "proof of concept" emulator. 
+Xanite is a "proof of concept" emulator
 
-This project emulates the Xbox 360 console on Android, supporting games in iso formats.
+This project is port from xenia Eden the emulator Xbox 360 console supporting games iso - xex formats
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
@@ -17,26 +17,13 @@ Automatically identifies your device's hardware (GPU, RAM) and optimizes setting
 - Performance Scaling:  
 you can manually adjust the resolution and performance in settings for experiment or low end devices
 
-## System Requirements
-
-### For Xbox 360
-- Processors:
-
-  - Snapdragon 855 or better
-  - Exynos 2200 or better
-  - Dimensity 8300 or better
-
-- RAM:
-  - 8 GB minimum
-  - 12+ GB recommended
-
-### Graphics:
-- (opengl coming soon)
+### Graphics
 - Vulkan 1.1
-
+- need snapdragon
+  
 ### OS Requirements:
-- Android 10+ (no root)
-- Android 9 and below not supported
+- Android 10+
+- Android 9 not supported
 
 ## How to Use
 
@@ -50,7 +37,7 @@ For Xbox 360:
 If you want to contribute as a developer, please contact us in discord
 
 ## DISCLAIMER !
-Xanite is an open-source project not affiliated with Microsoft, Xemu, or Xenia. It is intended for educational purposes and, We are porting.  
+Xanite is an open-source project not affiliated with ( Microsoft ) Xenia edge open source It is intended for educational purposes and, We are porting.  
 
 We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator itself is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
 
