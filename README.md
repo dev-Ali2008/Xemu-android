@@ -1,15 +1,15 @@
 <p align="center">
-    <a href="https://github.com/dev-Ali2008/xanite/blob/88f4853f02509490523af17acfabc9ce745489c5/360.jpg">
-        <img height="150px" src="https://github.com/dev-Ali2008/xanite/blob/88f4853f02509490523af17acfabc9ce745489c5/360.jpg" />
+    <a href="https://github.com/dev-Ali2008/xanite/blob/88f4853f02509490523af17acfabc9ce745489c5/OG.jpg">
+        <img height="150px" src="https://github.com/dev-Ali2008/xanite/blob/88f4853f02509490523af17acfabc9ce745489c5/OG.jpg" />
     </a>
 </p>
 
-<h1 align="center"> Xanite -
- Xbox 360 emulator Android </h1>
+<h1 align="center"> XaniteOG -
+ Xbox original emulator Android </h1>
 
-Xanite is a "proof of concept" emulator
+xaniteOG is a "proof of concept" emulator
 
-This project is port from xenia Eden the emulator Xbox 360 console supporting games iso - xex formats
+This project is native **from From scratch ** the emulator Xbox original console supporting games xbe - iso formats
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
@@ -17,27 +17,32 @@ Automatically identifies your device's hardware (GPU, RAM) and optimizes setting
 - Performance Scaling:  
 you can manually adjust the resolution and performance in settings for experiment or low end devices
 
-### Graphics
-- Vulkan 1.1
-- need snapdragon
-  
-### OS Requirements:
-- Android 10+
-- Android 9 not supported
+### Text description
+This app is not a full-speed Xbox original emulator. It is built with performance and platform limitations in mind, and is best suited for:
 
-## How to Use
+- Small Xbox original titles
 
-For Xbox 360:
-   - Requires Xbox 360 system files from your console
+- display Canvas CPU 
 
-   - Games in iso format from your personal collection
+- 2D or low-complexity games
+
+- Simple graphics and textures
+
+**Not Supported*
+
+-Games with complex 3D scenes or heavy textures
+
+-High-performance or graphically intensive Xbox original titles
+
+Performance may be slow depending on the game, device, and settings. Compatibility varies, and many games may not run correctly or at all.
+
 
 ## Contributing
 
 If you want to contribute as a developer, please contact us in discord
 
 ## DISCLAIMER !
-Xanite is an open-source project not affiliated with ( Microsoft ) Xenia edge open source It is intended for educational purposes and, We are porting.  
+xaniteOG is an open-source project not affiliated with ( Microsoft ) It is intended for educational purposes and, We are porting.  
 
 We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator itself is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
 
