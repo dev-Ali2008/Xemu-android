@@ -9,7 +9,7 @@
 
 xaniteOG is a "proof of concept" emulator
 
-This project is native **from From scratch ** the emulator Xbox original console supporting games xbe - iso formats
+This project is native **From scratch** the emulator Xbox original console supporting games xbe - iso formats
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
