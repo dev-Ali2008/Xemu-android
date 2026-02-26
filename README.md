@@ -9,7 +9,7 @@
 
 xaniteOG is a "proof of concept" emulator
 
-This project was developed with the help of Xemu and X1 Box, building upon their foundations rather than being fully native from scratch. It supports Xbox Original games in XISO format only.
+This project was developed with the help of Xemu, building upon their foundations rather than being fully native from scratch. It supports Xbox Original games in XISO format only.
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
