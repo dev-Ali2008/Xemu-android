@@ -20,31 +20,26 @@ you can manually adjust the resolution and performance in settings for experimen
 ### Text description
 This app is not a full-speed Xbox original emulator. It is built with performance and platform limitations in mind, and is best suited for:
 
-- Small Xbox original titles
+## Device Requirements
+Android 9.0+
+64-bit ARM device (arm64-v8a)
+Vulkan-capable GPU/device
+Recommended: 6 GB RAM or higher for better stability and performance
 
-- display Canvas CPU 
-
-- 2D or low-complexity games
-
-- Simple graphics and textures
-
-**Not Supported*
-
--Games with complex 3D scenes or heavy textures
-
--High-performance or graphically intensive Xbox original titles
+-
 
 Performance may be slow depending on the game, device, and settings. Compatibility varies, and many games may not run correctly or at all.
 
+-
 
 ## Contributing
 
 If you want to contribute as a developer, please contact us in discord
 
 ## DISCLAIMER !
-xaniteOG is an open-source project not affiliated with ( Microsoft ) It is intended for educational purposes and, We are porting.  
+xaniteOG is an open-source project not affiliated with ( Microsoft ) It is intended for ed ucational purposes and, We are porting.  
 
-We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator itself is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
+We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator it self is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
 
 
  
