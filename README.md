@@ -9,7 +9,7 @@
 
 xaniteOG is a "proof of concept" emulator
 
-This project was developed with the help of Xemu, building upon its foundation. It supports Xbox Original games in XISO format only.
+Xanite is an Android-focused Xbox Original emulator that runs games in XISO format only, with ideas and inspiration drawn from Xemu and X1 Box.
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
@@ -39,9 +39,9 @@ stability and performance
 If you want to contribute as a developer, please contact us in discord
 
 ## DISCLAIMER !
-xaniteOG is an open-source project not affiliated with ( Microsoft ) It is intended for ed ucational purposes and, We are porting.  
+XaniteOG is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
 
-We do not condone piracy. BIOS files and game ROMs should be legally owned. While the emulator it self is legal, possessing illegal copies of games or BIOS files is not. Be cautious online.
+We do not condone piracy. BIOS files and game backups must be legally owned. While emulator software itself is legal, downloading or distributing copyrighted BIOS files or games without ownership is illegal. Please be responsible and cautious online.
 
 
  
