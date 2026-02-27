@@ -22,9 +22,14 @@ This app is not a full-speed Xbox original emulator. It is built with performanc
 
 ## Device Requirements
 Android 9.0+
+
 64-bit ARM device (arm64-v8a)
+
 Vulkan-capable GPU/device
-Recommended: 6 GB RAM or higher for better stability and performance
+
+Recommended: 6 GB RAM or higher for better 
+
+stability and performance
 
 - Performance may be slow depending on the game, device, and settings. Compatibility varies, and many games may not run correctly or at all.
 
