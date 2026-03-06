@@ -1,0 +1,32 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    plugins {
+        id("com.android.application") version "8.13.0"
+        id("org.jetbrains.kotlin.android") version "2.0.0"
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "Xanite"
+include(":app")
+
+def tempDirPath = "/data/data/com.tom.rv2ide/files/usr/tmp"
+def tempDir = file(tempDirPath)
+if (!tempDir.exists()) {
+    tempDir.mkdirs()
+    println "Created temp directory: ${tempDir.absolutePath}"
+}
+
+System.setProperty("java.io.tmpdir", tempDirPath)
+println "Java temp directory set to: ${System.getProperty('java.io.tmpdir')}"
