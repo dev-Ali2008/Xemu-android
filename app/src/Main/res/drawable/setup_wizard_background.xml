@@ -1,0 +1,7 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+  <gradient
+    android:angle="135"
+    android:startColor="@color/xemu_black"
+    android:centerColor="@color/xemu_surface"
+    android:endColor="@color/xemu_surface_variant" />
+</shape>

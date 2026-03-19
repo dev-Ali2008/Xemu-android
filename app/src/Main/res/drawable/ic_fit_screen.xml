@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/xemu_text_primary"
+        android:pathData="M17,4 L20,4 L20,7 L22,7 L22,2 L17,2 L17,4 Z M22,17 L22,22 L17,22 L17,20 L20,20 L20,17 L22,17 Z M2,17 L2,20 L5,20 L5,22 L2,22 L2,17 Z M2,2 L2,7 L4,7 L4,4 L7,4 L7,2 L2,2 Z M10,6 L14,6 L14,8 L10,8 L10,6 Z M6,10 L8,10 L8,14 L6,14 L6,10 Z M16,10 L18,10 L18,14 L16,14 L16,10 Z M10,16 L14,16 L14,18 L10,18 L10,16 Z"/>
+</vector>
