@@ -1,1 +1,1 @@
-Placeholder file for mipmap-anydpi-v26
+Placeholder file for mipmap
