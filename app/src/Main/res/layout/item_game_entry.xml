@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_height="wrap_content"
+     android:layout_width="match_parent"
+     android:layout_marginHorizontal="16dp"
+     app:cardElevation="0dp"
+     app:strokeWidth="0dp"
+     app:cardBackgroundColor="@android:color/transparent"
+     android:layout_marginTop="6dp">
+
+    <FrameLayout
+         android:layout_height="90dp"
+         android:layout_width="match_parent">
+
+        <ImageView
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:src="@drawable/background_games"
+             android:scaleType="centerCrop"
+             android:scaleX="1.40"
+             android:scaleY="1.40" />
+
+        <LinearLayout
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:gravity="center_vertical"
+             android:padding="10dp"
+             android:orientation="horizontal">
+
+            <ImageView
+                 android:layout_height="34dp"
+                 android:layout_width="34dp"
+                 android:src="@drawable/place_holder" />
+
+            <LinearLayout
+                 android:layout_height="wrap_content"
+                 android:layout_width="0dp"
+                 android:orientation="vertical"
+                 android:layout_marginStart="8dp"
+                 android:layout_weight="1">
+
+                <TextView
+                     android:layout_height="wrap_content"
+                     android:layout_width="match_parent"
+                     android:textSize="16sp"
+                     android:textColor="@android:color/white"
+                     android:maxLines="1"
+                     android:id="@+id/game_name_text"
+                     android:textStyle="bold" />
+
+                <TextView
+                     android:layout_height="wrap_content"
+                     android:layout_width="match_parent"
+                     android:textSize="12sp"
+                     android:textColor="@android:color/white"
+                     android:id="@+id/game_size_text" />
+
+                <TextView
+                     android:layout_height="wrap_content"
+                     android:layout_width="match_parent"
+                     android:textSize="12sp"
+                     android:textColor="@android:color/white"
+                     android:maxLines="1"
+                     android:id="@+id/game_path_text" />
+
+            </LinearLayout>
+
+            <ImageView
+                 android:layout_height="22dp"
+                 android:layout_width="22dp"
+                 android:src="@android:drawable/ic_media_play"
+                 android:tint="@color/xemu_green" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</com.google.android.material.card.MaterialCardView>

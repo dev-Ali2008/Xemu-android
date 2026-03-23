@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_xbox"
+    android:id="@+id/setup_root">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:padding="20dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!-- Progress Indicator -->
+            <TextView
+                android:id="@+id/progress_indicator"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/circle_green_background"
+                android:gravity="center"
+                android:text="1/4"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:elevation="4dp"/>
+
+            <!-- Welcome Section -->
+            <LinearLayout
+                android:id="@+id/welcome_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="visible">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_marginBottom="20dp"
+                    android:src="@drawable/ic_launcher_foreground"
+                    android:background="@drawable/circle_green_background"
+                    android:padding="25dp"
+                    android:elevation="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome to"
+                    android:textSize="20sp"
+                    android:textColor="#B0BEC5"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="XaniteOG"
+                    android:textSize="42sp"
+                    android:textColor="#4CAF50"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="Let's set up your original Xbox emulator in a few simple steps"
+                    android:textSize="16sp"
+                    android:textColor="#B0BEC5"
+                    android:gravity="center"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="10dp"
+                    android:lineSpacingExtra="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Main Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/setup_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardBackgroundColor="#1E2A3A"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#2A3A4A"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <!-- Pages Container -->
+                    <FrameLayout
+                        android:id="@+id/setup_pages_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp">
+
+                        <!-- Page 1: Welcome -->
+                        <LinearLayout
+                            android:id="@+id/page_welcome"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal"
+                            android:visibility="visible">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ready to begin?"
+                                android:textSize="24sp"
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold"
+                                android:layout_gravity="center_horizontal"/>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="You need the original Xbox BIOS files (MCPX, Flash) and a HDD image to get started."
+                                android:textSize="16sp"
+                                android:textColor="#B0BEC5"
+                                android:gravity="center"
+                                android:layout_marginTop="16dp"
+                                android:layout_marginBottom="8dp"
+                                android:lineSpacingExtra="4dp"/>
+
+                        </LinearLayout>
+
+                        <!-- Page 2: BIOS (Unified - MCPX + Flash + HDD) -->
+                        <LinearLayout
+                            android:id="@+id/page_bios"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/bios_icon"
+                                android:layout_width="70dp"
+                                android:layout_height="70dp"
+                                android:layout_marginBottom="12dp"
+                                android:src="@drawable/ic_bios"
+                                android:tint="#4CAF50"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="BIOS Files"
+                                android:textSize="22sp"
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Select all 3 required files: MCPX ROM, BIOS (Flash), and HDD image"
+                                android:textSize="14sp"
+                                android:textColor="#B0BEC5"
+                                android:gravity="center"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="16dp"/>
+
+                            <!-- MCPX Section -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="MCPX ROM"
+                                android:textColor="#4CAF50"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:id="@+id/mcpx_path_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="#2A3A4A"
+                                android:drawableStart="@drawable/ic_archive"
+                                android:drawablePadding="8dp"
+                                android:ellipsize="middle"
+                                android:gravity="center_vertical"
+                                android:maxLines="1"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:text="📁 Tap to select MCPX file"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_pick_mcpx"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="6dp"
+                                android:layout_marginBottom="16dp"
+                                android:text="Select MCPX File"
+                                android:textAllCaps="false"
+                                app:cornerRadius="22dp"
+                                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+                            <!-- Flash Section -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="BIOS (Flash)"
+                                android:textColor="#4CAF50"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:id="@+id/flash_path_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="#2A3A4A"
+                                android:drawableStart="@drawable/ic_archive"
+                                android:drawablePadding="8dp"
+                                android:ellipsize="middle"
+                                android:gravity="center_vertical"
+                                android:maxLines="1"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:text="📁 Tap to select BIOS file"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_pick_flash"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="6dp"
+                                android:layout_marginBottom="16dp"
+                                android:text="Select BIOS File"
+                                android:textAllCaps="false"
+                                app:cornerRadius="22dp"
+                                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+                            <!-- HDD Section -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="HDD Image"
+                                android:textColor="#4CAF50"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="4dp"/>
+
+                            <TextView
+                                android:id="@+id/hdd_path_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="#2A3A4A"
+                                android:drawableStart="@drawable/ic_archive"
+                                android:drawablePadding="8dp"
+                                android:ellipsize="middle"
+                                android:gravity="center_vertical"
+                                android:maxLines="1"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:text="📁 Tap to select HDD image"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_pick_hdd"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="6dp"
+                                android:text="Select HDD Image"
+                                android:textAllCaps="false"
+                                app:cornerRadius="22dp"
+                                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+                        </LinearLayout>
+
+                        <!-- Page 3: Games Folder -->
+                        <LinearLayout
+                            android:id="@+id/page_games"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/games_icon"
+                                android:layout_width="70dp"
+                                android:layout_height="70dp"
+                                android:layout_marginBottom="12dp"
+                                android:src="@drawable/ic_games"
+                                android:tint="#4CAF50"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Games Folder"
+                                android:textSize="22sp"
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Select the folder where your Xbox games are stored"
+                                android:textSize="14sp"
+                                android:textColor="#B0BEC5"
+                                android:gravity="center"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="16dp"/>
+
+                            <TextView
+                                android:id="@+id/games_path_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                android:background="#2A3A4A"
+                                android:drawableStart="@drawable/ic_folder"
+                                android:drawablePadding="8dp"
+                                android:ellipsize="middle"
+                                android:gravity="center_vertical"
+                                android:maxLines="1"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:text="📁 Tap to select games folder"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_pick_games"
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:layout_marginTop="12dp"
+                                android:text="Select Games Folder"
+                                android:textAllCaps="false"
+                                app:cornerRadius="26dp"
+                                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+                        </LinearLayout>
+
+                        <!-- Page 4: Complete -->
+                        <LinearLayout
+                            android:id="@+id/page_complete"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/success_icon"
+                                android:layout_width="100dp"
+                                android:layout_height="100dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_success"
+                                android:tint="#4CAF50"
+                                android:layout_gravity="center_horizontal"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="All Set!"
+                                android:textSize="28sp"
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Your Xbox emulator is ready to go. Click Finish to start playing!"
+                                android:textSize="14sp"
+                                android:textColor="#B0BEC5"
+                                android:gravity="center"
+                                android:layout_marginTop="12dp"
+                                android:layout_marginBottom="20dp"
+                                android:lineSpacingExtra="4dp"/>
+
+                            <!-- Summary Section -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#2A3A4A"
+                                android:orientation="vertical"
+                                android:padding="16dp"
+                                android:layout_marginTop="8dp"
+                                android:elevation="2dp">
+
+                                <TextView
+                                    android:id="@+id/summary_mcpx"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="12dp"
+                                    android:drawableStart="@drawable/ic_archive"
+                                    android:drawablePadding="8dp"
+                                    android:text="○ MCPX: Not set"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"/>
+
+                                <TextView
+                                    android:id="@+id/summary_flash"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="12dp"
+                                    android:drawableStart="@drawable/ic_archive"
+                                    android:drawablePadding="8dp"
+                                    android:text="○ BIOS: Not set"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"/>
+
+                                <TextView
+                                    android:id="@+id/summary_hdd"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="12dp"
+                                    android:drawableStart="@drawable/ic_archive"
+                                    android:drawablePadding="8dp"
+                                    android:text="○ HDD: Not set"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"/>
+
+                                <TextView
+                                    android:id="@+id/summary_games"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:drawableStart="@drawable/ic_folder"
+                                    android:drawablePadding="8dp"
+                                    android:text="○ Games: Not set"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="14sp"/>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </FrameLayout>
+
+                    <!-- Navigation Buttons -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_wizard_back"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="4dp"
+                            android:text="Back"
+                            android:textAllCaps="false"
+                            android:visibility="gone"
+                            app:cornerRadius="24dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_wizard_next"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="4dp"
+                            android:text="Start Setup →"
+                            android:textAllCaps="false"
+                            app:cornerRadius="24dp"
+                            style="@style/Widget.Material3.Button"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_wizard_finish"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="Finish"
+                            android:textAllCaps="false"
+                            android:visibility="gone"
+                            app:cornerRadius="24dp"
+                            style="@style/Widget.Material3.Button"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

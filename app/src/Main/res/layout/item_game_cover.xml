@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_height="wrap_content"
+     android:layout_width="match_parent"
+     app:rippleColor="@color/xemu_green"
+     android:clickable="true"
+     app:strokeColor="@color/xemu_outline"
+     app:cardElevation="0dp"
+     app:strokeWidth="1dp"
+     app:cardBackgroundColor="@color/xemu_surface_variant"
+     app:cardCornerRadius="20dp"
+     android:focusable="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:padding="10dp">
+
+        <ImageView
+             android:layout_height="0dp"
+             android:layout_width="0dp"
+             android:contentDescription="@string/library_open_game"
+             android:scaleType="fitCenter"
+             android:src="@android:drawable/ic_menu_report_image"
+             android:background="@drawable/setup_wizard_path_background"
+             app:layout_constraintTop_toTopOf="parent"
+             app:layout_constraintDimensionRatio="2:3"
+             app:layout_constraintStart_toStartOf="parent"
+             app:layout_constraintEnd_toEndOf="parent"
+             android:id="@+id/game_cover_image" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="0dp"
+             android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+             android:ellipsize="end"
+             app:layout_constraintStart_toStartOf="parent"
+             app:layout_constraintEnd_toEndOf="parent"
+             android:layout_marginTop="8dp"
+             android:maxLines="2"
+             app:layout_constraintTop_toBottomOf="@id/game_cover_image"
+             android:id="@+id/game_cover_name_text" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="0dp"
+             android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+             android:ellipsize="end"
+             app:layout_constraintStart_toStartOf="parent"
+             android:textColor="@color/xemu_text_muted"
+             app:layout_constraintEnd_toEndOf="parent"
+             android:layout_marginTop="2dp"
+             app:layout_constraintBottom_toBottomOf="parent"
+             android:maxLines="1"
+             app:layout_constraintTop_toBottomOf="@id/game_cover_name_text"
+             android:id="@+id/game_cover_size_text" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

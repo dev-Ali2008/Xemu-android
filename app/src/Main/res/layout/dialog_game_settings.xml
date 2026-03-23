@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_widescreen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Widescreen (16:9)"
+        android:checked="true" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_vsync"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="VSync"
+        android:checked="true" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_audio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Audio Enabled"
+        android:checked="true" />
+
+</LinearLayout>
