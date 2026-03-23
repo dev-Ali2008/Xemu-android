@@ -1,1 +1,1 @@
-Placeholder file for mipmap-hdpi
+Placeholder file for mipmap-xhdpi
