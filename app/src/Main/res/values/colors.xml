@@ -1,0 +1,30 @@
+<resources>
+
+    <color name="colorPrimary">#1E2A3A</color>
+    <color name="colorPrimaryDark">#2A3A4A</color>
+    <color name="colorAccent">#1A1F1E</color>
+
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <color name="xemu_background">#121212</color>
+
+    <color name="xemu_surface">#1E2A3A</color>
+    <color name="xemu_surface_variant">#141914</color>
+    
+    <color name="xemu_text">#E8F5E9</color>
+    <color name="xemu_text_primary">#FFFFFF</color>
+    <color name="xemu_text_muted">#B0BEC5</color>
+    <color name="xemu_text_disabled">#80FFFFFF</color>
+
+    <color name="xemu_green">#B0BEC5</color>
+    <color name="xemu_green_dark">#2A3A4A</color>
+
+    <color name="xemu_outline">#263126</color>
+    <color name="xemu_outline_variant">#2A3A4A</color>
+
+    <color name="xemu_black">#080A08</color>
+
+    <color name="setup_background">#0A0F1E</color>
+
+</resources>
