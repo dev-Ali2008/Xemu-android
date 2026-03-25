@@ -1,0 +1,285 @@
+<resources>
+  <string name="app_name">XaniteOG</string>
+  <string name="app_logo">App Logo</string>
+  
+  <string name="setup_title">Welcome to XaniteOG </string>
+  <string name="setup_subtitle">Locate your original Xbox files.</string>
+  <string name="setup_not_set">Not set</string>
+  <string name="setup_back">Back</string>
+  <string name="setup_next">Next</string>
+  <string name="setup_finish">Finish</string>
+  <string name="setup_skip">Skip Setup</string>
+  <string name="settings_eeprom_loading">Loading EEPROM...</string>
+
+<string name="settings_section_graphics">Graphics</string>
+<string name="settings_vulkan_driver">Vulkan Driver</string>
+<string name="settings_vulkan_driver_none">No custom driver selected (using system default)</string>
+<string name="settings_vulkan_driver_select">Select Driver</string>
+<string name="settings_vulkan_driver_clear">Clear</string>
+<string name="settings_vulkan_driver_hint">Select a custom Vulkan driver (.so file) for improved performance on Snapdragon devices</string>
+<string name="settings_vulkan_driver_selected">Vulkan driver selected successfully</string>
+<string name="settings_vulkan_driver_cleared">Vulkan driver cleared, using system default</string>
+<string name="settings_vulkan_driver_selected_format">Selected: %s</string>
+<string name="settings_show_fps_overlay">Show FPS Overlay</string>
+
+<string name="settings_shader_precision">Shader Precision</string>
+<string name="settings_shader_hard">Hard</string>
+<string name="settings_shader_normal">Normal</string>
+<string name="settings_shader_low">Low</string>
+
+<string name="eeprom_refresh_auto">Auto</string>
+<string name="eeprom_refresh_50hz">50Hz</string>
+<string name="eeprom_refresh_60hz">60Hz</string>
+
+    <string name="settings_language">Language</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">Arabic</string>
+    <string name="language_russian">Russian</string>
+    <string name="language_german">German</string>
+    <string name="language_portuguese">Português (Brasil)</string>
+
+    <string name="settings_bios_management">BIOS Management</string>
+    <string name="settings_mcpx">MCPX</string>
+    <string name="settings_bios">BIOS</string>
+    <string name="settings_hdd">HDD</string>
+    <string name="settings_mcpx_desc">MCPX Boot ROM</string>
+    <string name="settings_bios_desc">Flash BIOS</string>
+    <string name="settings_hdd_desc">Hard Disk Image</string>
+    <string name="settings_file_selected">✓ %s</string>
+    <string name="settings_file_not_selected">Not selected</string>
+    <string name="settings_invalid_file">Invalid file</string>
+
+    <string name="settings_gpu_drivers">GPU Drivers</string>
+    <string name="settings_languages">Languages</string>
+
+<string name="eeprom_aspect_auto">Auto</string>
+<string name="eeprom_aspect_4_3">4:3</string>
+<string name="eeprom_aspect_16_9">16:9</string>
+
+<string name="eeprom_resolution_auto">Auto</string>
+<string name="eeprom_resolution_480i">480i</string>
+<string name="eeprom_resolution_480p">480p</string>
+<string name="eeprom_resolution_720p">720p</string>
+<string name="eeprom_resolution_1080i">1080i</string>
+
+<string name="settings_eeprom_refresh_rate">Refresh Rate</string>
+<string name="settings_eeprom_aspect_ratio">Aspect Ratio</string>
+<string name="settings_eeprom_resolution">Resolution</string>
+
+<string name="settings_msaa">MSAA (Anti-aliasing)</string>
+<string name="settings_msaa_off">Off</string>
+
+<string name="settings_buffers">Buffer Controls</string>
+<string name="settings_buffers_hint">(OFF = better performance)</string>
+<string name="settings_write_color_buffer">Write Color Buffers</string>
+<string name="settings_write_depth_buffer">Write Depth Buffer</string>
+<string name="settings_read_color_buffer">Read Color Buffers</string>
+<string name="settings_read_depth_buffer">Read Depth Buffer</string>
+    <string name="library_info_button_desc">Game information</string>
+
+    <string name="library_set_xiso">Set XISO File</string>
+
+    <string name="library_info">Game Library Information</string>
+
+<string name="settings_section_network">Network Settings</string>
+<string name="settings_network_enable">Enable Network</string>
+<string name="settings_port_forwarding">Enable Port Forwarding (Xbox Live)</string>
+
+<!-- Drawer Menu -->
+<string name="drawer_settings">Settings</string>
+<string name="drawer_games_folder">Set (*.xiso) Directory </string>
+<string name="drawer_info">About</string>
+<string name="menu_button_desc">Menu</string>
+<!-- App Info -->
+<string name="app_info_message">XaniteOG - Original Xbox Emulator for Android\n\nVersion: 0.1 \n\nThis emulator allows you to play your favorite Original Xbox games on Android devices. For more information, visit our GitHub repository.</string>
+
+  <!-- Setup Steps -->
+  <string name="setup_step_mcpx">Step 1: MCPX ROM</string>
+  <string name="setup_step_flash">Step 2: BIOS / Flash ROM</string>
+  <string name="setup_step_hdd">Step 3: Hard Disk Image</string>
+  <string name="setup_step_disc">Step 4: Games Folder</string>
+  <string name="setup_step_complete">Setup Complete!</string>
+
+  <!-- MCPX -->
+  <string name="setup_mcpx_title">MCPX Boot ROM</string>
+  <string name="setup_mcpx_body">Choose the MCPX boot ROM file for your console.</string>
+  <string name="setup_pick_mcpx">Choose MCPX ROM</string>
+  <string name="setup_mcpx_value">MCPX ROM: %1$s</string>
+  
+  <!-- Flash/BIOS -->
+  <string name="setup_flash_title">Flash ROM (BIOS)</string>
+  <string name="setup_flash_body">Choose the flash ROM / BIOS image.</string>
+  <string name="setup_pick_flash">Choose Flash ROM</string>
+  <string name="setup_flash_value">Flash ROM: %1$s</string>
+
+  <string name="setup_hdd_title">Hard Disk</string>
+  <string name="setup_hdd_body">Choose your Xbox hard disk image.</string>
+  <string name="setup_pick_hdd">Choose Hard Disk</string>
+  <string name="setup_hdd_value">Hard Disk: %1$s</string>
+
+  <string name="setup_disc_title">Games Folder</string>
+  <string name="setup_disc_body">Pick your games folder using SAF. Xanite will scan it for playable images.</string>
+  <string name="setup_pick_disc">Choose Games Folder</string>
+  <string name="setup_disc_value">Games Folder: %1$s</string>
+
+  <string name="setup_complete">Setup Complete</string>
+  <string name="setup_complete_title">All Set!</string>
+  <string name="setup_complete_message">Your emulator is ready to use.\nClick Finish to continue.</string>
+
+  <string name="setup_skip_title">Skip Setup?</string>
+  <string name="setup_skip_message">You can complete the setup later from settings.\nSome features may not work correctly.</string>
+  <string name="setup_skip_confirm">Skip</string>
+
+  <string name="setup_exit_title">Exit Setup?</string>
+  <string name="setup_exit_message">Setup is not complete. Are you sure you want to exit?</string>
+  <string name="setup_exit_confirm">Exit</string>
+
+  <string name="setup_loading">Please wait...</string>
+
+  <string name="library_title">XaniteOG</string>
+  <string name="library_change_folder">Change Folder</string>
+  <string name="library_convert_iso">Convert ISO to XISO</string>
+  <string name="library_view_list">List</string>
+  <string name="library_view_cover_grid">Cover Grid</string>
+  <string name="library_box_art_lookup">Look up box art online</string>
+  <string name="library_folder_value">Folder: %1$s</string>
+  <string name="library_no_folder">No folder selected</string>
+  <string name="library_loading_games">Scanning games...</string>
+  <string name="library_converting_game">Converting %1$s...</string>
+  <string name="library_empty_games">No supported games found in this folder.</string>
+  <string name="library_convert_pick_title">Select ISO to convert</string>
+  <string name="library_convert_none">No .iso files found to convert.</string>
+  <string name="library_convert_confirm_title">Convert ISO</string>
+  <string name="library_convert_confirm_message">Create %1$s in the same folder?</string>
+  <string name="library_convert_overwrite_title">Replace existing file?</string>
+  <string name="library_convert_overwrite_message">%1$s already exists. Replace it?</string>
+  <string name="library_convert_action">Convert</string>
+  <string name="library_convert_busy">A conversion is already in progress.</string>
+  <string name="library_convert_unavailable">ISO converter native library is unavailable in this build.</string>
+  <string name="library_convert_success">Created %1$s</string>
+  <string name="library_convert_failed">Conversion failed: %1$s</string>
+  <string name="library_convert_write_permission">Games folder is read-only. Re-select it to grant write access.</string>
+  <string name="library_convert_create_output_failed">Failed to create output file in games folder.</string>
+  <string name="library_convert_copy_input_failed">Failed to copy ISO into converter workspace.</string>
+  <string name="library_convert_copy_output_failed">Failed to copy converted XISO back to games folder.</string>
+  <string name="library_convert_resolve_failed">Could not resolve destination folder for selected game.</string>
+  <string name="library_restart_failed">Unable to restart. The selected game is no longer accessible.</string>
+  <string name="library_game_size">Size: %1$s</string>
+  <string name="library_game_path">Path: %1$s</string>
+  
+  <string name="library_open_game">Open</string>
+  <string name="library_about_button_desc">About XaniteOG</string>
+  <string name="library_about_title">About XaniteOG</string>
+  <string name="library_about_message">XaniteOG is a community project based on xemu. Select a link below:</string>
+  <string name="library_about_open_failed">Unable to open link.</string>
+  <string name="library_about_link_source">Source Code (XaniteOG)</string>
+  <string name="library_about_link_privacy">Privacy Policy</string>
+  <string name="library_about_link_fork">Forked From (xemu)</string>
+  <string name="library_about_link_license">License (LICENSE)</string>
+  <string name="library_about_link_disclaimer">License Disclaimer (COPYING)</string>
+  <string name="library_about_url_source" translatable="false">https://xemu.app/</string>
+  <string name="library_about_url_privacy" translatable="false">https://github.com/xemu-project/xemu</string>
+  <string name="library_about_url_fork" translatable="false">https://github.com/xemu-project</string>
+  <string name="library_about_url_license" translatable="false">https://github.com/xemu-project/xemu/blob/master/LICENSE</string>
+  <string name="library_about_url_disclaimer" translatable="false">https://github.com/xemu-project/xemu/blob/master/COPYING</string>
+  <string name="library_settings">Settings</string>
+
+  <string name="settings_title">Settings</string>
+  <string name="settings_save">Save</string>
+  <string name="settings_section_display">Display</string>
+  <string name="settings_resolution_scale">Internal Resolution Scale</string>
+  <string name="settings_resolution_scale_1x">1x (Native 480p)</string>
+  <string name="settings_resolution_scale_2x">2x (960p)</string>
+  <string name="settings_resolution_scale_3x">3x (1440p)</string>
+  <string name="settings_section_performance">Performance</string>
+  <string name="settings_tcg_thread">CPU Threading Mode</string>
+  <string name="settings_tcg_thread_multi">Multi-thread</string>
+  <string name="settings_tcg_thread_single">Single-thread</string>
+  <string name="settings_hard_fpu">Hardware FPU</string>
+  <string name="settings_cache_shaders">Shader Cache</string>
+  <string name="settings_section_audio">Audio</string>
+  <string name="settings_use_dsp">Real-time DSP Processing</string>
+  <string name="settings_hrtf">HRTF (3D Audio)</string>
+  <string name="settings_saved">Settings saved</string>
+
+<string name="settings_graphics_api">Graphics API</string>
+<string name="settings_graphics_api_vulkan">Vulkan</string>
+<string name="settings_graphics_api_opengl">OpenGL</string>
+
+<string name="settings_filtering">Texture Filtering</string>
+<string name="settings_filtering_linear">Linear</string>
+<string name="settings_filtering_nearest">Nearest</string>
+
+<string name="settings_vsync">VSync</string>
+
+<string name="settings_display_mode">Display Mode</string>
+<string name="settings_display_mode_stretch">Stretch</string>
+<string name="settings_display_mode_4_3">4:3</string>
+<string name="settings_display_mode_16_9">16:9</string>
+
+<string name="settings_skip_boot_anim">Skip Boot Animation</string>
+
+<string name="settings_audio_driver">Audio Driver</string>
+<string name="settings_audio_driver_opensles">OpenSL ES</string>
+<string name="settings_audio_driver_aaudio">AAudio</string>
+<string name="settings_audio_driver_disabled">Disabled</string>
+
+<string name="settings_section_eeprom">EEPROM</string>
+<string name="settings_eeprom_language">System Language</string>
+<string name="settings_eeprom_video_standard">Video Standard</string>
+<string name="settings_eeprom_hint">These settings emulate the original Xbox EEPROM configuration.</string>
+
+<string name="frontend_launch_unresolved">Unable to launch emulator</string>
+
+<string name="settings_eeprom_language_english">English</string>
+<string name="settings_eeprom_language_japanese">Japanese</string>
+<string name="settings_eeprom_language_german">German</string>
+<string name="settings_eeprom_language_french">French</string>
+<string name="settings_eeprom_language_spanish">Spanish</string>
+<string name="settings_eeprom_language_italian">Italian</string>
+<string name="settings_eeprom_language_korean">Korean</string>
+<string name="settings_eeprom_language_chinese">Chinese</string>
+<string name="settings_eeprom_language_portuguese">Portuguese</string>
+<string name="frontend_launch_setup_required">Setup is required before launching the emulator</string>
+
+<string name="settings_eeprom_video_standard_ntsc_m">NTSC-M (USA)</string>
+<string name="settings_eeprom_video_standard_ntsc_j">NTSC-J (Japan)</string>
+<string name="settings_eeprom_video_standard_pal_i">PAL-I (Europe)</string>
+<string name="settings_eeprom_video_standard_pal_m">PAL-M (Brazil)</string>
+
+<string name="settings_eeprom_status_missing">EEPROM file missing</string>
+<string name="settings_eeprom_status_unknown">EEPROM status unknown</string>
+<string name="settings_eeprom_status_ready">EEPROM ready</string>
+<string name="settings_eeprom_status_invalid">EEPROM invalid</string>
+<string name="settings_eeprom_status_error">EEPROM error</string>
+
+<string name="settings_saved_eeprom_missing">Settings saved, but EEPROM missing</string>
+<string name="settings_saved_eeprom_failed">Failed to write EEPROM</string>
+<string name="settings_saved_with_eeprom">Settings and EEPROM saved</string>
+
+<string name="settings_redo_setup_wizard">Run Setup Wizard Again</string>
+
+<string name="settings_frame_rate_limit">Frame Rate Limit</string>
+<string name="settings_frame_rate_limit_30">30 FPS</string>
+<string name="settings_frame_rate_limit_60">60 FPS</string>
+
+<string name="settings_system_memory">System Memory</string>
+<string name="settings_system_memory_64">64 MB</string>
+<string name="settings_system_memory_128">128 MB</string>
+<string name="settings_system_memory_hint">Choose memory size for the emulator</string>
+
+<string name="settings_section_vulkan_driver">Gpu Driver</string>
+<string name="settings_vulkan_driver_browse">Browse</string>
+  
+  <string name="in_game_menu_title">Game Menu</string>
+  <string name="in_game_menu_resume">Resume</string>
+  <string name="in_game_menu_restart_game">Restart Game</string>
+  <string name="in_game_menu_show_touch_controls">Show Touch Controls</string>
+  <string name="in_game_menu_hide_touch_controls">Hide Touch Controls</string>
+  <string name="in_game_menu_exit_to_library">Exit to Game Library</string>
+  <string name="in_game_menu_quit_app">Quit App</string>
+  
+  <string name="language_picker_title">🌐 Select Language</string>
+  <string name="language_picker_restart">Restart</string>
+  <string name="language_picker_cancel">Cancel</string>
+</resources>
