@@ -8,7 +8,8 @@ set(CMAKE_OBJECT_PATH_MAX 180)
 include(FetchContent)
 include(ExternalProject)
 
-get_filename_component(REPO_ROOT "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
+# FIX 1: Navigate up three levels to reach the actual QEMU repository root
+get_filename_component(REPO_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
 find_program(PYTHON_EXECUTABLE python)
 if(NOT PYTHON_EXECUTABLE)
   message(FATAL_ERROR "python not found in PATH; required for QAPI/trace generation")
@@ -250,7 +251,8 @@ message(STATUS "NDK_BIN found: ${NDK_BIN}")
 message(STATUS "SYSROOT: ${SYSROOT}")
 
 set(GLIB_VERSION "2.66.8")
-set(GLIB_SOURCE_DIR "/storage/emulated/0/AndroidIDEProjects/Xanite/app/src/main/cpp/glib-2.66.8")
+# FIX 2: Use relative path instead of hardcoded absolute path for portability
+set(GLIB_SOURCE_DIR "${REPO_ROOT}/glib-${GLIB_VERSION}")
 set(GLIB_BUILD_DIR "${CMAKE_BINARY_DIR}/build/glib")
 set(GLIB_INSTALL_DIR "${CMAKE_BINARY_DIR}/install/glib")
 set(ICONV_STUB_DIR "${CMAKE_BINARY_DIR}/iconv-stub")
@@ -690,13 +692,10 @@ list(APPEND XEMU_CORE_SOURCES
   "${CMAKE_CURRENT_LIST_DIR}/xemu_settings_android.cc"
 )
 
-# --- QAPI/Trace generation ---
-set(QAPI_GEN_DIR "${CMAKE_BINARY_DIR}/qapi")
-file(MAKE_DIRECTORY "${QAPI_GEN_DIR}")
-
-## --- QAPI generation ---
+# FIX 3: Remove duplicate QAPI_GEN_DIR assignment and consolidate to single definition
 set(QAPI_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/qapi-gen")
 set(QAPI_SCHEMA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/qapi/qapi-schema.json")
+file(MAKE_DIRECTORY "${QAPI_GEN_DIR}")
 
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/qapi-gen.py"
@@ -793,7 +792,8 @@ if(XEMU_ENABLE_VULKAN)
   )
 endif()
 
-file(READ "/storage/emulated/0/AndroidIDEProjects/Xanite/app/src/main/cpp/QEMU_VERSION" QEMU_VERSION_STR)
+# FIX 4: Use REPO_ROOT instead of hardcoded absolute path for QEMU_VERSION file
+file(READ "${REPO_ROOT}/QEMU_VERSION" QEMU_VERSION_STR)
 string(STRIP "${QEMU_VERSION_STR}" QEMU_VERSION_STR)
 string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ "${QEMU_VERSION_STR}")
 set(QEMU_VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -998,61 +998,38 @@ find_library(vulkan-lib vulkan)
 find_library(zlib-lib z)
 
 if(XEMU_XISO_CONVERTER_BUILD_ENABLED)
-  add_library(xiso_converter SHARED
-    xiso_converter_jni.cpp
-  )
-
-  target_compile_definitions(xiso_converter PRIVATE ANDROID __ANDROID__)
-  target_compile_options(xiso_converter PRIVATE -fexceptions -frtti -g0
-    $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>:-UNDEBUG>
-  )
-
-  target_link_libraries(xiso_converter PRIVATE
-    xiso_converter_rs
-    ${log-lib}
-  )
+  target_link_libraries(xemu PRIVATE xiso_converter_rs)
 endif()
 
-if(TARGET SDL2::SDL2)
-  target_link_libraries(xemu PRIVATE SDL2::SDL2)
+if(XEMU_ENABLE_VULKAN)
+  target_link_libraries(xemu PRIVATE
+    volk_static
+    glslang::OSDependent
+    glslang::glslang
+    glslang::MachineIndependent
+    glslang::GenericCodeGen
+    glslang::SPIRV
+    spirv_reflect_static
+    vma
+  )
 endif()
 
 target_link_libraries(xemu PRIVATE
   xemu_core
-  iconv_stub
   glib-2.0
   gobject-2.0
   gio-2.0
   gmodule-2.0
   gthread-2.0
+  iconv_stub
+  tomlplusplus::tomlplusplus
   ${log-lib}
   ${android-lib}
   ${egl-lib}
   ${glesv3-lib}
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:${vulkan-lib}>
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:volk_static>
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:spirv_reflect_static>
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:glslang>
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:MachineIndependent>
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:GenericCodeGen>
-  $<$<BOOL:${XEMU_ENABLE_VULKAN}>:SPIRV>
   ${zlib-lib}
-  dl
 )
 
-set_target_properties(xemu PROPERTIES
-    POSITION_INDEPENDENT_CODE ON
-    CXX_VISIBILITY_PRESET "default"
-    VISIBILITY_INLINES_HIDDEN OFF
-)
-
-target_link_options(xemu PRIVATE 
-    -Wl,--export-dynamic
-    -Wl,--gc-sections
-)
-
-if(XEMU_ENABLE_VULKAN AND NOT vulkan-lib)
-    message(WARNING "Vulkan library not found! Vulkan renderer may not work.")
+if(XEMU_ENABLE_VULKAN)
+  target_link_libraries(xemu PRIVATE ${vulkan-lib})
 endif()
-
-message(STATUS "✅ CMake configuration completed successfully!")
