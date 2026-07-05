@@ -9,7 +9,7 @@
 
 xaniteOG is a "proof of concept" emulator
 
-Xanite is an Android-focused Xbox Original emulator that runs games in XISO format only, with ideas and inspiration drawn from Xemu and X1 Box.
+Xanite is an Android-focused Xbox Original emulator that runs games in XISO format only, with ideas and inspiration drawn from Xemu
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
