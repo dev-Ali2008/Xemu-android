@@ -1,6 +1,6 @@
 <p align="center">
-    <a href="https://github.com/dev-Ali2008/xanite/blob/1ed8509de3f209fb0162d43c4d168f75c71ee7d4/OG.jpg">
-        <img height="150px" src="https://github.com/dev-Ali2008/xanite/blob/1ed8509de3f209fb0162d43c4d168f75c71ee7d4/OG.jpg" />
+    <a href="https://github.com/dev-Ali2008/xanite/blob/929b223cf0b614d4c0d077eec44bd1a78f206aef/OG.jpg">
+        <img height="150px" src="https://github.com/dev-Ali2008/xanite/blob/929b223cf0b614d4c0d077eec44bd1a78f206aef/OG.jpg" />
     </a>
 </p>
 
