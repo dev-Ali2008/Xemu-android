@@ -4,12 +4,12 @@
     </a>
 </p>
 
-<h1 align="center"> XaniteOG -
+<h1 align="center"> xenraOG -
  Xbox original emulator Android </h1>
 
-xaniteOG is a "proof of concept" emulator
+xenraOG is a "proof of concept" emulator
 
-Xanite is an Android-focused Xbox Original emulator that runs games in XISO format only, with ideas and inspiration drawn from Xemu
+xenraOG is an Android-focused Xbox Original emulator that runs games in XISO format only, with ideas and inspiration drawn from Xemu
 
 - Hardware Detection:  
 Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
@@ -39,13 +39,13 @@ stability and performance
 If you want to contribute as a developer, please contact us in discord
 
 ## DISCLAIMER !
-XaniteOG is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
+xenraOG is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
 
 We do not condone piracy. BIOS files and game backups must be legally owned. While emulator software itself is legal, downloading or distributing copyrighted BIOS files or games without ownership is illegal. Please be responsible and cautious online.
 
 
  
-## xanite website
+## xenraOG website
 
 https://dev-ali2008.github.io/Xanite.io/#social
 
