@@ -47,5 +47,5 @@ We do not condone piracy. BIOS files and game backups must be legally owned. Whi
  
 ## xenraOG website
 
-https://dev-ali2008.github.io/Xanite.io/#social
+https://dev-ali2008.github.io/xenraOG.io/
 
