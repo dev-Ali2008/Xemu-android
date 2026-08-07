@@ -1,0 +1,244 @@
+<resources>
+
+  <!-- ── Main App Theme ── -->
+  <style name="Theme.Xaniteog" parent="Theme.Material3.Dark.NoActionBar">
+
+    <!-- Primary: Xbox green -->
+    <item name="colorPrimary">@color/xaniteog_green</item>
+    <item name="colorOnPrimary">@color/xaniteog_black</item>
+    <item name="colorPrimaryContainer">@color/xaniteog_green_container</item>
+    <item name="colorOnPrimaryContainer">@color/xaniteog_green_light</item>
+
+    <!-- Secondary: slightly muted green for toggles / chips -->
+    <item name="colorSecondary">@color/xaniteog_green_light</item>
+    <item name="colorOnSecondary">@color/xaniteog_black</item>
+    <item name="colorSecondaryContainer">@color/xaniteog_green_dark</item>
+    <item name="colorOnSecondaryContainer">@color/xaniteog_black</item>
+
+    <!-- Tertiary: same family, warm complement -->
+    <item name="colorTertiary">@color/xaniteog_green_light</item>
+    <item name="colorOnTertiary">@color/xaniteog_black</item>
+    <item name="colorTertiaryContainer">@color/xaniteog_surface_container_high</item>
+    <item name="colorOnTertiaryContainer">@color/xaniteog_text</item>
+
+    <!-- Surfaces -->
+    <item name="android:colorBackground">@color/xaniteog_black</item>
+    <item name="colorSurface">@color/xaniteog_surface</item>
+    <item name="colorOnSurface">@color/xaniteog_text</item>
+    <item name="colorSurfaceVariant">@color/xaniteog_surface_variant</item>
+    <item name="colorOnSurfaceVariant">@color/xaniteog_text_muted</item>
+    <item name="colorSurfaceContainer">@color/xaniteog_surface_container</item>
+    <item name="colorSurfaceContainerHigh">@color/xaniteog_surface_container_high</item>
+
+    <!-- Borders -->
+    <item name="colorOutline">@color/xaniteog_outline</item>
+    <item name="colorOutlineVariant">@color/xaniteog_outline_variant</item>
+
+    <!-- Error -->
+    <item name="colorError">@color/xaniteog_warning</item>
+    <item name="colorErrorContainer">@color/xaniteog_warning_container</item>
+
+    <!--
+      Shape scale:
+      Outlined controls default to medium rounding so segmented toggle groups
+      render cleanly. Filled CTAs and explicitly styled action buttons opt into
+      the pill shape where it makes sense.
+    -->
+    <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Xaniteog.Pill</item>
+    <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Xaniteog.Medium</item>
+    <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Xaniteog.Large</item>
+
+    <!-- Card default style -->
+    <item name="materialCardViewStyle">@style/Widget.Xaniteog.CardView</item>
+
+    <!-- Button styles -->
+    <item name="materialButtonStyle">@style/Widget.Xaniteog.Button</item>
+    <item name="materialButtonOutlinedStyle">@style/Widget.Xaniteog.Button.Outlined</item>
+    <item name="materialButtonToggleGroupStyle">@style/Widget.Xaniteog.ButtonToggleGroup</item>
+  </style>
+
+  <!-- ── Shape Scales ── -->
+
+  <!--
+    M3 Expressive "Pill" shape.
+    Using 100dp (instead of 50%) avoids RelativeCornerSize edge cases
+    with ripple clipping in toggle groups. Material's shape system clamps
+    this to half the view height anyway, so visually identical to 50%.
+  -->
+  <style name="ShapeAppearance.Xaniteog.Pill" parent="">
+    <item name="cornerFamily">rounded</item>
+    <item name="cornerSize">100dp</item>
+  </style>
+
+  <style name="ShapeAppearance.Xaniteog.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+    <item name="cornerFamily">rounded</item>
+    <item name="cornerSize">16dp</item>
+  </style>
+
+  <style name="ShapeAppearance.Xaniteog.Large" parent="ShapeAppearance.Material3.LargeComponent">
+    <item name="cornerFamily">rounded</item>
+    <item name="cornerSize">24dp</item>
+  </style>
+
+  <!-- ── Card ── -->
+  <style name="Widget.Xaniteog.CardView" parent="Widget.Material3.CardView.Filled">
+    <item name="cardBackgroundColor">@color/xaniteog_surface</item>
+    <item name="cardCornerRadius">28dp</item>
+    <item name="cardElevation">12dp</item>
+    <item name="strokeColor">@color/xaniteog_outline</item>
+    <item name="strokeWidth">2dp</item>
+  </style>
+
+  <!-- ── Filled Button (M3 Expressive pill + spring press) ── -->
+  <style name="Widget.Xaniteog.Button" parent="Widget.Material3.Button">
+    <item name="android:minHeight">52dp</item>
+    <item name="android:paddingStart">24dp</item>
+    <item name="android:paddingEnd">24dp</item>
+    <item name="backgroundTint">@color/xaniteog_button_filled_background</item>
+    <item name="android:textColor">@color/xaniteog_button_content_filled</item>
+    <item name="iconTint">@color/xaniteog_button_content_filled</item>
+    <item name="iconSize">26dp</item>
+    <item name="rippleColor">@color/xaniteog_green_light</item>
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Pill</item>
+    <item name="android:stateListAnimator">@animator/button_press_spring</item>
+  </style>
+
+  <!--
+    Outlined Button — moderate rounding by default so toggle-group children
+    don't produce pinched "bowtie" geometry when Material zeroes the inner
+    corners. Standalone action buttons can opt into the pill variant below.
+  -->
+  <style name="Widget.Xaniteog.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+    <item name="android:minHeight">52dp</item>
+    <item name="android:paddingStart">24dp</item>
+    <item name="android:paddingEnd">24dp</item>
+    <item name="android:textColor">@color/xaniteog_button_content</item>
+    <item name="iconTint">@color/xaniteog_button_content</item>
+    <item name="iconSize">26dp</item>
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Medium</item>
+    <item name="strokeColor">@color/xaniteog_green_dark</item>
+    <item name="strokeWidth">1.5dp</item>
+    <item name="rippleColor">@color/xaniteog_green</item>
+  </style>
+
+  <style name="Widget.Xaniteog.Button.Outlined.Pill" parent="Widget.Xaniteog.Button.Outlined">
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Pill</item>
+    <item name="android:stateListAnimator">@animator/button_press_spring</item>
+  </style>
+
+  <!--
+    Toggle Group — segmented controls inherit the medium outlined shape above.
+    Material rounds the outer edges for us, and the 16dp base keeps the center
+    seams from collapsing into fish/bowtie shapes.
+  -->
+  <style name="Widget.Xaniteog.ButtonToggleGroup" parent="Widget.Material3.MaterialButtonToggleGroup">
+    <item name="android:minHeight">52dp</item>
+  </style>
+
+  <!-- Compact, squared-off segmented control used by the setup orientation picker. -->
+  <style name="Widget.Xaniteog.OrientationToggleGroup" parent="Widget.Material3.MaterialButtonToggleGroup">
+    <item name="android:minHeight">44dp</item>
+  </style>
+
+  <style name="Widget.Xaniteog.OrientationButton" parent="Widget.Xaniteog.TabButton">
+    <item name="android:minWidth">0dp</item>
+    <item name="android:minHeight">0dp</item>
+    <item name="android:paddingStart">0dp</item>
+    <item name="android:paddingEnd">0dp</item>
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Medium</item>
+    <item name="iconSize">22dp</item>
+    <item name="iconPadding">0dp</item>
+  </style>
+
+  <!--
+    Tab / sidebar navigation button.
+    Lives inside a MaterialButtonToggleGroup: the checked tab fills with a
+    solid green "badge", unchecked tabs keep only the green outline.
+  -->
+  <style name="Widget.Xaniteog.TabButton" parent="Widget.Material3.Button.OutlinedButton">
+    <item name="android:minHeight">48dp</item>
+    <item name="android:paddingStart">18dp</item>
+    <item name="android:paddingEnd">18dp</item>
+    <item name="android:textAllCaps">true</item>
+    <item name="android:letterSpacing">0.06</item>
+    <item name="android:textStyle">bold</item>
+    <item name="backgroundTint">@color/xaniteog_tab_background</item>
+    <item name="android:textColor">@color/xaniteog_tab_content</item>
+    <item name="iconTint">@color/xaniteog_tab_content</item>
+    <item name="iconSize">22dp</item>
+    <item name="iconPadding">8dp</item>
+    <item name="strokeColor">@color/xaniteog_green_dark</item>
+    <item name="strokeWidth">1.5dp</item>
+    <item name="rippleColor">@color/xaniteog_green</item>
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Pill</item>
+  </style>
+
+  <!-- Selection card used on the startup hub -->
+  <style name="Widget.Xaniteog.SetupCard" parent="Widget.Material3.CardView.Filled">
+    <item name="cardBackgroundColor">@color/xaniteog_surface_variant</item>
+    <item name="cardCornerRadius">22dp</item>
+    <item name="cardElevation">6dp</item>
+    <item name="strokeColor">@color/xaniteog_outline_variant</item>
+    <item name="strokeWidth">1.5dp</item>
+    <item name="contentPadding">18dp</item>
+  </style>
+
+  <!-- ── Dialog Theme Overlay ── -->
+  <style name="ThemeOverlay.Xaniteog.RoundedDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+    <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Xaniteog.Dialog</item>
+    <item name="colorSurface">@color/xaniteog_surface_container</item>
+    <item name="colorOnSurface">@color/xaniteog_text</item>
+    <item name="colorOnSurfaceVariant">@color/xaniteog_text_muted</item>
+    <!-- Keep colorPrimary so filled button inherits green correctly -->
+    <item name="colorPrimary">@color/xaniteog_green</item>
+    <item name="colorOnPrimary">@color/xaniteog_black</item>
+
+    <!-- Material-namespaced attrs (used by MaterialAlertDialogBuilder) -->
+    <item name="buttonBarPositiveButtonStyle">@style/Widget.Xaniteog.Dialog.Button.Positive</item>
+    <item name="buttonBarNegativeButtonStyle">@style/Widget.Xaniteog.Dialog.Button.Negative</item>
+    <item name="buttonBarNeutralButtonStyle">@style/Widget.Xaniteog.Dialog.Button.Neutral</item>
+    <!-- Android-namespaced fallback (used by the underlying AlertDialog layout) -->
+    <item name="android:buttonBarPositiveButtonStyle">@style/Widget.Xaniteog.Dialog.Button.Positive</item>
+    <item name="android:buttonBarNegativeButtonStyle">@style/Widget.Xaniteog.Dialog.Button.Negative</item>
+    <item name="android:buttonBarNeutralButtonStyle">@style/Widget.Xaniteog.Dialog.Button.Neutral</item>
+  </style>
+
+  <style name="ShapeAppearanceOverlay.Xaniteog.Dialog" parent="">
+    <item name="cornerFamily">rounded</item>
+    <item name="cornerSize">28dp</item>
+  </style>
+
+  <!--
+    Dialog: positive = filled green pill button with spring press.
+  -->
+  <style name="Widget.Xaniteog.Dialog.Button.Positive" parent="Widget.Material3.Button">
+    <item name="backgroundTint">@color/xaniteog_button_filled_background</item>
+    <item name="android:textColor">@color/xaniteog_button_content_filled</item>
+    <item name="rippleColor">@color/xaniteog_green_light</item>
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Pill</item>
+    <item name="android:minWidth">88dp</item>
+    <item name="android:minHeight">44dp</item>
+    <item name="android:stateListAnimator">@animator/button_press_spring</item>
+  </style>
+
+  <!--
+    Dialog: negative = outlined pill button.
+  -->
+  <style name="Widget.Xaniteog.Dialog.Button.Negative" parent="Widget.Material3.Button.OutlinedButton">
+    <item name="strokeColor">@color/xaniteog_outline</item>
+    <item name="strokeWidth">1.5dp</item>
+    <item name="android:textColor">@color/xaniteog_button_content</item>
+    <item name="shapeAppearance">@style/ShapeAppearance.Xaniteog.Pill</item>
+    <item name="android:minWidth">88dp</item>
+    <item name="android:minHeight">44dp</item>
+    <item name="android:stateListAnimator">@animator/button_press_spring</item>
+  </style>
+
+  <!-- Dialog: neutral = text button -->
+  <style name="Widget.Xaniteog.Dialog.Button.Neutral" parent="Widget.Material3.Button.TextButton">
+    <item name="android:textColor">@color/xaniteog_button_content</item>
+    <item name="android:minWidth">88dp</item>
+    <item name="android:minHeight">44dp</item>
+  </style>
+
+</resources>

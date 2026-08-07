@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  M3 Expressive spring press animation for FILLED buttons only.
+
+  "state_pressed=false" as the last item acts as the default/release state:
+  since it has no other state constraints, it matches whenever nothing
+  more specific matches — i.e. normal and released states.
+
+  Using android:interpolator/overshoot causes the scale to briefly pass
+  1.0 on release (the "spring bounce-back" feel). When the view is already
+  at scale 1.0 (startup), delta is 0 so overshoot produces no visible movement.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- Touch down: snap quickly to 92% -->
+  <item android:state_pressed="true">
+    <set android:ordering="together">
+      <objectAnimator
+        android:duration="100"
+        android:interpolator="@android:interpolator/fast_out_slow_in"
+        android:propertyName="scaleX"
+        android:valueTo="0.92"
+        android:valueType="floatType" />
+      <objectAnimator
+        android:duration="100"
+        android:interpolator="@android:interpolator/fast_out_slow_in"
+        android:propertyName="scaleY"
+        android:valueTo="0.92"
+        android:valueType="floatType" />
+    </set>
+  </item>
+
+  <!-- Release / default: spring back to full size with overshoot bounce -->
+  <item>
+    <set android:ordering="together">
+      <objectAnimator
+        android:duration="400"
+        android:interpolator="@android:interpolator/overshoot"
+        android:propertyName="scaleX"
+        android:valueTo="1.0"
+        android:valueType="floatType" />
+      <objectAnimator
+        android:duration="400"
+        android:interpolator="@android:interpolator/overshoot"
+        android:propertyName="scaleY"
+        android:valueTo="1.0"
+        android:valueType="floatType" />
+    </set>
+  </item>
+
+</selector>

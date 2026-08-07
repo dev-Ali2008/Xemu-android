@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <attr name="fillColor" format="color" />
+  <attr name="strokeColor" format="color" />
+  <attr name="ringColor" format="color" />
+  <attr name="glowColor" format="color" />
+  <attr name="ringWidth" format="dimension" />
+  <attr name="chamferSize" format="dimension" />
+
+  <declare-styleable name="ChamferedPanelView">
+    <attr name="fillColor" />
+    <attr name="strokeColor" />
+    <attr name="chamferSize" />
+  </declare-styleable>
+  <declare-styleable name="GlowingCircleView">
+    <attr name="ringColor" />
+    <attr name="fillColor" />
+    <attr name="glowColor" />
+    <attr name="ringWidth" />
+  </declare-styleable>
+</resources>

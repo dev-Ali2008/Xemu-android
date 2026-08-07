@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Green skin launcher icon. Overrides main/res/mipmap-anydpi-v26 so the
+  backdrop is the grid artwork rather than the flat gold @color fill.
+  The foreground is the X alone, inscribed in the safe circle, so no launcher
+  mask can clip it.
+-->
+<!--
+  The foreground X is inset because an adaptive icon only shows the middle 72 of
+  its 108dp: content at 44% of the layer renders at ~66% of the visible tile,
+  against ~57% in the legacy ic_launcher.png where the whole square is shown.
+  That made the launcher icon look zoomed next to the intended artwork.
+  Insetting here rather than rescaling the PNGs keeps the source art intact and
+  makes the amount a one-line change. Keep it in step with ic_launcher_round.xml
+  and with the dark X baked into ic_launcher_background.png - if the silhouette
+  starts peeking out from behind the X, this has gone too far.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_background"/>
+    <foreground>
+        <inset
+            android:drawable="@mipmap/ic_launcher_foreground"
+            android:inset="7%" />
+    </foreground>
+</adaptive-icon>

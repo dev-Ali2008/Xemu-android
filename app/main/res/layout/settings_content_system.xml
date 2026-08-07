@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/tab_content_system"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+
+  <!-- EEPROM -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_eeprom"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <TextView
+        android:id="@+id/tv_eeprom_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_eeprom_language"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/settings_eeprom_language">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_eeprom_language"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_eeprom_video_standard"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/settings_eeprom_video_standard">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_eeprom_video_standard"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_eeprom_resolution_modes"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_eeprom_480p"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_eeprom_resolution_480p"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_eeprom_720p"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/settings_eeprom_resolution_720p"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_eeprom_1080i"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/settings_eeprom_resolution_1080i"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_eeprom_aspect_ratio"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/settings_eeprom_aspect_ratio">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_eeprom_aspect_ratio"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_eeprom_refresh_rate"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/settings_eeprom_refresh_rate">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_eeprom_refresh_rate"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/settings_eeprom_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- ORIENTATION -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_orientation"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_app_orientation"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/settings_app_orientation">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_app_orientation"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_game_orientation"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/settings_in_game_orientation">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_game_orientation"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_in_game_orientation_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- APP LANGUAGE -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_app_language"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_app_language"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/settings_app_language">
+
+        <AutoCompleteTextView
+          android:id="@+id/dropdown_app_language"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="none" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_app_language_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- SYSTEM MEMORY -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_system_memory"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_system_memory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_memory_64"
+          style="?attr/materialButtonOutlinedStyle"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          app:strokeColor="@color/xanite_accent"
+          app:strokeWidth="1dp"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_system_memory_64"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_memory_128"
+          style="?attr/materialButtonOutlinedStyle"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          app:strokeColor="@color/xanite_accent"
+          app:strokeWidth="1dp"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_system_memory_128"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </com.google.android.material.button.MaterialButtonToggleGroup>
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/settings_system_memory_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- CPU SPEED -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_cpu_speed"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_cpu_speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_cpu_733"
+          style="?attr/materialButtonOutlinedStyle"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          app:strokeColor="@color/xanite_accent"
+          app:strokeWidth="1dp"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_cpu_speed_733"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_cpu_1400"
+          style="?attr/materialButtonOutlinedStyle"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          app:strokeColor="@color/xanite_accent"
+          app:strokeWidth="1dp"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_cpu_speed_1400"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </com.google.android.material.button.MaterialButtonToggleGroup>
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/settings_cpu_speed_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- CPU THREADING -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_tcg_thread"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_tcg_thread"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_thread_multi"
+          style="?attr/materialButtonOutlinedStyle"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          app:strokeColor="@color/xanite_accent"
+          app:strokeWidth="1dp"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_tcg_thread_multi"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_thread_single"
+          style="?attr/materialButtonOutlinedStyle"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          app:strokeColor="@color/xanite_accent"
+          app:strokeWidth="1dp"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_tcg_thread_single"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </com.google.android.material.button.MaterialButtonToggleGroup>
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_hard_fpu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/settings_hard_fpu"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- ADVANCED / EXPERIMENTAL -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_advanced_experimental"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:text="@string/settings_advanced_experimental_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_toggle_advanced_experimental"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:text="@string/settings_advanced_experimental_show"
+        android:textColor="@color/xanite_accent"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+      <LinearLayout
+        android:id="@+id/layout_advanced_experimental_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="8dp"
+          android:letterSpacing="0.12"
+          android:text="@string/settings_section_hdd_tools"
+          android:textColor="@color/xanite_accent"
+          android:textSize="11sp"
+          android:textStyle="bold"
+          android:textAllCaps="true" />
+
+        <TextView
+          android:id="@+id/tv_hdd_tools_status"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textColor="#BFA898"
+          android:textSize="12sp" />
+
+        <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:layout_marginBottom="10dp"
+          android:text="@string/settings_hdd_tools_hint"
+          android:textColor="#BFA898"
+          android:textSize="12sp" />
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_initialize_retail_hdd"
+        style="?attr/materialButtonOutlinedStyle"
+        app:backgroundTint="@color/settings_toggle_btn_bg"
+        app:strokeColor="@color/xanite_accent"
+        app:strokeWidth="1dp"
+        android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="@string/settings_hdd_init_action"
+            android:textColor="@color/xanite_accent"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+          <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_import_dashboard"
+        style="?attr/materialButtonOutlinedStyle"
+        app:backgroundTint="@color/settings_toggle_btn_bg"
+        app:strokeColor="@color/xanite_accent"
+        app:strokeWidth="1dp"
+        android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/settings_dashboard_import_action"
+            android:textColor="@color/xanite_accent"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Hard-block activation gateway. Reuses the dashboard background so the gate
+  looks like part of the app rather than an error screen.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/xanite_gold_dashboard_background"
+  android:fillViewport="true">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp"
+    android:paddingTop="48dp"
+    android:paddingBottom="48dp">
+
+    <ImageView
+      android:layout_width="112dp"
+      android:layout_height="112dp"
+      android:src="@drawable/xanite_gold_x"
+      android:scaleType="fitCenter"
+      android:importantForAccessibility="no" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="12dp"
+      android:text="@string/activation_title"
+      android:textColor="@color/xanite_accent"
+      android:textSize="26sp"
+      android:textStyle="bold"
+      android:letterSpacing="0.15" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="28dp"
+      android:text="@string/activation_welcome"
+      android:textColor="#E8E0CC"
+      android:textSize="15sp"
+      android:gravity="center"
+      android:lineSpacingExtra="4dp" />
+
+    <TextView
+      android:id="@+id/activation_slots"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:paddingStart="16dp"
+      android:paddingEnd="16dp"
+      android:paddingTop="8dp"
+      android:paddingBottom="8dp"
+      android:textColor="@color/xanite_accent"
+      android:textSize="13sp"
+      android:letterSpacing="0.05" />
+
+    <!--
+      Progress and error share this slot. minHeight rather than a fixed height:
+      56dp still reserves the spinner's space so the buttons do not jump when
+      it appears, but a hard 56dp clipped the longer messages - the
+      not-purchased string runs to four lines and its tail was hidden behind
+      the activate button.
+    -->
+    <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:minHeight="56dp"
+      android:layout_marginTop="16dp">
+
+      <ProgressBar
+        android:id="@+id/activation_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+      <TextView
+        android:id="@+id/activation_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textColor="#FF8A80"
+        android:textSize="13sp"
+        android:visibility="gone" />
+    </FrameLayout>
+
+    <Button
+      android:id="@+id/activation_activate"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/activation_button"
+      android:textColor="#1A1200"
+      android:textStyle="bold"
+      android:textSize="15sp"
+      android:backgroundTint="@color/xanite_accent"
+      android:paddingTop="14dp"
+      android:paddingBottom="14dp" />
+
+    <!-- Shown only after the backend reports this account has not purchased. -->
+    <Button
+      android:id="@+id/activation_get_gold"
+      style="?android:attr/borderlessButtonStyle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:text="@string/activation_get_gold"
+      android:textColor="@color/xanite_accent"
+      android:textSize="14sp"
+      android:visibility="gone" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:text="@string/activation_permission_note"
+      android:textColor="#8A8172"
+      android:textSize="12sp"
+      android:gravity="center"
+      android:lineSpacingExtra="3dp" />
+
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_marginTop="28dp"
+      android:background="@color/xaniteog_outline_variant" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:text="@string/activation_footer"
+      android:textColor="#9E9482"
+      android:textSize="13sp"
+      android:gravity="center"
+      android:lineSpacingExtra="3dp" />
+
+    <Button
+      android:id="@+id/activation_exit"
+      style="?android:attr/borderlessButtonStyle"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="24dp"
+      android:text="@string/activation_exit"
+      android:textColor="#9E9482"
+      android:textSize="14sp" />
+  </LinearLayout>
+</ScrollView>

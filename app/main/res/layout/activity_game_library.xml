@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <ImageView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:src="@drawable/xanite_gold_dashboard_background"
+    android:scaleType="centerCrop" />
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#55000000" />
+
+  <!-- Y-MENU OVERLAY (slides from left) -->
+  <FrameLayout
+    android:id="@+id/ymenu_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="gone">
+
+    <View
+      android:id="@+id/ymenu_scrim"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#88000000" />
+
+    <LinearLayout
+      android:id="@+id/ymenu_panel"
+      android:layout_width="280dp"
+      android:layout_height="match_parent"
+      android:background="#0D0B08"
+      android:orientation="vertical"
+      android:paddingTop="72dp"
+      android:paddingHorizontal="16dp"
+      android:elevation="8dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="@string/library_about_title"
+        android:textColor="@color/xanite_accent"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.12" />
+
+      <!-- Scrolls so the list is reachable in landscape. The panel is only
+           ~1440px tall there, and with the top padding, title and bottom hint
+           the last entry (About XaniteOG) was clipped off with no way to
+           reach it. -->
+      <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+          android:id="@+id/ymenu_items"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical" />
+      </ScrollView>
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:letterSpacing="0.1"
+        android:text="@string/library_long_press_hint" />
+    </LinearLayout>
+  </FrameLayout>
+
+  <!-- MAIN CONTENT -->
+  <LinearLayout
+    android:id="@+id/library_main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:paddingBottom="56dp">
+
+    <!-- LEFT PANEL: Header + Game List -->
+    <Ali.Xanite.ChamferedPanelView
+      android:id="@+id/library_scroll"
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      android:layout_margin="12dp"
+      app:fillColor="#E60D0A04"
+      app:strokeColor="@color/xanite_accent_66"
+      app:chamferSize="20dp">
+
+      <LinearLayout
+        android:id="@+id/library_detail_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- HEADER STATS BAR -->
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:paddingBottom="8dp">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/library_title"
+            android:textColor="@color/xanite_accent"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.15"
+            android:textAllCaps="true" />
+
+          <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+          <TextView
+            android:id="@+id/library_stats_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#BFA898"
+            android:textSize="11sp"
+            android:letterSpacing="0.1" />
+        </LinearLayout>
+
+        <!-- View mode buttons -->
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/library_view_label"
+            android:textColor="#BFA898"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+          <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_list"
+            style="@style/Widget.Xaniteog.Button.Outlined"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:contentDescription="@string/library_view_list"
+            android:textColor="@color/game_library_view_toggle_content"
+            app:backgroundTint="@color/game_library_view_toggle_background"
+            app:icon="@drawable/ic_xaniteog_view_list"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/game_library_view_toggle_content" />
+
+          <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_grid"
+            style="@style/Widget.Xaniteog.Button.Outlined"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:contentDescription="@string/library_view_cover_grid"
+            android:textColor="@color/game_library_view_toggle_content"
+            app:backgroundTint="@color/game_library_view_toggle_background"
+            app:icon="@drawable/ic_xaniteog_grid_view"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/game_library_view_toggle_content" />
+        </LinearLayout>
+
+        <!-- Loading / Progress -->
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp"
+          android:orientation="horizontal"
+          android:gravity="center_vertical">
+
+          <ProgressBar
+            android:id="@+id/library_loading"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:indeterminateTint="@color/xaniteog_green"
+            android:visibility="gone" />
+
+          <ProgressBar
+            android:id="@+id/library_convert_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:max="100"
+            android:progress="0"
+            android:progressTint="@color/xaniteog_green"
+            android:visibility="gone" />
+
+          <TextView
+            android:id="@+id/library_loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/library_loading_games"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textColor="@color/xaniteog_text_muted"
+            android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Empty text -->
+        <TextView
+          android:id="@+id/library_empty_text"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:background="@drawable/game_list_item_background"
+          android:gravity="center"
+          android:padding="16dp"
+          android:text="@string/library_empty_games"
+          android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+          android:textColor="@color/xaniteog_text_muted"
+          android:visibility="gone" />
+
+        <!-- Convert ISO button -->
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_convert_iso"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:layout_marginTop="6dp"
+          android:text="@string/library_convert_iso"
+          android:textColor="#FF5252"
+          android:visibility="gone"
+          app:rippleColor="#33FF5252"
+          app:shapeAppearance="@style/ShapeAppearance.Xaniteog.Pill"
+          app:strokeColor="#FF5252" />
+
+        <!-- GAME LIST -->
+        <androidx.core.widget.NestedScrollView
+          android:id="@+id/library_list_scroll"
+          android:layout_width="match_parent"
+          android:layout_height="0dp"
+          android:layout_weight="1"
+          android:layout_marginTop="6dp"
+          android:clipToPadding="false">
+
+          <LinearLayout
+            android:id="@+id/library_games_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- GAME GRID -->
+        <androidx.core.widget.NestedScrollView
+          android:id="@+id/library_grid_scroll"
+          android:layout_width="match_parent"
+          android:layout_height="0dp"
+          android:layout_weight="1"
+          android:layout_marginTop="6dp"
+          android:visibility="gone">
+
+          <LinearLayout
+            android:id="@+id/library_games_grid_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+        </androidx.core.widget.NestedScrollView>
+
+      </LinearLayout>
+    </Ali.Xanite.ChamferedPanelView>
+
+    <!-- RIGHT PANEL: Selection Detail (visible when game selected) -->
+    <Ali.Xanite.ChamferedPanelView
+      android:id="@+id/library_detail_panel"
+      android:layout_width="240dp"
+      android:layout_height="match_parent"
+      android:layout_marginVertical="10dp"
+      android:layout_marginEnd="10dp"
+      android:visibility="gone"
+      app:fillColor="#E60D0A04"
+      app:strokeColor="@color/xanite_accent_66"
+      app:chamferSize="16dp">
+
+      <LinearLayout
+        android:id="@+id/library_selected_detail_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="16dp">
+
+        <View
+          android:id="@+id/library_detail_spacer_before"
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:layout_weight="1" />
+
+        <!-- Glowing Circle Icon -->
+        <Ali.Xanite.GlowingCircleView
+          android:id="@+id/library_selected_icon"
+          android:layout_width="100dp"
+          android:layout_height="100dp" />
+
+        <!-- Info Tooltip Panel -->
+        <Ali.Xanite.ChamferedPanelView
+          android:id="@+id/library_info_panel"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          app:fillColor="#2A2108"
+          app:strokeColor="@color/xanite_accent_66"
+          app:chamferSize="10dp">
+
+          <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+              android:id="@+id/library_detail_title"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textColor="#FFF6EB"
+              android:textSize="13sp"
+              android:textStyle="bold"
+              android:maxLines="2" />
+
+            <TextView
+              android:id="@+id/library_detail_saves"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="6dp"
+              android:textColor="#BFA898"
+              android:textSize="11sp" />
+
+            <TextView
+              android:id="@+id/library_detail_content"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textColor="#BFA898"
+              android:textSize="11sp" />
+
+            <TextView
+              android:id="@+id/library_detail_blocks"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textColor="#BFA898"
+              android:textSize="11sp" />
+          </LinearLayout>
+        </Ali.Xanite.ChamferedPanelView>
+
+        <View
+          android:id="@+id/library_detail_spacer_after"
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:layout_weight="1" />
+
+      </LinearLayout>
+    </Ali.Xanite.ChamferedPanelView>
+  </LinearLayout>
+
+  <!-- BOTTOM A/B BUTTONS BAR -->
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:background="#E60D0B08"
+    android:paddingHorizontal="16dp"
+    android:paddingBottom="12dp"
+    android:paddingTop="4dp">
+
+    <!-- B Button (bottom-left) -->
+    <LinearLayout
+      android:id="@+id/btn_library_b_back"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:clickable="true"
+      android:focusable="true"
+      android:background="?attr/selectableItemBackground"
+      android:paddingHorizontal="8dp"
+      android:paddingVertical="4dp">
+
+      <FrameLayout
+        android:layout_width="36dp"
+        android:layout_height="36dp">
+
+        <ImageView
+          android:layout_width="36dp"
+          android:layout_height="36dp"
+          android:src="@drawable/circuit_wire_left"
+          android:scaleType="fitXY" />
+
+        <TextView
+          android:layout_width="32dp"
+          android:layout_height="32dp"
+          android:layout_gravity="center"
+          android:background="@drawable/xbox_b_button_bg"
+          android:gravity="center"
+          android:text="B"
+          android:textColor="#000000"
+          android:textSize="14sp"
+          android:textStyle="bold" />
+      </FrameLayout>
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="@string/settings_back"
+        android:textColor="#AAFFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1" />
+    </LinearLayout>
+
+    <View
+      android:layout_width="0dp"
+      android:layout_height="1dp"
+      android:layout_weight="1" />
+
+    <!-- A Button (bottom-right) -->
+    <LinearLayout
+      android:id="@+id/btn_library_a_select"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:clickable="true"
+      android:focusable="true"
+      android:background="?attr/selectableItemBackground"
+      android:paddingHorizontal="8dp"
+      android:paddingVertical="4dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:text="@string/library_open_game"
+        android:textColor="#AAFFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1" />
+
+      <FrameLayout
+        android:layout_width="36dp"
+        android:layout_height="36dp">
+
+        <ImageView
+          android:layout_width="36dp"
+          android:layout_height="36dp"
+          android:src="@drawable/circuit_wire_right"
+          android:scaleType="fitXY" />
+
+        <TextView
+          android:layout_width="32dp"
+          android:layout_height="32dp"
+          android:layout_gravity="center"
+          android:background="@drawable/xbox_a_button_bg"
+          android:gravity="center"
+          android:text="A"
+          android:textColor="#000000"
+          android:textSize="14sp"
+          android:textStyle="bold" />
+      </FrameLayout>
+    </LinearLayout>
+  </LinearLayout>
+</FrameLayout>

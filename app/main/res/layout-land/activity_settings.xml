@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="#0B0808">
+
+  <ImageView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:src="@drawable/xanite_gold_dashboard_background"
+    android:scaleType="centerCrop"
+    android:alpha="0.3" />
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <!-- LEFT SIDEBAR -->
+    <LinearLayout
+      android:layout_width="200dp"
+      android:layout_height="match_parent"
+      android:background="#0D0B08"
+      android:orientation="vertical"
+      android:paddingHorizontal="12dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:text="@string/settings_title"
+          android:textColor="@color/xanite_accent"
+          android:textSize="18sp"
+          android:textStyle="bold"
+          android:letterSpacing="0.06" />
+
+        <ImageButton
+          android:id="@+id/btn_settings_close"
+          android:layout_width="32dp"
+          android:layout_height="32dp"
+          android:background="?attr/selectableItemBackgroundBorderless"
+          android:src="@drawable/ic_arrow_back"
+          android:scaleType="center"
+          android:contentDescription="@string/settings_back"
+          app:tint="@color/xanite_accent" />
+      </LinearLayout>
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="12dp"
+        android:background="@color/xanite_accent_33" />
+
+      <TextView
+        android:id="@+id/tab_btn_video"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="@string/settings_tab_video"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <TextView
+        android:id="@+id/tab_btn_audio"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="@string/settings_tab_audio"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <TextView
+        android:id="@+id/tab_btn_system"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="@string/settings_tab_system"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <TextView
+        android:id="@+id/tab_btn_rendering"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="@string/settings_tab_rendering"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <TextView
+        android:id="@+id/tab_btn_input"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="@string/settings_tab_input"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <TextView
+        android:id="@+id/tab_btn_maintenance"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="@string/settings_tab_maintenance"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <TextView
+        android:id="@+id/tab_btn_shortcuts"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:text="Shortcuts"
+        android:textColor="#FFF6EB"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+      <LinearLayout
+        android:id="@+id/btn_b_back_settings"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal">
+        <TextView
+          android:layout_width="28dp"
+          android:layout_height="28dp"
+          android:background="@drawable/xbox_a_button_bg"
+          android:gravity="center"
+          android:text="B"
+          android:textColor="#000000"
+          android:textSize="12sp"
+          android:textStyle="bold" />
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="6dp"
+          android:letterSpacing="0.15"
+          android:text="@string/settings_back"
+          android:textColor="#AAFFFFFF"
+          android:textSize="12sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/xanite_accent_1a" />
+
+      <LinearLayout
+        android:id="@+id/btn_a_save_settings"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginBottom="12dp"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal">
+        <TextView
+          android:layout_width="28dp"
+          android:layout_height="28dp"
+          android:background="@drawable/xbox_a_button_bg"
+          android:gravity="center"
+          android:text="A"
+          android:textColor="#000000"
+          android:textSize="12sp"
+          android:textStyle="bold" />
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="6dp"
+          android:letterSpacing="0.15"
+          android:text="@string/settings_save"
+          android:textColor="#AAFFFFFF"
+          android:textSize="12sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+    </LinearLayout>
+
+    <!-- RIGHT CONTENT PANEL -->
+    <androidx.core.widget.NestedScrollView
+      android:id="@+id/settings_scroll"
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      android:clipToPadding="false"
+      android:fillViewport="true"
+      android:padding="12dp">
+
+      <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include
+          android:id="@+id/tab_content_video"
+          layout="@layout/settings_content_video"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="visible" />
+
+        <include
+          android:id="@+id/tab_content_audio"
+          layout="@layout/settings_content_audio"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone" />
+
+        <include
+          android:id="@+id/tab_content_system"
+          layout="@layout/settings_content_system"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone" />
+
+        <include
+          android:id="@+id/tab_content_rendering"
+          layout="@layout/settings_content_rendering"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone" />
+
+        <include
+          android:id="@+id/tab_content_input"
+          layout="@layout/settings_content_input"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone" />
+
+        <include
+          android:id="@+id/tab_content_maintenance"
+          layout="@layout/settings_content_maintenance"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone" />
+
+        <include
+          android:id="@+id/tab_content_shortcuts"
+          layout="@layout/settings_content_shortcuts"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone" />
+      </FrameLayout>
+    </androidx.core.widget.NestedScrollView>
+  </LinearLayout>
+</FrameLayout>

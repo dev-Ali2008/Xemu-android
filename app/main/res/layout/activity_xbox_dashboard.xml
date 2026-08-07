@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/xanite_gold_dashboard_background" />
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#33000000" />
+
+  <!-- Top-left: on the right this sat on top of the first menu blade in
+       landscape, overlapping GAME LIBRARY. The left side is empty next to
+       the logo. -->
+  <com.google.android.material.button.MaterialButton
+    android:id="@+id/btn_dashboard_orientation"
+    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+    android:layout_width="wrap_content"
+    android:layout_height="48dp"
+    android:layout_gravity="top|start"
+    android:layout_margin="16dp"
+    android:contentDescription="@string/dashboard_orientation_description_auto"
+    android:elevation="12dp"
+    android:text="@string/dashboard_orientation_auto"
+    android:textColor="#FFFFE0"
+    android:textSize="12sp"
+    android:textStyle="bold"
+    app:icon="@drawable/ic_orientation_auto"
+    app:iconTint="@color/xanite_accent"
+    app:strokeColor="@color/xanite_accent_99"
+    app:strokeWidth="1dp" />
+
+  <LinearLayout
+    android:id="@+id/dashboard_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="32dp"
+    android:paddingBottom="64dp">
+
+    <!-- LEFT 45%: Logo -->
+    <LinearLayout
+      android:id="@+id/dashboard_logo_container"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="0.45"
+      android:gravity="center"
+      android:orientation="vertical">
+
+      <ImageView
+        android:id="@+id/iv_xbox_logo"
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:src="@drawable/xanite_gold_x"
+        android:scaleType="fitCenter"
+        android:importantForAccessibility="no" />
+    </LinearLayout>
+
+    <!-- RIGHT 55%: Menu -->
+    <LinearLayout
+      android:id="@+id/dashboard_menu_container"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="0.55"
+      android:orientation="vertical"
+      android:gravity="center_vertical">
+
+      <FrameLayout
+        android:id="@+id/menu_game_library"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginBottom="14dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:clickable="true"
+        android:focusable="true">
+
+        <View
+          android:layout_width="4dp"
+          android:layout_height="match_parent"
+          android:layout_gravity="start"
+          android:background="@color/xanite_accent" />
+
+        <TextView
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center_vertical"
+          android:paddingStart="24dp"
+          android:text="GAME LIBRARY"
+          android:textSize="17sp"
+          android:textStyle="bold"
+          android:textColor="#CCFFFFFF"
+          android:letterSpacing="0.12" />
+      </FrameLayout>
+
+      <FrameLayout
+        android:id="@+id/menu_xbox_live"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginBottom="14dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:clickable="true"
+        android:focusable="true">
+
+        <View
+          android:layout_width="4dp"
+          android:layout_height="match_parent"
+          android:layout_gravity="start"
+          android:background="@color/xanite_accent" />
+
+        <TextView
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center_vertical"
+          android:paddingStart="24dp"
+          android:text="XBOX LIVE"
+          android:textSize="17sp"
+          android:textStyle="bold"
+          android:textColor="#CCFFFFFF"
+          android:letterSpacing="0.12" />
+      </FrameLayout>
+
+      <FrameLayout
+        android:id="@+id/menu_settings"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@drawable/xbox_menu_item_bg"
+        android:clickable="true"
+        android:focusable="true">
+
+        <View
+          android:layout_width="4dp"
+          android:layout_height="match_parent"
+          android:layout_gravity="start"
+          android:background="@color/xanite_accent" />
+
+        <TextView
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center_vertical"
+          android:paddingStart="24dp"
+          android:text="SETTINGS"
+          android:textSize="17sp"
+          android:textStyle="bold"
+          android:textColor="#CCFFFFFF"
+          android:letterSpacing="0.12" />
+      </FrameLayout>
+    </LinearLayout>
+  </LinearLayout>
+
+  <!-- Bottom hints -->
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="20dp">
+
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center_vertical"
+      android:orientation="horizontal">
+
+      <TextView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:text="B"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="@drawable/xbox_a_button_bg" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:text="BACK"
+        android:textColor="#AAFFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.15" />
+    </LinearLayout>
+
+    <View
+      android:layout_width="0dp"
+      android:layout_height="1dp"
+      android:layout_weight="1" />
+
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center_vertical"
+      android:orientation="horizontal">
+
+      <TextView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:text="A"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="@drawable/xbox_a_button_bg" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:text="SELECT"
+        android:textColor="#AAFFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.15" />
+    </LinearLayout>
+  </LinearLayout>
+</FrameLayout>

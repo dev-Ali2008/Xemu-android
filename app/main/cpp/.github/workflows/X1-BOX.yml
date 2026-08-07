@@ -1,0 +1,181 @@
+name: X1 BOX - Signed
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: x1-box-signed
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK / NDK / CMake
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.1.0" \
+            "cmake;3.30.3" \
+            "ndk;29.0.14206865"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/29.0.14206865" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/29.0.14206865" >> $GITHUB_ENV
+
+      - name: Install Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            meson \
+            pkg-config \
+            python3 \
+            python3-pip \
+            python3-setuptools \
+            curl \
+            unzip
+
+      - name: Install Rust (rustup + cargo)
+        shell: bash
+        run: |
+          set -e
+          echo "CARGO_HOME=$HOME/.cargo" >> $GITHUB_ENV
+          echo "RUSTUP_HOME=$HOME/.rustup" >> $GITHUB_ENV
+          curl -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          rustc --version
+          cargo --version
+
+      - name: Add Rust Android target (arm64)
+        shell: bash
+        run: |
+          set -e
+          rustup target add aarch64-linux-android
+          rustup target list --installed
+
+      - name: Export Android toolchain for cargo
+        shell: bash
+        run: |
+          set -e
+          echo "CC_aarch64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang" >> $GITHUB_ENV
+          echo "CXX_aarch64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++" >> $GITHUB_ENV
+          echo "AR_aarch64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" >> $GITHUB_ENV
+
+      - name: Detect App Name + Version (auto)
+        id: meta
+        shell: bash
+        run: |
+          set -e
+          GRADLE="android/app/build.gradle.kts"
+          STRINGS="android/app/src/main/res/values/strings.xml"
+          VERSION_NAME=$(grep -m1 -E 'versionName\s*=' "$GRADLE" | sed -E 's/.*"([^"]+)".*/\1/')
+          APP_NAME=$(grep -m1 -E '<string\s+name="app_name"\s*>' "$STRINGS" | sed -E 's/.*>([^<]+)<\/string>.*/\1/')
+          APP_NAME_SAFE=$(echo "$APP_NAME" | tr ' ' '-' | tr -cd 'A-Za-z0-9._-')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          echo "APP_NAME_SAFE=$APP_NAME_SAFE" >> $GITHUB_ENV
+
+      - name: Remove org.gradle.java.home (force setup-java)
+        shell: bash
+        run: |
+          set -e
+          for f in android/gradle.properties gradle.properties "$HOME/.gradle/gradle.properties"; do
+            if [ -f "$f" ]; then
+              sed -i '/^\s*org\.gradle\.java\.home\s*=/d' "$f"
+            fi
+          done
+
+      - name: Fix DEFAULT_JVM_OPTS in gradlew
+        shell: bash
+        run: |
+          set -e
+          if [ -f android/gradlew ]; then
+            sed -i 's/^DEFAULT_JVM_OPTS=.*/DEFAULT_JVM_OPTS="-Xmx2g -Xms256m"/' android/gradlew || true
+          fi
+
+      - name: Improve Gradle memory
+        run: |
+          mkdir -p "$HOME/.gradle"
+          cat > "$HOME/.gradle/gradle.properties" << 'EOF'
+          org.gradle.jvmargs=-Xmx6g -Xms512m -Dfile.encoding=UTF-8
+          org.gradle.daemon=false
+          org.gradle.parallel=true
+          org.gradle.caching=true
+          EOF
+
+      - name: Delete .cxx
+        run: |
+          rm -rf android/app/.cxx
+          rm -rf android/app/build
+
+      - name: Decode keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_B64 }}" | base64 -d > android/app/release.jks
+
+      - name: Create key.properties for Gradle signing
+        run: |
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}"
+            echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}"
+          } > android/key.properties
+
+      - name: Build Release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon clean :app:assembleRelease
+
+      - name: Set unique Release Tag
+        run: |
+          BASE="${APP_NAME_SAFE}-${VERSION_NAME}"
+          echo "REL_TAG=$BASE" >> $GITHUB_ENV
+          echo "REL_NAME=$BASE" >> $GITHUB_ENV
+
+      - name: Get signed APK from Gradle (rename)
+        run: |
+          set -e
+          APK_DIR="android/app/build/outputs/apk/release"
+          SRC_APK=$(find "$APK_DIR" -type f -name "*release*.apk" ! -name "*unsigned*" | head -n 1)
+          FINAL_APK="$APK_DIR/${APP_NAME_SAFE}-${VERSION_NAME}.apk"
+          if [ -z "$SRC_APK" ]; then
+            find android/app/build/outputs/apk -type f -name "*.apk" || true
+            exit 1
+          fi
+          mv "$SRC_APK" "$FINAL_APK"
+          echo "SIGNED_APK=$FINAL_APK" >> $GITHUB_ENV
+
+      - name: Verify signed APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.1.0/apksigner" verify --verbose "${{ env.SIGNED_APK }}"
+
+      - name: Create GitHub Release + Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ env.REL_TAG }}"
+          name: "${{ env.REL_NAME }}"
+          files: |
+            ${{ env.SIGNED_APK }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

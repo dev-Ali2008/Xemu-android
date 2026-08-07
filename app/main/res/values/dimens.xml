@@ -1,0 +1,4 @@
+<resources>
+  <dimen name="top_level_card_outer_padding_horizontal">8dp</dimen>
+  <dimen name="top_level_card_outer_padding_vertical">12dp</dimen>
+</resources>

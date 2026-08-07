@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/tab_content_audio"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+
+  <!-- AUDIO -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_audio"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_use_dsp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_use_dsp"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_use_dsp_jit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/settings_use_dsp_jit"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_hrtf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/settings_hrtf"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_audio_driver"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+      <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_audio_driver"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_audio_opensles"
+        style="?attr/materialButtonOutlinedStyle"
+        app:backgroundTint="@color/settings_toggle_btn_bg"
+        app:strokeColor="@color/xanite_accent"
+        app:strokeWidth="1dp"
+        android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_audio_driver_opensles"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_audio_aaudio"
+        style="?attr/materialButtonOutlinedStyle"
+        app:backgroundTint="@color/settings_toggle_btn_bg"
+        app:strokeColor="@color/xanite_accent"
+        app:strokeWidth="1dp"
+        android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_audio_driver_aaudio"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_audio_disabled"
+        style="?attr/materialButtonOutlinedStyle"
+        app:backgroundTint="@color/settings_toggle_btn_bg"
+        app:strokeColor="@color/xanite_accent"
+        app:strokeWidth="1dp"
+        android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          android:text="@string/settings_audio_driver_disabled"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </com.google.android.material.button.MaterialButtonToggleGroup>
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

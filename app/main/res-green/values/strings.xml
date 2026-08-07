@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the app name differs; every other string falls through to main/res. -->
+<resources>
+  <string name="app_name">Xanite</string>
+  <string name="setup_title">Welcome to Xanite</string>
+</resources>

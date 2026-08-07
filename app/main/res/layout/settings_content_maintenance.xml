@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/tab_content_maintenance"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+
+    <!-- Debugging -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_maintenance"
+        android:textAllCaps="true"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_show_fps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_show_fps"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_debug_logs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/settings_debug_logs_enable"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="52dp"
+        android:text="@string/settings_debug_logs_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_active_dev_logs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/settings_active_dev_logs_enable"
+        android:textColor="#FFF6EB"
+        android:textSize="14sp" />
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="52dp"
+        android:text="@string/settings_active_dev_logs_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_export_debug_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_export_debug_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_copy_debug_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_copy_debug_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_clear_debug_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_clear_debug_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- Crash & Session Reports -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_crash_report"
+        android:textAllCaps="true"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/text_last_crash_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#BFA898"
+        android:textSize="13sp" />
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/settings_crash_autocopy_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_copy_crash_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_copy_crash_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_dismiss_crash_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_dismiss_crash_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="10dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_section_session_report"
+        android:textAllCaps="true"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/text_last_session_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#BFA898"
+        android:textSize="13sp" />
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/settings_session_autocopy_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_copy_session_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_copy_session_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_dismiss_session_log"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_dismiss_session_log_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- Emulator Files -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:letterSpacing="0.12"
+        android:text="@string/settings_save_backup_title"
+        android:textAllCaps="true"
+        android:textColor="@color/xanite_accent"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/text_save_storage_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:textColor="#FFF6EB"
+        android:textIsSelectable="true"
+        android:textSize="13sp" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_change_save_hdd"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/settings_change_save_hdd_action"
+        android:textColor="@color/settings_toggle_btn_text"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/settings_toggle_btn_bg" />
+
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/settings_emulator_files_hint"
+        android:textColor="#BFA898"
+        android:textSize="12sp" />
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_import_emulator_files"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_import_emulator_files_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_export_emulator_files"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_export_emulator_files_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- Maintenance Actions -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_clear_system_cache"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_clear_cache_action"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_redo_setup_wizard"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="0dp"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:layout_weight="1"
+          app:backgroundTint="@color/settings_toggle_btn_bg"
+          android:text="@string/settings_redo_setup_wizard"
+          android:textColor="@color/settings_toggle_btn_text"
+          android:textSize="13sp"
+          android:textStyle="bold" />
+      </LinearLayout>
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- Gold activation. Hidden entirely on the green skin, which has no
+       licensing; visibility is driven by BuildConfig.GOLD_LICENSING_REQUIRED. -->
+  <com.google.android.material.card.MaterialCardView
+    android:id="@+id/card_account_license"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:visibility="gone"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_tab_account"
+        android:textColor="@color/xanite_accent"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08" />
+
+      <TextView
+        android:id="@+id/text_account_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="#E8E0CC"
+        android:textSize="13sp"
+        android:lineSpacingExtra="4dp" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_refresh_license"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/account_refresh"
+        android:textColor="@color/settings_toggle_btn_text"
+        android:textStyle="bold"
+        app:backgroundTint="@color/settings_toggle_btn_bg" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_unbind_device"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/account_unbind"
+        android:textColor="#FF8A80"
+        android:textStyle="bold"
+        app:backgroundTint="@color/settings_toggle_btn_bg" />
+    </LinearLayout>
+  </com.google.android.material.card.MaterialCardView>
+
+  <!-- In-app privacy policy link. -->
+  <com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#1A170D"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/xanite_accent_33"
+    app:strokeWidth="1dp">
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/btn_privacy_policy"
+      style="?attr/materialButtonOutlinedStyle"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:layout_margin="16dp"
+      android:text="@string/settings_privacy_policy"
+      android:textColor="@color/settings_toggle_btn_text"
+      android:textStyle="bold"
+      app:backgroundTint="@color/settings_toggle_btn_bg" />
+  </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

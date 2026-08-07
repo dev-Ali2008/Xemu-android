@@ -1,0 +1,59 @@
+<resources>
+  <!-- Backgrounds -->
+  <color name="xaniteog_black">#0B0808</color>
+  <!-- Deep charcoal dashboard base + radial gold glow stops -->
+  <color name="xaniteog_charcoal">#0D0B08</color>
+  <color name="xaniteog_glow_strong">#4DFFD700</color>
+  <color name="xaniteog_glow_soft">#1AFFD700</color>
+  <color name="xaniteog_glow_floor">#14FFD700</color>
+  <color name="xaniteog_surface">#14120D</color>
+  <color name="xaniteog_surface_variant">#1D1915</color>
+  <color name="xaniteog_surface_container">#261F1A</color>
+  <color name="xaniteog_surface_container_high">#2E251E</color>
+
+  <!-- Text -->
+  <color name="xaniteog_text">#FFF6EB</color>
+  <color name="xaniteog_text_muted">#BFA898</color>
+
+  <!-- Gold — primary accent -->
+  <color name="xaniteog_green">#FFD700</color>
+  <color name="xaniteog_green_light">#FFD700</color>
+  <color name="xaniteog_green_dark">#FFD700</color>
+  <color name="xaniteog_green_container">#524A1A</color>
+
+  <!-- Notice -->
+  <color name="xaniteog_notice">#FFD54F</color>
+
+  <!-- Danger / warning -->
+  <color name="xaniteog_warning">#FF6B6B</color>
+  <color name="xaniteog_warning_container">#4A1515</color>
+
+  <!-- Borders -->
+  <color name="xaniteog_outline">#FFD700</color>
+  <color name="xaniteog_outline_variant">#2E251E</color>
+  <color name="xaniteog_outline_shadow">#332B15</color>
+
+  <!--
+    Accent ramp. Layouts used to hardcode #FFD700 and its alpha variants in
+    ~273 places, which made re-skinning impossible. Everything now points at
+    these, so a product flavor only has to override this block.
+    Suffix = alpha byte, e.g. accent_33 == #33FFD700.
+  -->
+  <color name="xanite_accent">#FFD700</color>
+  <color name="xanite_accent_cc">#CCFFD700</color>
+  <color name="xanite_accent_aa">#AAFFD700</color>
+  <color name="xanite_accent_99">#99FFD700</color>
+  <color name="xanite_accent_88">#88FFD700</color>
+  <color name="xanite_accent_66">#66FFD700</color>
+  <color name="xanite_accent_55">#55FFD700</color>
+  <color name="xanite_accent_4d">#4DFFD700</color>
+  <color name="xanite_accent_33">#33FFD700</color>
+  <color name="xanite_accent_22">#22FFD700</color>
+  <color name="xanite_accent_1a">#1AFFD700</color>
+  <color name="xanite_accent_14">#14FFD700</color>
+
+  <!-- Dashboard background gradient stops -->
+  <color name="xanite_bg_grad_start">#030303</color>
+  <color name="xanite_bg_grad_center">#181204</color>
+  <color name="xanite_bg_grad_end">#5A4100</color>
+</resources>

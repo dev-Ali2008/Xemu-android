@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple phone-in-portrait glyph: rounded rectangle outline (stroke only,
+     no fillColor so app:iconTint recolors just the outline) plus a short
+     home-indicator bar near the bottom, matching the 24dp / 960 viewport
+     convention used by the other ic_xaniteog_*.xml icons in this project. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="24dp"
+  android:height="24dp"
+  android:viewportWidth="960"
+  android:viewportHeight="960">
+
+  <!-- Phone chassis outline -->
+  <path
+    android:strokeColor="@android:color/white"
+    android:strokeWidth="52"
+    android:pathData="
+      M 388,140
+      H 572
+      A 92,92 0 0 1 664,232
+      V 728
+      A 92,92 0 0 1 572,820
+      H 388
+      A 92,92 0 0 1 296,728
+      V 232
+      A 92,92 0 0 1 388,140
+      Z" />
+
+  <!-- Home indicator bar -->
+  <path
+    android:fillColor="@android:color/white"
+    android:pathData="M 430,748 H 530 A 20,20 0 0 1 530,788 H 430 A 20,20 0 0 1 430,748 Z" />
+</vector>

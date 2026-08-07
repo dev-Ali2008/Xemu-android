@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:clipToPadding="false"
+  android:fillViewport="true"
+  android:paddingHorizontal="24dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingVertical="16dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <ImageView
+      android:layout_width="40dp"
+      android:layout_height="40dp"
+      android:contentDescription="@string/setup_flash_title"
+      android:src="@drawable/ic_xaniteog_memory"
+      app:tint="@color/xaniteog_green" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:text="@string/setup_bios_step_title"
+      android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+      android:textColor="@color/xaniteog_text"
+      android:textStyle="bold" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:text="@string/setup_bios_step_subtitle"
+      android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+      android:textColor="@color/xaniteog_text_muted" />
+
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/card_mcpx"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="6dp"
+      app:cardBackgroundColor="@color/xaniteog_surface_variant"
+      app:cardCornerRadius="10dp"
+      app:cardElevation="3dp"
+      app:strokeColor="@color/xaniteog_outline_variant"
+      app:strokeWidth="1dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+          <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_xaniteog_upload_file"
+            app:tint="@color/xaniteog_green"
+            android:contentDescription="@string/setup_mcpx_title" />
+
+          <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/setup_mcpx_title"
+            android:textAppearance="@style/TextAppearance.Material3.LabelLarge" />
+
+          <TextView
+            android:id="@+id/setup_status_mcpx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/setup_card_status_unset"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="@color/xaniteog_text_muted" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_pick_mcpx"
+          style="@style/Widget.Xaniteog.Button.Outlined.Pill"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:minHeight="0dp"
+          android:text="@string/setup_pick_mcpx"
+          app:icon="@drawable/ic_xaniteog_upload_file"
+          app:iconGravity="textStart"
+          app:iconPadding="6dp" />
+
+        <TextView
+          android:id="@+id/mcpx_path_text"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:background="@drawable/setup_wizard_path_background"
+          android:ellipsize="middle"
+          android:maxLines="1"
+          android:paddingVertical="2dp"
+          android:text="@string/setup_not_set"
+          android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+          android:textColor="@color/xaniteog_text_muted" />
+      </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/card_flash"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      app:cardBackgroundColor="@color/xaniteog_surface_variant"
+      app:cardCornerRadius="10dp"
+      app:cardElevation="3dp"
+      app:strokeColor="@color/xaniteog_outline_variant"
+      app:strokeWidth="1dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+          <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_xaniteog_memory"
+            app:tint="@color/xaniteog_green"
+            android:contentDescription="@string/setup_flash_title" />
+
+          <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/setup_flash_title"
+            android:textAppearance="@style/TextAppearance.Material3.LabelLarge" />
+
+          <TextView
+            android:id="@+id/setup_status_flash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/setup_card_status_unset"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="@color/xaniteog_text_muted" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_pick_flash"
+          style="@style/Widget.Xaniteog.Button.Outlined.Pill"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:minHeight="0dp"
+          android:text="@string/setup_pick_flash"
+          app:icon="@drawable/ic_xaniteog_memory"
+          app:iconGravity="textStart"
+          app:iconPadding="6dp" />
+
+        <TextView
+          android:id="@+id/flash_path_text"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:background="@drawable/setup_wizard_path_background"
+          android:ellipsize="middle"
+          android:maxLines="1"
+          android:paddingVertical="2dp"
+          android:text="@string/setup_not_set"
+          android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+          android:textColor="@color/xaniteog_text_muted" />
+      </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/card_hdd"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:layout_marginBottom="2dp"
+      app:cardBackgroundColor="@color/xaniteog_surface_variant"
+      app:cardCornerRadius="10dp"
+      app:cardElevation="3dp"
+      app:strokeColor="@color/xaniteog_outline_variant"
+      app:strokeWidth="1dp">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+          <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_xaniteog_hard_drive"
+            app:tint="@color/xaniteog_green"
+            android:contentDescription="@string/setup_hdd_title" />
+
+          <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/setup_hdd_title"
+            android:textAppearance="@style/TextAppearance.Material3.LabelLarge" />
+
+          <TextView
+            android:id="@+id/setup_status_hdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/setup_card_status_unset"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="@color/xaniteog_text_muted" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_pick_hdd"
+          style="@style/Widget.Xaniteog.Button.Outlined.Pill"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:minHeight="0dp"
+          android:text="@string/setup_pick_hdd"
+          app:icon="@drawable/ic_xaniteog_hard_drive"
+          app:iconGravity="textStart"
+          app:iconPadding="6dp" />
+
+        <TextView
+          android:id="@+id/hdd_path_text"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:background="@drawable/setup_wizard_path_background"
+          android:ellipsize="middle"
+          android:maxLines="1"
+          android:paddingVertical="2dp"
+          android:text="@string/setup_not_set"
+          android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+          android:textColor="@color/xaniteog_text_muted" />
+      </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+  </LinearLayout>
+  </LinearLayout>
+</androidx.core.widget.NestedScrollView>

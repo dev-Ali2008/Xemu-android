@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Green skin. Overrides only the accent ramp and background gradient from
+  main/res/values/colors.xml - every other colour falls through unchanged, so
+  this file is the whole difference between Xanite and Xanite Gold.
+
+  Alpha suffixes mirror the gold ramp exactly (accent_33 == #33<accent>).
+-->
+<resources>
+  <!-- Accent ramp -->
+  <color name="xanite_accent">#5FD35F</color>
+  <color name="xanite_accent_cc">#CC5FD35F</color>
+  <color name="xanite_accent_aa">#AA5FD35F</color>
+  <color name="xanite_accent_99">#995FD35F</color>
+  <color name="xanite_accent_88">#885FD35F</color>
+  <color name="xanite_accent_66">#665FD35F</color>
+  <color name="xanite_accent_55">#555FD35F</color>
+  <color name="xanite_accent_4d">#4D5FD35F</color>
+  <color name="xanite_accent_33">#335FD35F</color>
+  <color name="xanite_accent_22">#225FD35F</color>
+  <color name="xanite_accent_1a">#1A5FD35F</color>
+  <color name="xanite_accent_14">#145FD35F</color>
+
+  <!-- Dashboard background: dark green instead of warm brown -->
+  <color name="xanite_bg_grad_start">#030503</color>
+  <color name="xanite_bg_grad_center">#0A1A0C</color>
+  <color name="xanite_bg_grad_end">#145A22</color>
+
+  <!-- Legacy semantic names still referenced by themes -->
+  <color name="xaniteog_green">#5FD35F</color>
+  <color name="xaniteog_green_light">#7FE07F</color>
+  <color name="xaniteog_green_dark">#3FA33F</color>
+  <color name="xaniteog_green_container">#1E4A1E</color>
+  <color name="xaniteog_outline">#5FD35F</color>
+  <color name="xaniteog_glow_strong">#4D5FD35F</color>
+  <color name="xaniteog_glow_soft">#1A5FD35F</color>
+  <color name="xaniteog_glow_floor">#145FD35F</color>
+</resources>

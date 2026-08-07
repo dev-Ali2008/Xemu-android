@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backdrop tone sampled from the corners of the green logo artwork, replacing
+  gold's #D2A33F. The adaptive icon draws the grid bitmap instead, but this is
+  what pre-O launchers and any @color/ic_launcher_background reference fall
+  back to, so the two must agree.
+-->
+<resources>
+    <color name="ic_launcher_background">#022806</color>
+</resources>

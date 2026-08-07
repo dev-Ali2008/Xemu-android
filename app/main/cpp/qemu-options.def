@@ -1,0 +1,1105 @@
+﻿
+DEFHEADING(Standard options:)
+
+DEF("help", 0, QEMU_OPTION_h,
+    "-h or -help     display this help and exit\n", QEMU_ARCH_ALL)
+
+DEF("version", 0, QEMU_OPTION_version,
+    "-version        display version information and exit\n", QEMU_ARCH_ALL)
+
+DEF("machine", HAS_ARG, QEMU_OPTION_machine, \
+    "-machine [type=]name[,prop[=value][,...]]\n"
+    "                selects emulated machine ('-machine help' for list)\n"
+    "                property accel=accel1[:accel2[:...]] selects accelerator\n"
+    "                supported accelerators are kvm, xen, hvf, nvmm, whpx, mshv or tcg (default: tcg)\n"
+    "                vmport=on|off|auto controls emulation of vmport (default: auto)\n"
+    "                dump-guest-core=on|off include guest memory in a core dump (default=on)\n"
+    "                mem-merge=on|off controls memory merge support (default: on)\n"
+    "                aes-key-wrap=on|off controls support for AES key wrapping (default=on)\n"
+    "                dea-key-wrap=on|off controls support for DEA key wrapping (default=on)\n"
+    "                suppress-vmdesc=on|off disables self-describing migration (default=off)\n"
+    "                nvdimm=on|off controls NVDIMM support (default=off)\n"
+    "                memory-encryption=@var{} memory encryption object to use (default=none)\n"
+    "                hmat=on|off controls ACPI HMAT support (default=off)\n"
+    "                spcr=on|off controls ACPI SPCR support (default=on)\n"
+#ifdef CONFIG_POSIX
+    "                aux-ram-share=on|off allocate auxiliary guest RAM as shared (default: off)\n"
+#endif
+    "                memory-backend='backend-id' specifies explicitly provided backend for main RAM (default=none)\n"
+    "                cxl-fmw.0.targets.0=firsttarget,cxl-fmw.0.targets.1=secondtarget,cxl-fmw.0.size=size[,cxl-fmw.0.interleave-granularity=granularity]\n"
+    "                smp-cache.0.cache=cachename,smp-cache.0.topology=topologylevel\n",
+    QEMU_ARCH_ALL)
+
+DEF("M", HAS_ARG, QEMU_OPTION_M,
+    "                sgx-epc.0.memdev=memid,sgx-epc.0.node=numaid\n",
+    QEMU_ARCH_ALL)
+
+
+DEF("cpu", HAS_ARG, QEMU_OPTION_cpu,
+    "-cpu cpu        select CPU ('-cpu help' for list)\n", QEMU_ARCH_ALL)
+
+DEF("accel", HAS_ARG, QEMU_OPTION_accel,
+    "-accel [accel=]accelerator[,prop[=value][,...]]\n"
+    "                select accelerator (kvm, xen, hvf, nvmm, whpx, mshv or tcg; use 'help' for a list)\n"
+    "                igd-passthru=on|off (enable Xen integrated Intel graphics passthrough, default=off)\n"
+    "                kernel-irqchip=on|off|split controls accelerated irqchip support (default=on)\n"
+    "                kvm-shadow-mem=size of KVM shadow MMU in bytes\n"
+    "                one-insn-per-tb=on|off (one guest instruction per TCG translation block)\n"
+    "                split-wx=on|off (enable TCG split w^x mapping)\n"
+    "                tb-size=n (TCG translation block cache size)\n"
+    "                dirty-ring-size=n (KVM dirty ring GFN count, default 0)\n"
+    "                eager-split-size=n (KVM Eager Page Split chunk size, default 0, disabled. ARM only)\n"
+    "                notify-vmexit=run|internal-error|disable,notify-window=n (enable notify VM exit and set notify window, x86 only)\n"
+    "                thread=single|multi (enable multi-threaded TCG)\n"
+    "                device=path (KVM device path, default /dev/kvm)\n", QEMU_ARCH_ALL)
+
+DEF("smp", HAS_ARG, QEMU_OPTION_smp,
+    "-smp [[cpus=]n][,maxcpus=maxcpus][,drawers=drawers][,books=books][,sockets=sockets]\n"
+    "               [,dies=dies][,clusters=clusters][,modules=modules][,cores=cores]\n"
+    "               [,threads=threads]\n"
+    "                set the number of initial CPUs to 'n' [default=1]\n"
+    "                maxcpus= maximum number of total CPUs, including\n"
+    "                offline CPUs for hotplug, etc\n"
+    "                drawers= number of drawers on the machine board\n"
+    "                books= number of books in one drawer\n"
+    "                sockets= number of sockets in one book\n"
+    "                dies= number of dies in one socket\n"
+    "                clusters= number of clusters in one die\n"
+    "                modules= number of modules in one cluster\n"
+    "                cores= number of cores in one module\n"
+    "                threads= number of threads in one core\n"
+    "Note: Different machines may have different subsets of the CPU topology\n"
+    "      parameters supported, so the actual meaning of the supported parameters\n"
+    "      will vary accordingly. For example, for a machine type that supports a\n"
+    "      three-level CPU hierarchy of sockets/cores/threads, the parameters will\n"
+    "      sequentially mean as below:\n"
+    "                sockets means the number of sockets on the machine board\n"
+    "                cores means the number of cores in one socket\n"
+    "                threads means the number of threads in one core\n"
+    "      For a particular machine type board, an expected CPU topology hierarchy\n"
+    "      can be defined through the supported sub-option. Unsupported parameters\n"
+    "      can also be provided in addition to the sub-option, but their values\n"
+    "      must be set as 1 in the purpose of correct parsing.\n",
+    QEMU_ARCH_ALL)
+
+DEF("numa", HAS_ARG, QEMU_OPTION_numa,
+    "-numa node[,mem=size][,cpus=firstcpu[-lastcpu]][,nodeid=node][,initiator=node]\n"
+    "-numa node[,memdev=id][,cpus=firstcpu[-lastcpu]][,nodeid=node][,initiator=node]\n"
+    "-numa dist,src=source,dst=destination,val=distance\n"
+    "-numa cpu,node-id=node[,socket-id=x][,core-id=y][,thread-id=z]\n"
+    "-numa hmat-lb,initiator=node,target=node,hierarchy=memory|first-level|second-level|third-level,data-type=access-latency|read-latency|write-latency[,latency=lat][,bandwidth=bw]\n"
+    "-numa hmat-cache,node-id=node,size=size,level=level[,associativity=none|direct|complex][,policy=none|write-back|write-through][,line=size]\n",
+    QEMU_ARCH_ALL)
+
+DEF("add-fd", HAS_ARG, QEMU_OPTION_add_fd,
+    "-add-fd fd=fd,set=set[,opaque=opaque]\n"
+    "                Add 'fd' to fd 'set'\n", QEMU_ARCH_ALL)
+
+DEF("set", HAS_ARG, QEMU_OPTION_set,
+    "-set group.id.arg=value\n"
+    "                set <arg> parameter for item <id> of type <group>\n"
+    "                i.e. -set drive.$id.file=/path/to/image\n", QEMU_ARCH_ALL)
+
+DEF("global", HAS_ARG, QEMU_OPTION_global,
+    "-global driver.property=value\n"
+    "-global driver=driver,property=property,value=value\n"
+    "                set a global default for a driver property\n",
+    QEMU_ARCH_ALL)
+
+DEF("boot", HAS_ARG, QEMU_OPTION_boot,
+    "-boot [order=drives][,once=drives][,menu=on|off]\n"
+    "      [,splash=sp_name][,splash-time=sp_time][,reboot-timeout=rb_time][,strict=on|off]\n"
+    "                'drives': floppy (a), hard disk (c), CD-ROM (d), network (n)\n"
+    "                'sp_name': the file's name that would be passed to bios as logo picture, if menu=on\n"
+    "                'sp_time': the period that splash picture last if menu=on, unit is ms\n"
+    "                'rb_timeout': the timeout before guest reboot when boot failed, unit is ms\n",
+    QEMU_ARCH_ALL)
+
+DEF("m", HAS_ARG, QEMU_OPTION_m,
+    "-m [size=]megs[,slots=n,maxmem=size]\n"
+    "                configure guest RAM\n"
+    "                size: initial amount of guest memory\n"
+    "                slots: number of hotplug slots (default: none)\n"
+    "                maxmem: maximum amount of guest memory (default: none)\n"
+    "                Note: Some architectures might enforce a specific granularity\n",
+    QEMU_ARCH_ALL)
+
+DEF("mem-path", HAS_ARG, QEMU_OPTION_mempath,
+    "-mem-path FILE  provide backing storage for guest RAM\n", QEMU_ARCH_ALL)
+
+DEF("mem-prealloc", 0, QEMU_OPTION_mem_prealloc,
+    "-mem-prealloc   preallocate guest memory (use with -mem-path)\n",
+    QEMU_ARCH_ALL)
+
+DEF("k", HAS_ARG, QEMU_OPTION_k,
+    "-k language     use keyboard layout (for example 'fr' for French)\n",
+    QEMU_ARCH_ALL)
+
+
+DEF("audio", HAS_ARG, QEMU_OPTION_audio,
+    "-audio [driver=]driver[,prop[=value][,...]]\n"
+    "                specifies default audio backend when `audiodev` is not\n"
+    "                used to create a machine or sound device;"
+    "                options are the same as for -audiodev\n"
+    "-audio [driver=]driver,model=value[,prop[=value][,...]]\n"
+    "                specifies the audio backend and device to use;\n"
+    "                apart from 'model', options are the same as for -audiodev.\n"
+    "                use '-audio model=help' to show possible devices.\n",
+    QEMU_ARCH_ALL)
+
+DEF("audiodev", HAS_ARG, QEMU_OPTION_audiodev,
+    "-audiodev [driver=]driver,id=id[,prop[=value][,...]]\n"
+    "                specifies the audio backend to use\n"
+    "                Use ``-audiodev help`` to list the available drivers\n"
+    "                id= identifier of the backend\n"
+    "                timer-period= timer period in microseconds\n"
+    "                in|out.mixing-engine= use mixing engine to mix streams inside QEMU\n"
+    "                in|out.fixed-settings= use fixed settings for host audio\n"
+    "                in|out.frequency= frequency to use with fixed settings\n"
+    "                in|out.channels= number of channels to use with fixed settings\n"
+    "                in|out.format= sample format to use with fixed settings\n"
+    "                valid values: s8, s16, s32, u8, u16, u32, f32\n"
+    "                in|out.voices= number of voices to use\n"
+    "                in|out.buffer-length= length of buffer in microseconds\n"
+    "-audiodev none,id=id,[,prop[=value][,...]]\n"
+    "                dummy driver that discards all output\n"
+#ifdef CONFIG_AUDIO_ALSA
+    "-audiodev alsa,id=id[,prop[=value][,...]]\n"
+    "                in|out.dev= name of the audio device to use\n"
+    "                in|out.period-length= length of period in microseconds\n"
+    "                in|out.try-poll= attempt to use poll mode\n"
+    "                threshold= threshold (in microseconds) when playback starts\n"
+#endif
+#ifdef CONFIG_AUDIO_COREAUDIO
+    "-audiodev coreaudio,id=id[,prop[=value][,...]]\n"
+    "                in|out.buffer-count= number of buffers\n"
+#endif
+#ifdef CONFIG_AUDIO_DSOUND
+    "-audiodev dsound,id=id[,prop[=value][,...]]\n"
+    "                latency= add extra latency to playback in microseconds\n"
+#endif
+#ifdef CONFIG_AUDIO_OSS
+    "-audiodev oss,id=id[,prop[=value][,...]]\n"
+    "                in|out.dev= path of the audio device to use\n"
+    "                in|out.buffer-count= number of buffers\n"
+    "                in|out.try-poll= attempt to use poll mode\n"
+    "                try-mmap= try using memory mapped access\n"
+    "                exclusive= open device in exclusive mode\n"
+    "                dsp-policy= set timing policy (0..10), -1 to use fragment mode\n"
+#endif
+#ifdef CONFIG_AUDIO_PA
+    "-audiodev pa,id=id[,prop[=value][,...]]\n"
+    "                server= PulseAudio server address\n"
+    "                in|out.name= source/sink device name\n"
+    "                in|out.latency= desired latency in microseconds\n"
+#endif
+#ifdef CONFIG_AUDIO_PIPEWIRE
+    "-audiodev pipewire,id=id[,prop[=value][,...]]\n"
+    "                in|out.name= source/sink device name\n"
+    "                in|out.stream-name= name of pipewire stream\n"
+    "                in|out.latency= desired latency in microseconds\n"
+#endif
+#ifdef CONFIG_AUDIO_SDL
+    "-audiodev sdl,id=id[,prop[=value][,...]]\n"
+    "                in|out.buffer-count= number of buffers\n"
+#endif
+#ifdef CONFIG_AUDIO_SNDIO
+    "-audiodev sndio,id=id[,prop[=value][,...]]\n"
+#endif
+#ifdef CONFIG_SPICE
+    "-audiodev spice,id=id[,prop[=value][,...]]\n"
+#endif
+#ifdef CONFIG_DBUS_DISPLAY
+    "-audiodev dbus,id=id[,prop[=value][,...]]\n"
+#endif
+    "-audiodev wav,id=id[,prop[=value][,...]]\n"
+    "                path= path of wav file to record\n",
+    QEMU_ARCH_ALL)
+
+DEF("device", HAS_ARG, QEMU_OPTION_device,
+    "-device driver[,prop[=value][,...]]\n"
+    "                add device (based on driver)\n"
+    "                prop=value,... sets driver properties\n"
+    "                use '-device help' to print all possible drivers\n"
+    "                use '-device driver,help' to print all possible properties\n",
+    QEMU_ARCH_ALL)
+
+DEF("name", HAS_ARG, QEMU_OPTION_name,
+    "-name string1[,process=string2][,debug-threads=on|off]\n"
+    "                set the name of the guest\n"
+    "                string1 sets the window title and string2 the process name\n"
+    "                When debug-threads is enabled, individual threads are given a separate name\n"
+    "                NOTE: The thread names are for debugging and not a stable API.\n",
+    QEMU_ARCH_ALL)
+
+DEF("uuid", HAS_ARG, QEMU_OPTION_uuid,
+    "-uuid %08x-%04x-%04x-%04x-%012x\n"
+    "                specify machine UUID\n", QEMU_ARCH_ALL)
+
+DEFHEADING()
+
+DEFHEADING(Block device options:)
+
+
+DEF("fda", HAS_ARG, QEMU_OPTION_fda,
+    "-fda/-fdb file  use 'file' as floppy disk 0/1 image\n", QEMU_ARCH_ALL)
+DEF("fdb", HAS_ARG, QEMU_OPTION_fdb, "", QEMU_ARCH_ALL)
+
+DEF("hda", HAS_ARG, QEMU_OPTION_hda,
+    "-hda/-hdb file  use 'file' as hard disk 0/1 image\n", QEMU_ARCH_ALL)
+DEF("hdb", HAS_ARG, QEMU_OPTION_hdb, "", QEMU_ARCH_ALL)
+DEF("hdc", HAS_ARG, QEMU_OPTION_hdc,
+    "-hdc/-hdd file  use 'file' as hard disk 2/3 image\n", QEMU_ARCH_ALL)
+DEF("hdd", HAS_ARG, QEMU_OPTION_hdd, "", QEMU_ARCH_ALL)
+
+DEF("cdrom", HAS_ARG, QEMU_OPTION_cdrom,
+    "-cdrom file     use 'file' as CD-ROM image\n",
+    QEMU_ARCH_ALL)
+
+DEF("blockdev", HAS_ARG, QEMU_OPTION_blockdev,
+    "-blockdev [driver=]driver[,node-name=N][,discard=ignore|unmap]\n"
+    "          [,cache.direct=on|off][,cache.no-flush=on|off]\n"
+    "          [,read-only=on|off][,auto-read-only=on|off]\n"
+    "          [,force-share=on|off][,detect-zeroes=on|off|unmap]\n"
+    "          [,driver specific parameters...]\n"
+    "                configure a block backend\n", QEMU_ARCH_ALL)
+
+DEF("drive", HAS_ARG, QEMU_OPTION_drive,
+    "-drive [file=file][,if=type][,bus=n][,unit=m][,media=d][,index=i]\n"
+    "       [,cache=writethrough|writeback|none|directsync|unsafe][,format=f]\n"
+    "       [,snapshot=on|off][,rerror=ignore|stop|report]\n"
+    "       [,werror=ignore|stop|report|enospc][,id=name]\n"
+    "       [,aio=threads|native|io_uring]\n"
+    "       [,readonly=on|off][,copy-on-read=on|off]\n"
+    "       [,discard=ignore|unmap][,detect-zeroes=on|off|unmap]\n"
+    "       [[,bps=b]|[[,bps_rd=r][,bps_wr=w]]]\n"
+    "       [[,iops=i]|[[,iops_rd=r][,iops_wr=w]]]\n"
+    "       [[,bps_max=bm]|[[,bps_rd_max=rm][,bps_wr_max=wm]]]\n"
+    "       [[,iops_max=im]|[[,iops_rd_max=irm][,iops_wr_max=iwm]]]\n"
+    "       [[,iops_size=is]]\n"
+    "       [[,group=g]]\n"
+    "                use 'file' as a drive image\n", QEMU_ARCH_ALL)
+
+DEF("mtdblock", HAS_ARG, QEMU_OPTION_mtdblock,
+    "-mtdblock file  use 'file' as on-board Flash memory image\n",
+    QEMU_ARCH_ALL)
+
+DEF("sd", HAS_ARG, QEMU_OPTION_sd,
+    "-sd file        use 'file' as SecureDigital card image\n", QEMU_ARCH_ALL)
+
+DEF("snapshot", 0, QEMU_OPTION_snapshot,
+    "-snapshot       write to temporary files instead of disk image files\n",
+    QEMU_ARCH_ALL)
+
+DEF("fsdev", HAS_ARG, QEMU_OPTION_fsdev,
+    "-fsdev local,id=id,path=path,security_model=mapped-xattr|mapped-file|passthrough|none\n"
+    " [,writeout=immediate][,readonly=on][,fmode=fmode][,dmode=dmode]\n"
+    " [[,throttling.bps-total=b]|[[,throttling.bps-read=r][,throttling.bps-write=w]]]\n"
+    " [[,throttling.iops-total=i]|[[,throttling.iops-read=r][,throttling.iops-write=w]]]\n"
+    " [[,throttling.bps-total-max=bm]|[[,throttling.bps-read-max=rm][,throttling.bps-write-max=wm]]]\n"
+    " [[,throttling.iops-total-max=im]|[[,throttling.iops-read-max=irm][,throttling.iops-write-max=iwm]]]\n"
+    " [[,throttling.iops-size=is]]\n"
+    "-fsdev synth,id=id\n",
+    QEMU_ARCH_ALL)
+
+
+DEF("virtfs", HAS_ARG, QEMU_OPTION_virtfs,
+    "-virtfs local,path=path,mount_tag=tag,security_model=mapped-xattr|mapped-file|passthrough|none\n"
+    "        [,id=id][,writeout=immediate][,readonly=on][,fmode=fmode][,dmode=dmode][,multidevs=remap|forbid|warn]\n"
+    "-virtfs synth,mount_tag=tag[,id=id][,readonly=on]\n",
+    QEMU_ARCH_ALL)
+
+
+DEF("iscsi", HAS_ARG, QEMU_OPTION_iscsi,
+    "-iscsi [user=user][,password=password][,password-secret=secret-id]\n"
+    "       [,header-digest=CRC32C|CR32C-NONE|NONE-CRC32C|NONE]\n"
+    "       [,initiator-name=initiator-iqn][,id=target-iqn]\n"
+    "       [,timeout=timeout]\n"
+    "                iSCSI session parameters\n", QEMU_ARCH_ALL)
+
+
+DEFHEADING()
+
+DEFHEADING(USB convenience options:)
+
+DEF("usb", 0, QEMU_OPTION_usb,
+    "-usb            enable on-board USB host controller (if not enabled by default)\n",
+    QEMU_ARCH_ALL)
+
+DEF("usbdevice", HAS_ARG, QEMU_OPTION_usbdevice,
+    "-usbdevice name add the host or guest USB device 'name'\n",
+    QEMU_ARCH_ALL)
+
+DEFHEADING()
+
+DEFHEADING(Display options:)
+
+DEF("display", HAS_ARG, QEMU_OPTION_display,
+#if defined(CONFIG_SPICE)
+    "-display spice-app[,gl=on|off]\n"
+#endif
+#if defined(CONFIG_SDL)
+    "-display sdl[,gl=on|core|es|off][,grab-mod=<mod>][,show-cursor=on|off]\n"
+    "            [,window-close=on|off]\n"
+#endif
+#if defined(CONFIG_GTK)
+    "-display gtk[,full-screen=on|off][,gl=on|off][,grab-on-hover=on|off]\n"
+    "            [,show-tabs=on|off][,show-cursor=on|off][,window-close=on|off]\n"
+    "            [,show-menubar=on|off][,zoom-to-fit=on|off]\n"
+#endif
+#if defined(CONFIG_VNC)
+    "-display vnc=<display>[,<optargs>]\n"
+#endif
+#if defined(CONFIG_CURSES)
+    "-display curses[,charset=<encoding>]\n"
+#endif
+#if defined(CONFIG_COCOA)
+    "-display cocoa[,full-grab=on|off][,swap-opt-cmd=on|off]\n"
+    "              [,show-cursor=on|off][,left-command-key=on|off]\n"
+    "              [,full-screen=on|off][,zoom-to-fit=on|off]\n"
+#endif
+#if defined(CONFIG_OPENGL)
+    "-display egl-headless[,rendernode=<file>]\n"
+#endif
+#if defined(CONFIG_DBUS_DISPLAY)
+    "-display dbus[,addr=<dbusaddr>]\n"
+    "             [,gl=on|core|es|off][,rendernode=<file>]\n"
+#endif
+    "-display none\n"
+    "                select display backend type\n"
+    "                The default display is equivalent to\n                "
+#if defined(CONFIG_GTK)
+            "\"-display gtk\"\n"
+#elif defined(CONFIG_SDL)
+            "\"-display sdl\"\n"
+#elif defined(CONFIG_COCOA)
+            "\"-display cocoa\"\n"
+#elif defined(CONFIG_VNC)
+            "\"-vnc localhost:0,to=99,id=default\"\n"
+#else
+            "\"-display none\"\n"
+#endif
+    , QEMU_ARCH_ALL)
+
+DEF("nographic", 0, QEMU_OPTION_nographic,
+    "-nographic      disable graphical output and redirect serial I/Os to console\n",
+    QEMU_ARCH_ALL)
+
+#ifdef CONFIG_SPICE
+DEF("spice", HAS_ARG, QEMU_OPTION_spice,
+    "-spice [port=port][,tls-port=secured-port][,x509-dir=<dir>]\n"
+    "       [,x509-key-file=<file>][,x509-key-password=<file>]\n"
+    "       [,x509-cert-file=<file>][,x509-cacert-file=<file>]\n"
+    "       [,x509-dh-key-file=<file>][,addr=addr]\n"
+    "       [,ipv4=on|off][,ipv6=on|off][,unix=on|off]\n"
+    "       [,tls-ciphers=<list>]\n"
+    "       [,tls-channel=[main|display|cursor|inputs|record|playback]]\n"
+    "       [,plaintext-channel=[main|display|cursor|inputs|record|playback]]\n"
+    "       [,sasl=on|off][,disable-ticketing=on|off]\n"
+    "       [,password-secret=<secret-id>]\n"
+    "       [,image-compression=[auto_glz|auto_lz|quic|glz|lz|off]]\n"
+    "       [,jpeg-wan-compression=[auto|never|always]]\n"
+    "       [,zlib-glz-wan-compression=[auto|never|always]]\n"
+    "       [,streaming-video=[off|all|filter]][,disable-copy-paste=on|off]\n"
+    "       [,disable-agent-file-xfer=on|off][,agent-mouse=[on|off]]\n"
+    "       [,playback-compression=[on|off]][,seamless-migration=[on|off]]\n"
+    "       [,video-codec=<codec>\n"
+    "       [,max-refresh-rate=rate\n"
+    "       [,gl=[on|off]][,rendernode=<file>]\n"
+    "                enable spice\n"
+    "                at least one of {port, tls-port} is mandatory\n",
+    QEMU_ARCH_ALL)
+#endif
+
+DEF("vga", HAS_ARG, QEMU_OPTION_vga,
+    "-vga [std|cirrus|vmware|qxl|xenfb|tcx|cg3|virtio|none]\n"
+    "                select video card type\n", QEMU_ARCH_ALL)
+
+DEF("full-screen", 0, QEMU_OPTION_full_screen,
+    "-full-screen    start in full screen\n", QEMU_ARCH_ALL)
+
+DEF("g", HAS_ARG, QEMU_OPTION_g ,
+    "-g WxH[xDEPTH]  Set the initial graphical resolution and depth\n",
+    QEMU_ARCH_PPC | QEMU_ARCH_SPARC | QEMU_ARCH_M68K)
+
+#ifdef CONFIG_VNC
+DEF("vnc", HAS_ARG, QEMU_OPTION_vnc ,
+    "-vnc <display>  shorthand for -display vnc=<display>\n", QEMU_ARCH_ALL)
+#endif
+
+ARCHHEADING(, QEMU_ARCH_I386)
+
+ARCHHEADING(i386 target only:, QEMU_ARCH_I386)
+
+DEF("win2k-hack", 0, QEMU_OPTION_win2k_hack,
+    "-win2k-hack     use it when installing Windows 2000 to avoid a disk full bug\n",
+    QEMU_ARCH_I386)
+
+DEF("no-fd-bootchk", 0, QEMU_OPTION_no_fd_bootchk,
+    "-no-fd-bootchk  disable boot signature checking for floppy disks\n",
+    QEMU_ARCH_I386)
+
+DEF("acpitable", HAS_ARG, QEMU_OPTION_acpitable,
+    "-acpitable [sig=str][,rev=n][,oem_id=str][,oem_table_id=str][,oem_rev=n][,asl_compiler_id=str][,asl_compiler_rev=n][,{data|file}=file1[:file2]...]\n"
+    "                ACPI table description\n", QEMU_ARCH_I386)
+
+DEF("smbios", HAS_ARG, QEMU_OPTION_smbios,
+    "-smbios file=binary\n"
+    "                load SMBIOS entry from binary file\n"
+    "-smbios type=0[,vendor=str][,version=str][,date=str][,release=%d.%d]\n"
+    "              [,uefi=on|off][,vm=on|off]\n"
+    "                specify SMBIOS type 0 fields\n"
+    "-smbios type=1[,manufacturer=str][,product=str][,version=str][,serial=str]\n"
+    "              [,uuid=uuid][,sku=str][,family=str]\n"
+    "                specify SMBIOS type 1 fields\n"
+    "-smbios type=2[,manufacturer=str][,product=str][,version=str][,serial=str]\n"
+    "              [,asset=str][,location=str]\n"
+    "                specify SMBIOS type 2 fields\n"
+    "-smbios type=3[,manufacturer=str][,version=str][,serial=str][,asset=str]\n"
+    "              [,sku=str]\n"
+    "                specify SMBIOS type 3 fields\n"
+    "-smbios type=4[,sock_pfx=str][,manufacturer=str][,version=str][,serial=str]\n"
+    "              [,asset=str][,part=str][,max-speed=%d][,current-speed=%d]\n"
+    "              [,processor-family=%d][,processor-id=%d]\n"
+    "                specify SMBIOS type 4 fields\n"
+    "-smbios type=8[,external_reference=str][,internal_reference=str][,connector_type=%d][,port_type=%d]\n"
+    "                specify SMBIOS type 8 fields\n"
+    "-smbios type=11[,value=str][,path=filename]\n"
+    "                specify SMBIOS type 11 fields\n"
+    "-smbios type=17[,loc_pfx=str][,bank=str][,manufacturer=str][,serial=str]\n"
+    "               [,asset=str][,part=str][,speed=%d]\n"
+    "                specify SMBIOS type 17 fields\n"
+    "-smbios type=41[,designation=str][,kind=str][,instance=%d][,pcidev=str]\n"
+    "                specify SMBIOS type 41 fields\n",
+    QEMU_ARCH_I386 | QEMU_ARCH_ARM | QEMU_ARCH_LOONGARCH | QEMU_ARCH_RISCV)
+
+DEFHEADING()
+
+DEFHEADING(Network options:)
+
+DEF("netdev", HAS_ARG, QEMU_OPTION_netdev,
+#ifdef CONFIG_PASST
+    "-netdev passt,id=str[,path=file][,quiet=on|off][,vhost-user=on|off]\n"
+    "[,mtu=mtu][,address=addr][,netmask=mask][,mac=addr][,gateway=addr]\n"
+    "          [,interface=name][,outbound=address][,outbound-if4=name]\n"
+    "          [,outbound-if6=name][,dns=addr][,search=list][,fqdn=name]\n"
+    "          [,dhcp-dns=on|off][,dhcp-search=on|off][,map-host-loopback=addr]\n"
+    "          [,map-guest-addr=addr][,dns-forward=addr][,dns-host=addr]\n"
+    "          [,tcp=on|off][,udp=on|off][,icmp=on|off][,dhcp=on|off]\n"
+    "          [,ndp=on|off][,dhcpv6=on|off][,ra=on|off][,freebind=on|off]\n"
+    "          [,ipv4=on|off][,ipv6=on|off][,tcp-ports=spec][,udp-ports=spec]\n"
+    "          [,param=list]\n"
+    "                configure a passt network backend with ID 'str'\n"
+    "                if 'path' is not provided 'passt' will be started according to PATH\n"
+    "                by default, informational message of passt are not displayed (quiet=on)\n"
+    "                to display this message, use 'quiet=off'\n"
+    "                by default, passt will be started in socket-based mode, to enable vhost-mode,\n"
+    "                use 'vhost-user=on'\n"
+    "                for details on other options, refer to passt(1)\n"
+    "                'param' allows to pass any option defined by passt(1)\n"
+#endif
+#ifdef CONFIG_SLIRP
+    "-netdev user,id=str[,ipv4=on|off][,net=addr[/mask]][,host=addr]\n"
+    "         [,ipv6=on|off][,ipv6-net=addr[/int]][,ipv6-host=addr]\n"
+    "         [,restrict=on|off][,hostname=host][,dhcpstart=addr]\n"
+    "         [,dns=addr][,ipv6-dns=addr][,dnssearch=domain][,domainname=domain]\n"
+    "         [,tftp=dir][,tftp-server-name=name][,bootfile=f][,hostfwd=rule][,guestfwd=rule]"
+#ifndef _WIN32
+                                             "[,smb=dir[,smbserver=addr]]\n"
+#endif
+    "                configure a user mode network backend with ID 'str',\n"
+    "                its DHCP server and optional services\n"
+#endif
+#ifdef _WIN32
+    "-netdev tap,id=str,ifname=name\n"
+    "                configure a host TAP network backend with ID 'str'\n"
+#else
+    "-netdev tap,id=str[,fd=h][,fds=x:y:...:z][,ifname=name][,script=file][,downscript=dfile]\n"
+    "         [,br=bridge][,helper=helper][,sndbuf=nbytes][,vnet_hdr=on|off][,vhost=on|off]\n"
+    "         [,vhostfd=h][,vhostfds=x:y:...:z][,vhostforce=on|off][,queues=n]\n"
+    "         [,poll-us=n]\n"
+    "                configure a host TAP network backend with ID 'str'\n"
+    "                connected to a bridge (default=" DEFAULT_BRIDGE_INTERFACE ")\n"
+    "                use network scripts 'file' (default=" DEFAULT_NETWORK_SCRIPT ")\n"
+    "                to configure it and 'dfile' (default=" DEFAULT_NETWORK_DOWN_SCRIPT ")\n"
+    "                to deconfigure it\n"
+    "                use '[down]script=no' to disable script execution\n"
+    "                use network helper 'helper' (default=" DEFAULT_BRIDGE_HELPER ") to\n"
+    "                configure it\n"
+    "                use 'fd=h' to connect to an already opened TAP interface\n"
+    "                use 'fds=x:y:...:z' to connect to already opened multiqueue capable TAP interfaces\n"
+    "                use 'sndbuf=nbytes' to limit the size of the send buffer (the\n"
+    "                default is disabled 'sndbuf=0' to enable flow control set 'sndbuf=1048576')\n"
+    "                use vnet_hdr=off to avoid enabling the IFF_VNET_HDR tap flag\n"
+    "                use vnet_hdr=on to make the lack of IFF_VNET_HDR support an error condition\n"
+    "                use vhost=on to enable experimental in kernel accelerator\n"
+    "                    (only has effect for virtio guests which use MSIX)\n"
+    "                use vhostforce=on to force vhost on for non-MSIX virtio guests\n"
+    "                use 'vhostfd=h' to connect to an already opened vhost net device\n"
+    "                use 'vhostfds=x:y:...:z to connect to multiple already opened vhost net devices\n"
+    "                use 'queues=n' to specify the number of queues to be created for multiqueue TAP\n"
+    "                use 'poll-us=n' to specify the maximum number of microseconds that could be\n"
+    "                spent on busy polling for vhost net\n"
+    "-netdev bridge,id=str[,br=bridge][,helper=helper]\n"
+    "                configure a host TAP network backend with ID 'str' that is\n"
+    "                connected to a bridge (default=" DEFAULT_BRIDGE_INTERFACE ")\n"
+    "                using the program 'helper (default=" DEFAULT_BRIDGE_HELPER ")\n"
+#endif
+#ifdef __linux__
+    "-netdev l2tpv3,id=str,src=srcaddr,dst=dstaddr[,srcport=srcport][,dstport=dstport]\n"
+    "         [,rxsession=rxsession],txsession=txsession[,ipv6=on|off][,udp=on|off]\n"
+    "         [,cookie64=on|off][,counter][,pincounter][,txcookie=txcookie]\n"
+    "         [,rxcookie=rxcookie][,offset=offset]\n"
+    "                configure a network backend with ID 'str' connected to\n"
+    "                an Ethernet over L2TPv3 pseudowire.\n"
+    "                Linux kernel 3.3+ as well as most routers can talk\n"
+    "                L2TPv3. This transport allows connecting a VM to a VM,\n"
+    "                VM to a router and even VM to Host. It is a nearly-universal\n"
+    "                standard (RFC3931). Note - this implementation uses static\n"
+    "                pre-configured tunnels (same as the Linux kernel).\n"
+    "                use 'src=' to specify source address\n"
+    "                use 'dst=' to specify destination address\n"
+    "                use 'udp=on' to specify udp encapsulation\n"
+    "                use 'srcport=' to specify source udp port\n"
+    "                use 'dstport=' to specify destination udp port\n"
+    "                use 'ipv6=on' to force v6\n"
+    "                L2TPv3 uses cookies to prevent misconfiguration as\n"
+    "                well as a weak security measure\n"
+    "                use 'rxcookie=0x012345678' to specify a rxcookie\n"
+    "                use 'txcookie=0x012345678' to specify a txcookie\n"
+    "                use 'cookie64=on' to set cookie size to 64 bit, otherwise 32\n"
+    "                use 'counter=off' to force a 'cut-down' L2TPv3 with no counter\n"
+    "                use 'pincounter=on' to work around broken counter handling in peer\n"
+    "                use 'offset=X' to add an extra offset between header and data\n"
+#endif
+    "-netdev socket,id=str[,fd=h][,listen=[host]:port][,connect=host:port]\n"
+    "                configure a network backend to connect to another network\n"
+    "                using a socket connection\n"
+    "-netdev socket,id=str[,fd=h][,mcast=maddr:port[,localaddr=addr]]\n"
+    "                configure a network backend to connect to a multicast maddr and port\n"
+    "                use 'localaddr=addr' to specify the host address to send packets from\n"
+    "-netdev socket,id=str[,fd=h][,udp=host:port][,localaddr=host:port]\n"
+    "                configure a network backend to connect to another network\n"
+    "                using an UDP tunnel\n"
+    "-netdev stream,id=str[,server=on|off],addr.type=inet,addr.host=host,addr.port=port[,to=maxport][,numeric=on|off][,keep-alive=on|off][,mptcp=on|off][,addr.ipv4=on|off][,addr.ipv6=on|off][,reconnect-ms=milliseconds]\n"
+    "-netdev stream,id=str[,server=on|off],addr.type=unix,addr.path=path[,abstract=on|off][,tight=on|off][,reconnect-ms=milliseconds]\n"
+    "-netdev stream,id=str[,server=on|off],addr.type=fd,addr.str=file-descriptor[,reconnect-ms=milliseconds]\n"
+    "                configure a network backend to connect to another network\n"
+    "                using a socket connection in stream mode.\n"
+    "-netdev dgram,id=str,remote.type=inet,remote.host=maddr,remote.port=port[,local.type=inet,local.host=addr]\n"
+    "-netdev dgram,id=str,remote.type=inet,remote.host=maddr,remote.port=port[,local.type=fd,local.str=file-descriptor]\n"
+    "                configure a network backend to connect to a multicast maddr and port\n"
+    "                use ``local.host=addr`` to specify the host address to send packets from\n"
+    "-netdev dgram,id=str,local.type=inet,local.host=addr,local.port=port[,remote.type=inet,remote.host=addr,remote.port=port]\n"
+    "-netdev dgram,id=str,local.type=unix,local.path=path[,remote.type=unix,remote.path=path]\n"
+    "-netdev dgram,id=str,local.type=fd,local.str=file-descriptor\n"
+    "                configure a network backend to connect to another network\n"
+    "                using an UDP tunnel\n"
+#ifdef CONFIG_VDE
+    "-netdev vde,id=str[,sock=socketpath][,port=n][,group=groupname][,mode=octalmode]\n"
+    "                configure a network backend to connect to port 'n' of a vde switch\n"
+    "                running on host and listening for incoming connections on 'socketpath'.\n"
+    "                Use group 'groupname' and mode 'octalmode' to change default\n"
+    "                ownership and permissions for communication port.\n"
+#endif
+#ifdef CONFIG_NETMAP
+    "-netdev netmap,id=str,ifname=name[,devname=nmname]\n"
+    "                attach to the existing netmap-enabled network interface 'name', or to a\n"
+    "                VALE port (created on the fly) called 'name' ('nmname' is name of the \n"
+    "                netmap device, defaults to '/dev/netmap')\n"
+#endif
+#ifdef CONFIG_AF_XDP
+    "-netdev af-xdp,id=str,ifname=name[,mode=native|skb][,force-copy=on|off]\n"
+    "         [,queues=n][,start-queue=m][,inhibit=on|off][,sock-fds=x:y:...:z]\n"
+    "         [,map-path=/path/to/socket/map][,map-start-index=i]\n"
+    "                attach to the existing network interface 'name' with AF_XDP socket\n"
+    "                use 'mode=MODE' to specify an XDP program attach mode\n"
+    "                use 'force-copy=on|off' to force XDP copy mode even if device supports zero-copy (default: off)\n"
+    "                use 'inhibit=on|off' to inhibit loading of a default XDP program (default: off)\n"
+    "                with inhibit=on,\n"
+    "                  use 'sock-fds' to provide file descriptors for already open AF_XDP sockets\n"
+    "                  added to a socket map in XDP program.  One socket per queue.\n"
+    "                  use 'map-path' to provide the socket map location to populate AF_XDP sockets with,\n"
+    "                  and use 'map-start-index' to specify the starting index for the map (default: 0) (Since 10.1)\n"
+    "                use 'queues=n' to specify how many queues of a multiqueue interface should be used\n"
+    "                use 'start-queue=m' to specify the first queue that should be used\n"
+#endif
+#ifdef CONFIG_POSIX
+    "-netdev vhost-user,id=str,chardev=dev[,vhostforce=on|off]\n"
+    "                configure a vhost-user network, backed by a chardev 'dev'\n"
+#endif
+#ifdef __linux__
+    "-netdev vhost-vdpa,id=str[,vhostdev=/path/to/dev][,vhostfd=h]\n"
+    "                configure a vhost-vdpa network,Establish a vhost-vdpa netdev\n"
+    "                use 'vhostdev=/path/to/dev' to open a vhost vdpa device\n"
+    "                use 'vhostfd=h' to connect to an already opened vhost vdpa device\n"
+#endif
+#ifdef CONFIG_VMNET
+    "-netdev vmnet-host,id=str[,isolated=on|off][,net-uuid=uuid]\n"
+    "         [,start-address=addr,end-address=addr,subnet-mask=mask]\n"
+    "                configure a vmnet network backend in host mode with ID 'str',\n"
+    "                isolate this interface from others with 'isolated',\n"
+    "                configure the address range and choose a subnet mask,\n"
+    "                specify network UUID 'uuid' to disable DHCP and interact with\n"
+    "                vmnet-host interfaces within this isolated network\n"
+    "-netdev vmnet-shared,id=str[,isolated=on|off][,nat66-prefix=addr]\n"
+    "         [,start-address=addr,end-address=addr,subnet-mask=mask]\n"
+    "                configure a vmnet network backend in shared mode with ID 'str',\n"
+    "                configure the address range and choose a subnet mask,\n"
+    "                set IPv6 ULA prefix (of length 64) to use for internal network,\n"
+    "                isolate this interface from others with 'isolated'\n"
+    "-netdev vmnet-bridged,id=str,ifname=name[,isolated=on|off]\n"
+    "                configure a vmnet network backend in bridged mode with ID 'str',\n"
+    "                use 'ifname=name' to select a physical network interface to be bridged,\n"
+    "                isolate this interface from others with 'isolated'\n"
+#endif
+    "-netdev hubport,id=str,hubid=n[,netdev=nd]\n"
+    "                configure a hub port on the hub with ID 'n'\n", QEMU_ARCH_ALL)
+DEF("nic", HAS_ARG, QEMU_OPTION_nic,
+    "-nic [tap|bridge|"
+#ifdef CONFIG_PASST
+    "passt|"
+#endif
+#ifdef CONFIG_SLIRP
+    "user|"
+#endif
+#ifdef __linux__
+    "l2tpv3|"
+#endif
+#ifdef CONFIG_VDE
+    "vde|"
+#endif
+#ifdef CONFIG_NETMAP
+    "netmap|"
+#endif
+#ifdef CONFIG_AF_XDP
+    "af-xdp|"
+#endif
+#ifdef CONFIG_POSIX
+    "vhost-user|"
+#endif
+#ifdef CONFIG_VMNET
+    "vmnet-host|vmnet-shared|vmnet-bridged|"
+#endif
+    "socket][,option][,...][mac=macaddr]\n"
+    "                initialize an on-board / default host NIC (using MAC address\n"
+    "                macaddr) and connect it to the given host network backend\n"
+    "-nic none       use it alone to have zero network devices (the default is to\n"
+    "                provided a 'user' network connection)\n",
+    QEMU_ARCH_ALL)
+DEF("net", HAS_ARG, QEMU_OPTION_net,
+    "-net nic[,macaddr=mac][,model=type][,name=str][,addr=str][,vectors=v]\n"
+    "                configure or create an on-board (or machine default) NIC and\n"
+    "                connect it to hub 0 (please use -nic unless you need a hub)\n"
+    "-net ["
+#ifdef CONFIG_PASST
+    "passt|"
+#endif
+#ifdef CONFIG_SLIRP
+    "user|"
+#endif
+    "tap|"
+    "bridge|"
+#ifdef CONFIG_VDE
+    "vde|"
+#endif
+#ifdef CONFIG_NETMAP
+    "netmap|"
+#endif
+#ifdef CONFIG_AF_XDP
+    "af-xdp|"
+#endif
+#ifdef CONFIG_VMNET
+    "vmnet-host|vmnet-shared|vmnet-bridged|"
+#endif
+    "socket][,option][,option][,...]\n"
+    "                old way to initialize a host network interface\n"
+    "                (use the -netdev option if possible instead)\n", QEMU_ARCH_ALL)
+
+DEFHEADING()
+
+DEFHEADING(Character device options:)
+
+DEF("chardev", HAS_ARG, QEMU_OPTION_chardev,
+    "-chardev help\n"
+    "-chardev null,id=id[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev socket,id=id[,host=host],port=port[,to=to][,ipv4=on|off][,ipv6=on|off][,nodelay=on|off]\n"
+    "         [,server=on|off][,wait=on|off][,telnet=on|off][,websocket=on|off][,reconnect-ms=milliseconds][,mux=on|off]\n"
+    "         [,logfile=PATH][,logappend=on|off][,tls-creds=ID][,tls-authz=ID] (tcp)\n"
+    "-chardev socket,id=id,path=path[,server=on|off][,wait=on|off][,telnet=on|off][,websocket=on|off][,reconnect-ms=milliseconds]\n"
+    "         [,mux=on|off][,logfile=PATH][,logappend=on|off][,abstract=on|off][,tight=on|off] (unix)\n"
+    "-chardev udp,id=id[,host=host],port=port[,localaddr=localaddr]\n"
+    "         [,localport=localport][,ipv4=on|off][,ipv6=on|off][,mux=on|off]\n"
+    "         [,logfile=PATH][,logappend=on|off]\n"
+    "-chardev msmouse,id=id[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev vc,id=id[[,width=width][,height=height]][[,cols=cols][,rows=rows]]\n"
+    "         [,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev ringbuf,id=id[,size=size][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev file,id=id,path=path[,input-path=input-file][,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev pipe,id=id,path=path[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+#ifdef _WIN32
+    "-chardev console,id=id[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev serial,id=id,path=path[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+#else
+    "-chardev pty,id=id[,path=path][,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev stdio,id=id[,mux=on|off][,signal=on|off][,logfile=PATH][,logappend=on|off]\n"
+#endif
+#ifdef CONFIG_BRLAPI
+    "-chardev braille,id=id[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+#endif
+#if defined(__linux__) || defined(__sun__) || defined(__FreeBSD__) \
+        || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+    "-chardev serial,id=id,path=path[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+#endif
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
+    "-chardev parallel,id=id,path=path[,mux=on|off][,logfile=PATH][,logappend=on|off]\n"
+#endif
+#if defined(CONFIG_SPICE)
+    "-chardev spicevmc,id=id,name=name[,debug=debug][,logfile=PATH][,logappend=on|off]\n"
+    "-chardev spiceport,id=id,name=name[,debug=debug][,logfile=PATH][,logappend=on|off]\n"
+#endif
+    , QEMU_ARCH_ALL
+)
+
+
+DEFHEADING()
+
+#ifdef CONFIG_TPM
+DEFHEADING(TPM device options:)
+
+DEF("tpmdev", HAS_ARG, QEMU_OPTION_tpmdev, \
+    "-tpmdev passthrough,id=id[,path=path][,cancel-path=path]\n"
+    "                use path to provide path to a character device; default is /dev/tpm0\n"
+    "                use cancel-path to provide path to TPM's cancel sysfs entry; if\n"
+    "                not provided it will be searched for in /sys/class/misc/tpm?/device\n"
+    "-tpmdev emulator,id=id,chardev=dev\n"
+    "                configure the TPM device using chardev backend\n",
+    QEMU_ARCH_ALL)
+
+DEFHEADING()
+
+#endif
+
+DEFHEADING(Boot Image or Kernel specific:)
+
+
+DEF("bios", HAS_ARG, QEMU_OPTION_bios, \
+    "-bios file      set the filename for the BIOS\n", QEMU_ARCH_ALL)
+
+DEF("pflash", HAS_ARG, QEMU_OPTION_pflash,
+    "-pflash file    use 'file' as a parallel flash image\n", QEMU_ARCH_ALL)
+
+
+DEF("kernel", HAS_ARG, QEMU_OPTION_kernel, \
+    "-kernel bzImage use 'bzImage' as kernel image\n", QEMU_ARCH_ALL)
+
+DEF("shim", HAS_ARG, QEMU_OPTION_shim, \
+    "-shim shim.efi use 'shim.efi' to boot the kernel\n", QEMU_ARCH_ALL)
+
+DEF("append", HAS_ARG, QEMU_OPTION_append, \
+    "-append cmdline use 'cmdline' as kernel command line\n", QEMU_ARCH_ALL)
+
+DEF("initrd", HAS_ARG, QEMU_OPTION_initrd, \
+           "-initrd file    use 'file' as initial ram disk\n", QEMU_ARCH_ALL)
+
+DEF("dtb", HAS_ARG, QEMU_OPTION_dtb, \
+    "-dtb    file    use 'file' as device tree image\n", QEMU_ARCH_ALL)
+
+
+DEFHEADING()
+
+DEFHEADING(Debug/Expert options:)
+
+DEF("compat", HAS_ARG, QEMU_OPTION_compat,
+    "-compat [deprecated-input=accept|reject|crash][,deprecated-output=accept|hide]\n"
+    "                Policy for handling deprecated management interfaces\n"
+    "-compat [unstable-input=accept|reject|crash][,unstable-output=accept|hide]\n"
+    "                Policy for handling unstable management interfaces\n",
+    QEMU_ARCH_ALL)
+
+DEF("fw_cfg", HAS_ARG, QEMU_OPTION_fwcfg,
+    "-fw_cfg [name=]<name>,file=<file>\n"
+    "                add named fw_cfg entry with contents from file\n"
+    "-fw_cfg [name=]<name>,string=<str>\n"
+    "                add named fw_cfg entry with contents from string\n",
+    QEMU_ARCH_ALL)
+
+DEF("serial", HAS_ARG, QEMU_OPTION_serial, \
+    "-serial dev     redirect the serial port to char device 'dev'\n",
+    QEMU_ARCH_ALL)
+
+DEF("parallel", HAS_ARG, QEMU_OPTION_parallel, \
+    "-parallel dev   redirect the parallel port to char device 'dev'\n",
+    QEMU_ARCH_ALL)
+
+DEF("monitor", HAS_ARG, QEMU_OPTION_monitor, \
+    "-monitor dev    redirect the monitor to char device 'dev'\n",
+    QEMU_ARCH_ALL)
+DEF("qmp", HAS_ARG, QEMU_OPTION_qmp, \
+    "-qmp dev        like -monitor but opens in 'control' mode\n",
+    QEMU_ARCH_ALL)
+DEF("qmp-pretty", HAS_ARG, QEMU_OPTION_qmp_pretty, \
+    "-qmp-pretty dev like -qmp but uses pretty JSON formatting\n",
+    QEMU_ARCH_ALL)
+
+DEF("mon", HAS_ARG, QEMU_OPTION_mon, \
+    "-mon [chardev=]name[,mode=readline|control][,pretty[=on|off]]\n", QEMU_ARCH_ALL)
+
+DEF("debugcon", HAS_ARG, QEMU_OPTION_debugcon, \
+    "-debugcon dev   redirect the debug console to char device 'dev'\n",
+    QEMU_ARCH_ALL)
+
+DEF("pidfile", HAS_ARG, QEMU_OPTION_pidfile, \
+    "-pidfile file   write PID to 'file'\n", QEMU_ARCH_ALL)
+
+DEF("preconfig", 0, QEMU_OPTION_preconfig, \
+    "--preconfig     pause QEMU before machine is initialized (experimental)\n",
+    QEMU_ARCH_ALL)
+
+DEF("S", 0, QEMU_OPTION_S, \
+    "-S              freeze CPU at startup (use 'c' to start execution)\n",
+    QEMU_ARCH_ALL)
+
+DEF("overcommit", HAS_ARG, QEMU_OPTION_overcommit,
+    "-overcommit [mem-lock=on|off|on-fault][cpu-pm=on|off]\n"
+    "                run qemu with overcommit hints\n"
+    "                mem-lock=on|off|on-fault controls memory lock support (default: off)\n"
+    "                cpu-pm=on|off controls cpu power management (default: off)\n",
+    QEMU_ARCH_ALL)
+
+DEF("gdb", HAS_ARG, QEMU_OPTION_gdb, \
+    "-gdb dev        accept gdb connection on 'dev'. (QEMU defaults to starting\n"
+    "                the guest without waiting for gdb to connect; use -S too\n"
+    "                if you want it to not start execution.)\n",
+    QEMU_ARCH_ALL)
+
+DEF("s", 0, QEMU_OPTION_s, \
+    "-s              shorthand for -gdb tcp::" DEFAULT_GDBSTUB_PORT "\n",
+    QEMU_ARCH_ALL)
+
+DEF("d", HAS_ARG, QEMU_OPTION_d, \
+    "-d item1,...    enable logging of specified items (use '-d help' for a list of log items)\n",
+    QEMU_ARCH_ALL)
+
+DEF("D", HAS_ARG, QEMU_OPTION_D, \
+    "-D logfile      output log to logfile (default stderr)\n",
+    QEMU_ARCH_ALL)
+
+DEF("dfilter", HAS_ARG, QEMU_OPTION_DFILTER, \
+    "-dfilter range,..  filter debug output to range of addresses (useful for -d cpu,exec,etc..)\n",
+    QEMU_ARCH_ALL)
+
+DEF("seed", HAS_ARG, QEMU_OPTION_seed, \
+    "-seed number       seed the pseudo-random number generator\n",
+    QEMU_ARCH_ALL)
+
+DEF("L", HAS_ARG, QEMU_OPTION_L, \
+    "-L path         set the directory for the BIOS, VGA BIOS and keymaps\n",
+    QEMU_ARCH_ALL)
+
+DEF("enable-kvm", 0, QEMU_OPTION_enable_kvm, \
+    "-enable-kvm     enable KVM full virtualization support\n",
+    QEMU_ARCH_ARM | QEMU_ARCH_I386 | QEMU_ARCH_MIPS | QEMU_ARCH_PPC |
+    QEMU_ARCH_RISCV | QEMU_ARCH_S390X)
+
+DEF("xen-domid", HAS_ARG, QEMU_OPTION_xen_domid,
+    "-xen-domid id   specify xen guest domain id\n",
+    QEMU_ARCH_ARM | QEMU_ARCH_I386)
+DEF("xen-attach", 0, QEMU_OPTION_xen_attach,
+    "-xen-attach     attach to existing xen domain\n"
+    "                libxl will use this when starting QEMU\n",
+    QEMU_ARCH_ARM | QEMU_ARCH_I386)
+DEF("xen-domid-restrict", 0, QEMU_OPTION_xen_domid_restrict,
+    "-xen-domid-restrict     restrict set of available xen operations\n"
+    "                        to specified domain id. (Does not affect\n"
+    "                        xenpv machine type).\n",
+    QEMU_ARCH_ARM | QEMU_ARCH_I386)
+
+DEF("no-reboot", 0, QEMU_OPTION_no_reboot, \
+    "-no-reboot      exit instead of rebooting\n", QEMU_ARCH_ALL)
+
+DEF("no-shutdown", 0, QEMU_OPTION_no_shutdown, \
+    "-no-shutdown    stop before shutdown\n", QEMU_ARCH_ALL)
+
+DEF("action", HAS_ARG, QEMU_OPTION_action,
+    "-action reboot=reset|shutdown\n"
+    "                   action when guest reboots [default=reset]\n"
+    "-action shutdown=poweroff|pause\n"
+    "                   action when guest shuts down [default=poweroff]\n"
+    "-action panic=pause|shutdown|exit-failure|none\n"
+    "                   action when guest panics [default=shutdown]\n"
+    "-action watchdog=reset|shutdown|poweroff|inject-nmi|pause|debug|none\n"
+    "                   action when watchdog fires [default=reset]\n",
+    QEMU_ARCH_ALL)
+
+DEF("loadvm", HAS_ARG, QEMU_OPTION_loadvm, \
+    "-loadvm [tag|id]\n" \
+    "                start right away with a saved state (loadvm in monitor)\n",
+    QEMU_ARCH_ALL)
+
+#if !defined(_WIN32) && !defined(EMSCRIPTEN)
+DEF("daemonize", 0, QEMU_OPTION_daemonize, \
+    "-daemonize      daemonize QEMU after initializing\n", QEMU_ARCH_ALL)
+#endif
+
+DEF("option-rom", HAS_ARG, QEMU_OPTION_option_rom, \
+    "-option-rom rom load a file, rom, into the option ROM space\n",
+    QEMU_ARCH_ALL)
+
+DEF("rtc", HAS_ARG, QEMU_OPTION_rtc, \
+    "-rtc [base=utc|localtime|<datetime>][,clock=host|rt|vm][,driftfix=none|slew]\n" \
+    "                set the RTC base and clock, enable drift fix for clock ticks (x86 only)\n",
+    QEMU_ARCH_ALL)
+
+
+DEF("icount", HAS_ARG, QEMU_OPTION_icount, \
+    "-icount [shift=N|auto][,align=on|off][,sleep=on|off][,rr=record|replay,rrfile=<filename>[,rrsnapshot=<snapshot>]]\n" \
+    "                enable virtual instruction counter with 2^N clock ticks per\n" \
+    "                instruction, enable aligning the host and virtual clocks\n" \
+    "                or disable real time cpu sleeping, and optionally enable\n" \
+    "                record-and-replay mode\n", QEMU_ARCH_ALL)
+
+DEF("watchdog-action", HAS_ARG, QEMU_OPTION_watchdog_action, \
+    "-watchdog-action reset|shutdown|poweroff|inject-nmi|pause|debug|none\n" \
+    "                action when watchdog fires [default=reset]\n",
+    QEMU_ARCH_ALL)
+
+DEF("echr", HAS_ARG, QEMU_OPTION_echr, \
+    "-echr chr       set terminal escape character instead of ctrl-a\n",
+    QEMU_ARCH_ALL)
+
+DEF("incoming", HAS_ARG, QEMU_OPTION_incoming, \
+    "-incoming tcp:[host]:port[,to=maxport][,ipv4=on|off][,ipv6=on|off]\n" \
+    "-incoming rdma:host:port[,ipv4=on|off][,ipv6=on|off]\n" \
+    "-incoming unix:socketpath\n" \
+    "                prepare for incoming migration, listen on\n" \
+    "                specified protocol and socket address\n" \
+    "-incoming fd:fd\n" \
+    "-incoming file:filename[,offset=offset]\n" \
+    "-incoming exec:cmdline\n" \
+    "                accept incoming migration on given file descriptor\n" \
+    "                or from given external command\n" \
+    "-incoming <channel>\n" \
+    "                accept incoming migration on the migration channel\n" \
+    "-incoming defer\n" \
+    "                wait for the URI to be specified via migrate_incoming\n",
+    QEMU_ARCH_ALL)
+
+DEF("only-migratable", 0, QEMU_OPTION_only_migratable, \
+    "-only-migratable     allow only migratable devices\n", QEMU_ARCH_ALL)
+
+DEF("nodefaults", 0, QEMU_OPTION_nodefaults, \
+    "-nodefaults     don't create default devices\n", QEMU_ARCH_ALL)
+
+DEF("prom-env", HAS_ARG, QEMU_OPTION_prom_env,
+    "-prom-env variable=value\n"
+    "                set OpenBIOS nvram variables\n",
+    QEMU_ARCH_PPC | QEMU_ARCH_SPARC)
+DEF("semihosting", 0, QEMU_OPTION_semihosting,
+    "-semihosting    semihosting mode\n",
+    QEMU_ARCH_ARM | QEMU_ARCH_M68K | QEMU_ARCH_XTENSA |
+    QEMU_ARCH_MIPS | QEMU_ARCH_RISCV)
+DEF("semihosting-config", HAS_ARG, QEMU_OPTION_semihosting_config,
+    "-semihosting-config [enable=on|off][,target=native|gdb|auto][,chardev=id][,userspace=on|off][,arg=str[,...]]\n" \
+    "                semihosting configuration\n",
+QEMU_ARCH_ARM | QEMU_ARCH_M68K | QEMU_ARCH_XTENSA |
+QEMU_ARCH_MIPS | QEMU_ARCH_RISCV)
+DEF("sandbox", HAS_ARG, QEMU_OPTION_sandbox, \
+    "-sandbox on[,obsolete=allow|deny][,elevateprivileges=allow|deny|children]\n" \
+    "          [,spawn=allow|deny][,resourcecontrol=allow|deny]\n" \
+    "                Enable seccomp mode 2 system call filter (default 'off').\n" \
+    "                use 'obsolete' to allow obsolete system calls that are provided\n" \
+    "                    by the kernel, but typically no longer used by modern\n" \
+    "                    C library implementations.\n" \
+    "                use 'elevateprivileges' to allow or deny the QEMU process ability\n" \
+    "                    to elevate privileges using set*uid|gid system calls.\n" \
+    "                    The value 'children' will deny set*uid|gid system calls for\n" \
+    "                    main QEMU process but will allow forks and execves to run unprivileged\n" \
+    "                use 'spawn' to avoid QEMU to spawn new threads or processes by\n" \
+    "                     blocking *fork and execve\n" \
+    "                use 'resourcecontrol' to disable process affinity and schedular priority\n",
+    QEMU_ARCH_ALL)
+
+DEF("readconfig", HAS_ARG, QEMU_OPTION_readconfig,
+    "-readconfig <file>\n"
+    "                read config file\n", QEMU_ARCH_ALL)
+
+DEF("no-user-config", 0, QEMU_OPTION_nouserconfig,
+    "-no-user-config\n"
+    "                do not load default user-provided config files at startup\n",
+    QEMU_ARCH_ALL)
+
+DEF("trace", HAS_ARG, QEMU_OPTION_trace,
+    "-trace [[enable=]<pattern>][,events=<file>][,file=<file>]\n"
+    "                specify tracing options\n",
+    QEMU_ARCH_ALL)
+DEF("plugin", HAS_ARG, QEMU_OPTION_plugin,
+    "-plugin [file=]<file>[,<argname>=<argvalue>]\n"
+    "                load a plugin\n",
+    QEMU_ARCH_ALL)
+
+DEF("qtest", HAS_ARG, QEMU_OPTION_qtest, "", QEMU_ARCH_ALL)
+DEF("qtest-log", HAS_ARG, QEMU_OPTION_qtest_log, "", QEMU_ARCH_ALL)
+
+#if defined(CONFIG_POSIX) && !defined(EMSCRIPTEN)
+DEF("run-with", HAS_ARG, QEMU_OPTION_run_with,
+    "-run-with [async-teardown=on|off][,chroot=dir]\n" \
+    "          [,exit-with-parent=on|off][,user=username|uid:gid]\n"
+    "                Set miscellaneous QEMU process lifecycle options:\n"
+    "                async-teardown=on enables asynchronous teardown (Linux only)\n"
+    "                exit-with-parent=on causes QEMU to exit if the parent\n"
+    "                  process of QEMU exits (Linux, FreeBSD, macOS only)\n"
+    "                chroot=dir chroot to dir just before starting the VM\n"
+    "                user=username switch to the specified user before starting the VM\n"
+    "                user=uid:gid ditto, but use specified user-ID and group-ID instead\n",
+    QEMU_ARCH_ALL)
+#endif
+
+DEF("msg", HAS_ARG, QEMU_OPTION_msg,
+    "-msg [timestamp[=on|off]][,guest-name=[on|off]]\n"
+    "                control error message format\n"
+    "                timestamp=on enables timestamps (default: off)\n"
+    "                guest-name=on enables guest name prefix but only if\n"
+    "                              -name guest option is set (default: off)\n",
+    QEMU_ARCH_ALL)
+
+DEF("dump-vmstate", HAS_ARG, QEMU_OPTION_dump_vmstate,
+    "-dump-vmstate <file>\n"
+    "                Output vmstate information in JSON format to file.\n"
+    "                Use the scripts/vmstate-static-checker.py file to\n"
+    "                check for possible regressions in migration code\n"
+    "                by comparing two such vmstate dumps.\n",
+    QEMU_ARCH_ALL)
+
+DEF("enable-sync-profile", 0, QEMU_OPTION_enable_sync_profile,
+    "-enable-sync-profile\n"
+    "                enable synchronization profiling\n",
+    QEMU_ARCH_ALL)
+
+#if defined(CONFIG_TCG) && defined(CONFIG_LINUX)
+DEF("perfmap", 0, QEMU_OPTION_perfmap,
+    "-perfmap        generate a /tmp/perf-${pid}.map file for perf\n",
+    QEMU_ARCH_ALL)
+
+DEF("jitdump", 0, QEMU_OPTION_jitdump,
+    "-jitdump        generate a jit-${pid}.dump file for perf\n",
+    QEMU_ARCH_ALL)
+#endif
+
+DEFHEADING()
+
+DEFHEADING(Generic object creation:)
+
+DEF("object", HAS_ARG, QEMU_OPTION_object,
+    "-object TYPENAME[,PROP1=VALUE1,...]\n"
+    "                create a new object of type TYPENAME setting properties\n"
+    "                in the order they are specified.  Note that the 'id'\n"
+    "                property must be set.  These objects are placed in the\n"
+    "                '/objects' path.\n",
+    QEMU_ARCH_ALL)
+
+
+
+#undef DEF
+#undef DEFHEADING
+#undef ARCHHEADING

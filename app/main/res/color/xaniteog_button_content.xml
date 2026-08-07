@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:alpha="0.5" android:color="@color/xaniteog_text_muted" android:state_enabled="false" />
+  <item android:color="@color/xaniteog_black" android:state_checked="true" />
+  <item android:color="@color/xaniteog_green_light" />
+</selector>

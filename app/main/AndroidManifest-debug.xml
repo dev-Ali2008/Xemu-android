@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only manifest overlay.
+
+  Makes MainActivity launchable from adb so a benchmark can boot straight into
+  a save state, passing the AUTO_LOAD_SNAPSHOT_SLOT int extra to
+  Ali.Xanite/.MainActivity via "am start".
+
+  Without this, reaching real gameplay takes ~4 minutes of scripted taps per
+  run, which pushed perf measurements into menus and cutscenes that are not
+  CPU-bound, so CPU wins were invisible and thermal drift dominated.
+
+  This is wired to the debug source set only (see sourceSets in build.gradle),
+  so release builds keep exported="false" by construction.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+  <application>
+    <activity
+        android:name=".MainActivity"
+        android:exported="true"
+        tools:replace="android:exported" />
+  </application>
+</manifest>

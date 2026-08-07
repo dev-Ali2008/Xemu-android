@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Xbox 2001 dashboard vibe: a deep charcoal base with a soft radial neon-green
+  glow blooming from the upper-centre of the screen. Shared by the settings,
+  setup, library and per-game screens for a consistent look.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- Deep charcoal base -->
+  <item>
+    <shape android:shape="rectangle">
+      <solid android:color="@color/xaniteog_charcoal" />
+    </shape>
+  </item>
+
+  <!-- Soft neon-green radial bloom near the top -->
+  <item>
+    <shape android:shape="rectangle">
+      <gradient
+        android:type="radial"
+        android:centerX="0.5"
+        android:centerY="0.18"
+        android:gradientRadius="115%p"
+        android:startColor="@color/xaniteog_glow_strong"
+        android:centerColor="@color/xaniteog_glow_soft"
+        android:endColor="@android:color/transparent" />
+    </shape>
+  </item>
+
+  <!-- Subtle secondary bloom from the lower edge to seat the charcoal -->
+  <item>
+    <shape android:shape="rectangle">
+      <gradient
+        android:type="radial"
+        android:centerX="0.5"
+        android:centerY="1.05"
+        android:gradientRadius="95%p"
+        android:startColor="@color/xaniteog_glow_floor"
+        android:endColor="@android:color/transparent" />
+    </shape>
+  </item>
+
+</layer-list>

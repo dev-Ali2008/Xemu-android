@@ -1,0 +1,131 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <!-- Resolving a browser for the Patreon OAuth hand-off. -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <data android:scheme="https" />
+    </intent>
+  </queries>
+
+  <application
+    android:name=".XaniteApplication"
+    android:label="@string/app_name"
+    android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:allowBackup="false"
+    android:fullBackupContent="false"
+    android:dataExtractionRules="@xml/data_extraction_rules"
+    android:usesCleartextTraffic="false"
+    android:networkSecurityConfig="@xml/network_security_config"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.Xaniteog">
+
+    <activity
+      android:name=".LauncherActivity"
+      android:exported="true">
+
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="content" />
+        <data android:scheme="file" />
+      </intent-filter>
+
+      <intent-filter>
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="*/*" />
+      </intent-filter>
+    </activity>
+
+    <!-- Hard-block activation gate. Excluded from recents, and explicitly NOT
+         noHistory: it must survive the Patreon OAuth round trip so the redirect
+         can hand the code back to the same task.
+
+         exported MUST stay true: the round trip ends with the *browser*
+         launching xanite://activate, and a non-exported activity cannot be
+         started by another app, which silently breaks activation. This is safe
+         because handleRedirect() discards any redirect whose state does not
+         match the SecureRandom value this activity generated. -->
+    <activity
+      android:name=".ActivationGatewayActivity"
+      android:excludeFromRecents="true"
+      android:exported="true"
+      android:launchMode="singleTask"
+      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="xanite" android:host="activate" />
+      </intent-filter>
+    </activity>
+
+    <activity
+      android:name=".PrivacyPolicyActivity"
+      android:exported="false" />
+
+    <!-- MainActivity = اللعبة نفسها، تبقى landscape -->
+    <activity
+      android:name=".MainActivity"
+      android:screenOrientation="sensorLandscape"
+      android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+      android:hardwareAccelerated="true"
+      android:process=":xaniteog"
+      android:exported="false">
+
+      <meta-data
+        android:name="SDL_MAIN_LIBRARY"
+        android:value="xaniteog" />
+    </activity>
+
+    <activity
+      android:name=".SetupWizardActivity"
+      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+      android:exported="false" />
+
+    <activity
+      android:name=".GameLibraryActivity"
+      android:exported="false" />
+
+    <!-- Target of home-screen game shortcuts. Must be exported so the
+         launcher can start it. It only launches a game the user pinned
+         themselves, and re-checks the persisted URI permission first. -->
+    <activity
+      android:name=".ShortcutLaunchActivity"
+      android:exported="true"
+      android:excludeFromRecents="true"
+      android:noHistory="true"
+      android:theme="@android:style/Theme.NoDisplay" />
+
+    <activity
+      android:name=".SettingsActivity"
+      android:exported="false" />
+
+    <activity
+      android:name=".PerGameSettingsActivity"
+      android:exported="false" />
+
+    <activity
+      android:name=".XboxDashboardActivity"
+      android:exported="false" />
+
+    <activity
+      android:name=".InsigniaSetupActivity"
+      android:exported="false" />
+
+    <activity
+      android:name=".XboxLiveActivity"
+      android:exported="false"
+      android:windowSoftInputMode="adjustResize" />
+
+  </application>
+</manifest>

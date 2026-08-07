@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Active tab = solid green badge; inactive tab = transparent (green outline only) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:color="@color/xaniteog_green" android:state_checked="true" />
+  <item android:color="@android:color/transparent" />
+</selector>

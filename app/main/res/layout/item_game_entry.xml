@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_marginTop="4dp"
+  android:background="@drawable/game_list_item_background"
+  android:padding="8dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
+
+    <ImageView
+      android:id="@+id/game_list_cover_image"
+      android:layout_width="64dp"
+      android:layout_height="64dp"
+      android:background="@drawable/game_cover_image_background"
+      android:contentDescription="@string/library_open_game"
+      android:scaleType="centerCrop"
+      android:src="@drawable/ic_xaniteog_image_placeholder"
+      android:elevation="2dp" />
+
+    <LinearLayout
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="14dp"
+      android:layout_weight="1"
+      android:orientation="vertical">
+
+      <TextView
+        android:id="@+id/game_name_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/game_convert_warning_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:maxLines="1"
+        android:text="@string/library_regular_iso_badge"
+        android:textColor="@color/xaniteog_warning"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+      <TextView
+        android:id="@+id/game_size_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#AAFFFFFF"
+        android:textSize="13sp" />
+
+      <TextView
+        android:id="@+id/game_path_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="middle"
+        android:maxLines="1"
+        android:textColor="#88FFFFFF"
+        android:textSize="12sp" />
+    </LinearLayout>
+  </LinearLayout>
+</FrameLayout>

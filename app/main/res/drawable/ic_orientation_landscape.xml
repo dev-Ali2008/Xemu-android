@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Landscape counterpart of ic_orientation_portrait.xml: same chassis,
+     rotated 90 degrees, home-indicator bar moved to the right edge. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="24dp"
+  android:height="24dp"
+  android:viewportWidth="960"
+  android:viewportHeight="960">
+
+  <!-- Phone chassis outline -->
+  <path
+    android:strokeColor="@android:color/white"
+    android:strokeWidth="52"
+    android:pathData="
+      M 232,296
+      H 728
+      A 92,92 0 0 1 820,388
+      V 572
+      A 92,92 0 0 1 728,664
+      H 232
+      A 92,92 0 0 1 140,572
+      V 388
+      A 92,92 0 0 1 232,296
+      Z" />
+
+  <!-- Home indicator bar -->
+  <path
+    android:fillColor="@android:color/white"
+    android:pathData="M 748,430 V 530 A 20,20 0 0 1 708,530 V 430 A 20,20 0 0 1 748,430 Z" />
+</vector>

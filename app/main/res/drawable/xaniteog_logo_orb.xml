@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glowing neon-green orb used as the startup logo backdrop -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- Outer soft halo -->
+  <item>
+    <shape android:shape="oval">
+      <gradient
+        android:type="radial"
+        android:gradientRadius="50%"
+        android:startColor="@color/xaniteog_glow_strong"
+        android:centerColor="@color/xaniteog_glow_soft"
+        android:endColor="@android:color/transparent" />
+    </shape>
+  </item>
+
+  <!-- Bright glowing core -->
+  <item
+    android:bottom="22dp"
+    android:left="22dp"
+    android:right="22dp"
+    android:top="22dp">
+    <shape android:shape="oval">
+      <gradient
+        android:type="radial"
+        android:gradientRadius="50%"
+        android:startColor="#FFFFE699"
+        android:centerColor="@color/xaniteog_green"
+        android:endColor="@color/xanite_accent_22" />
+      <stroke
+        android:width="1.5dp"
+        android:color="@color/xanite_accent_aa" />
+    </shape>
+  </item>
+
+</layer-list>
