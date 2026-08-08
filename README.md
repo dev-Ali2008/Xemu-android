@@ -7,8 +7,6 @@
 <h1 align="center"> xenraOG -
  Xbox original emulator Android </h1>
 
-xenraOG is a "proof of concept" emulator
-
 xenraOG is an Android-focused Xbox Original emulator that runs games in XISO format only, with ideas and inspiration drawn from Xemu
 
 - Hardware Detection:  
