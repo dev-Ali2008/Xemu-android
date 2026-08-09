@@ -19,7 +19,7 @@ you can manually adjust the resolution and performance in settings for experimen
 This app is not a full-speed Xbox original emulator. It is built with performance and platform limitations in mind, and is best suited for:
 
 ## Device Requirements
-Android 9.0+
+Android 10+
 
 64-bit ARM device (arm64-v8a)
 
