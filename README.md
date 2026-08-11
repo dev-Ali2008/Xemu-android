@@ -4,7 +4,7 @@
     </a>
 </p>
 
-<h1 align="center"> xenra -
+<h1 align="center"> Xenra -
  Xbox Original and 360 emulator </h1>
 
 xenra is an Android-focused Xbox Original and 360 emulator that runs games in XISO and ISO format only, with ideas and inspiration drawn from Xemu and Xenia
