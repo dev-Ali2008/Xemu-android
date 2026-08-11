@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center"> xenra -
- Xbox Original and 360 emulator on Android </h1>
+ Xbox Original and 360 emulator </h1>
 
 xenra is an Android-focused Xbox Original and 360 emulator that runs games in XISO and ISO format only, with ideas and inspiration drawn from Xemu and Xenia
 
