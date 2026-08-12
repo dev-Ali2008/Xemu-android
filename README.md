@@ -1,11 +1,10 @@
 <p align="center">
-    <a href="https://github.com/dev-Ali2008/xanite/blob/929b223cf0b614d4c0d077eec44bd1a78f206aef/OG.jpg">
-        <img height="150px" src="https://github.com/dev-Ali2008/xanite/blob/929b223cf0b614d4c0d077eec44bd1a78f206aef/OG.jpg" />
+    <a href="https://github.com/dev-Ali2008/xenra/blob/40c583fd3254affac90ea343c567654ad79d6f90/Xbox.jpg">
+        <img height="150px" src="https://github.com/dev-Ali2008/xenra/blob/40c583fd3254affac90ea343c567654ad79d6f90/Xbox.jpg" />
     </a>
 </p>
 
-<h1 align="center"> Xenra -
- Xbox Original and 360 emulator </h1>
+<h1 align="center"> Xenra - emulator </h1>
 
 xenra is an Android-focused Xbox Original and 360 emulator that runs games in XISO and ISO format only, with ideas and inspiration drawn from Xemu and Xenia
 
