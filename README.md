@@ -35,6 +35,8 @@ stability and performance
 
 If you want to contribute as a developer, please contact us in discord
 
+yebot32 is the developer and owner, Ali alsaadi was the previous owner and founder of the emulator
+
 ## DISCLAIMER !
 xenraOG is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
 
