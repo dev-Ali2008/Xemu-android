@@ -14,9 +14,6 @@ Automatically identifies your device's hardware (GPU, RAM) and optimizes setting
 - Performance Scaling:  
 you can manually adjust the resolution and performance in settings for experiment or low end devices
 
-### Text description
-This app is not a full-speed Xbox original emulator. It is built with performance and platform limitations in mind, and is best suited for:
-
 ## Device Requirements
 Android 10+
 
