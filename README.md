@@ -59,7 +59,7 @@ https://github.com/dev-Ali2008/xenraOG
 
 YouTube
 
-https://youtube.com/@emulator_xenraog?si= s4GLzSSLWEG4fne3
+https://youtube.com/@emulator_xenraog?si=s4GLzSSLWEG4fne3
 
 Patreon
 
