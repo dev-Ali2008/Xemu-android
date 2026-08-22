@@ -41,7 +41,27 @@ We do not condone piracy. BIOS files and game backups must be legally owned. Whi
 
 
  
-## xenraOG website
+## xenraOG website and socials
 
 https://dev-ali2008.github.io/xenraOG.io/
+
+Discord
+
+https://discord.gg/U5kytJ4dub
+
+Telegram
+
+https://t.me/xenraOG
+
+GitHub
+
+https://github.com/dev-Ali2008/xenraOG
+
+YouTube
+
+https://youtube.com/@emulator_xenraog?si= s4GLzSSLWEG4fne3
+
+Patreon
+
+https://www.patreon.com/cw/Xanite/membership
 
