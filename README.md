@@ -12,7 +12,7 @@ Xenra is an Android-focused Xbox Original and 360 emulator that runs games in XI
 
 ## History & Origins
 
-Xenra originally started as a unified fork combining [x1 box](https://github.com/dev-Ali2008/x1box) and [Xendroid](https://github.com/dev-Ali2008/xendroid) into a single cohesive app. Since then, it has been massively improved and updated.
+Xenra originally started as a unified fork combining [x1 box](https://github.com/izzy2lost/xemu) and [Xendroid](https://github.com/rfandango/XenDroid) into a single cohesive app. Since then, it has been massively improved and updated.
 
 ---
 
