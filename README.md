@@ -35,13 +35,13 @@ If you want to contribute as a developer, please contact us in discord
 yebot32 is the developer and owner, Ali alsaadi was the previous owner and founder of the emulator
 
 ## DISCLAIMER !
-xenraOG is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
+Xenra is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
 
 We do not condone piracy. BIOS files and game backups must be legally owned. While emulator software itself is legal, downloading or distributing copyrighted BIOS files or games without ownership is illegal. Please be responsible and cautious online.
 
 
  
-## xenraOG website and socials
+## Xenra website and socials
 
 https://dev-ali2008.github.io/xenraOG.io/
 
