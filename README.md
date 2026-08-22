@@ -4,64 +4,61 @@
     </a>
 </p>
 
-<h1 align="center"> Xenra - emulator </h1>
+<h1 align="center"> Xenra - Emulator </h1>
 
-Xenra is an Android-focused Xbox Original and 360 emulator that runs games in XISO and ISO format only, with ideas and inspiration drawn from Xemu and Xenia
+Xenra is an Android-focused Xbox Original and Xbox 360 emulator that runs games in XISO and ISO formats, drawing inspiration and ideas from Xemu and Xenia.
 
-- Hardware Detection:  
-Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance
+---
 
-- Performance Scaling:  
-you can manually adjust the resolution and performance in settings for experiment or low end devices
+## History & Origins
+
+Xenra originally started as a unified fork combining **x1 box** and **Xendroid** into a single cohesive app. Since then, the codebase has been massively rewritten, updated, and improved to deliver significantly enhanced stability, better modern hardware compatibility, and overall higher performance on mobile devices.
+
+---
+
+## Features
+
+- **Hardware Detection:**  
+  Automatically identifies your device's hardware (GPU, RAM) and optimizes settings for peak performance.
+
+- **Performance Scaling:**  
+  Manually adjust resolution and performance profiles in the settings menu—ideal for experimentation or tuning for low-end devices.
+
+---
 
 ## Device Requirements
-Android 10+
 
-64-bit ARM device (arm64-v8a)
+- **OS:** Android 10 or higher
+- **Architecture:** 64-bit ARM device (`arm64-v8a`)
+- **Graphics:** Vulkan-capable GPU
+- **RAM:** 6 GB RAM or higher recommended for optimal stability and performance
 
-Vulkan-capable GPU/device
+> **Note:** Performance varies depending on the title, your device, and configured settings. Compatibility is an ongoing effort, and some games may run slowly or not at all.
 
-Recommended: 6 GB RAM or higher for better 
-
-stability and performance
-
-- Performance may be slow depending on the game, device, and settings. Compatibility varies, and many games may not run correctly or at all.
-
+---
 
 ## Contributing
 
-If you want to contribute as a developer, please contact us in discord
+If you would like to contribute as a developer, please reach out via our [Discord community](https://discord.gg/U5kytJ4dub).
 
-yebot32 is the developer and owner, Ali alsaadi was the previous owner and founder of the emulator
+- **yebot32:** Developer and current owner
+- **Ali Alsaadi:** Founder and previous owner
 
-## DISCLAIMER !
-Xenra is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is intended for educational and research purposes as we continue developing and porting the emulator to Android.
+---
 
-We do not condone piracy. BIOS files and game backups must be legally owned. While emulator software itself is legal, downloading or distributing copyrighted BIOS files or games without ownership is illegal. Please be responsible and cautious online.
+## DISCLAIMER
 
+Xenra is an open-source project and is not affiliated with or endorsed by Microsoft in any way. This project is created strictly for educational and research purposes as development continues on porting and optimizing Xbox emulation for Android.
 
- 
-## Xenra website and socials
+We do not condone or encourage piracy. BIOS/Dashboard files and game backups must be legally owned by the user. While emulator software itself is legal, downloading or distributing copyrighted BIOS files, game ROMs, or ISOs without owning the original media is illegal.
 
-https://dev-ali2008.github.io/xenraOG.io/
+---
 
-Discord
+## Links & Socials
 
-https://discord.gg/U5kytJ4dub
-
-Telegram
-
-https://t.me/xenraOG
-
-GitHub
-
-https://github.com/dev-Ali2008/xenraOG
-
-YouTube
-
-https://youtube.com/@emulator_xenraog?si=s4GLzSSLWEG4fne3
-
-Patreon
-
-https://www.patreon.com/cw/Xanite/membership
-
+- **Website:** [dev-ali2008.github.io/xenraOG.io](https://dev-ali2008.github.io/xenraOG.io/)
+- **Discord:** [Join Community](https://discord.gg/U5kytJ4dub)
+- **Telegram:** [t.me/xenraOG](https://t.me/xenraOG)
+- **GitHub:** [dev-Ali2008/xenraOG](https://github.com/dev-Ali2008/xenraOG)
+- **YouTube:** [@emulator_xenraog](https://youtube.com/@emulator_xenraog?si=s4GLzSSLWEG4fne3)
+- **Patreon:** [Xanite Membership](https://www.patreon.com/cw/Xanite/membership)
