@@ -6,7 +6,7 @@
 
 <h1 align="center"> Xenra - emulator </h1>
 
-Xenra is an Android-focused Xbox Original and 360 emulator that runs games in XISO and ISO format only, with ideas and inspiration drawn from Xemu and Xenia.
+Xenra is an Android-focused Xbox Original and 360 emulator that runs games in XISO and ISO format only.
 
 ---
 
