@@ -12,7 +12,7 @@ Xenra is an Android-focused Xbox Original and 360 emulator that runs games in XI
 
 ## History & Origins
 
-Xenra originally started as a unified project combining x1 box and Xendroid into a single cohesive app. Under the hood, it builds upon xemu for Original Xbox emulation and Xenia Edge for Xbox 360 emulation. Since its initial release, the project has been massively improved and updated.
+Xenra brings Original Xbox and Xbox 360 emulation together into a single cohesive application. Under the hood, it builds upon xemu for Original Xbox emulation and Xenia Edge for Xbox 360 emulation. Since its initial release, the project has been massively improved and updated.
 
 ---
 
