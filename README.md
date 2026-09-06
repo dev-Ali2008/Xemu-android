@@ -33,8 +33,6 @@ Xenra brings Original Xbox and Xbox 360 emulation together into a single cohesiv
 - Vulkan-capable GPU/device
 - **Recommended:** 6 GB RAM or higher for better stability and performance
 
-> Performance may be slow depending on the game, device, and settings. Compatibility varies, and many games may not run correctly or at all.
-
 ---
 
 ## Contributing
@@ -42,7 +40,7 @@ Xenra brings Original Xbox and Xbox 360 emulation together into a single cohesiv
 If you want to contribute as a developer, please contact us in discord.
 
 - **yebot32** is the developer and owner
-- **Ali alsaadi** was the previous owner and founder of the emulator
+- **Ali alsaadi** was the founder of the emulator
 
 ---
 
